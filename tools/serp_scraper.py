@@ -1,0 +1,344 @@
+#!/usr/bin/env python3
+"""
+SERP & Data Scraper Tool
+Handles multiple scraping modes:
+  - autosuggest: Google Autocomplete suggestions
+  - trends: Google Trends data via pytrends
+  - serp_top10: Top 10 organic results for a keyword
+  - competitor_gap: Keyword gap vs competitor pages
+  - link_prospects: Find guest post / resource page opportunities
+  - unlinked_mentions: Find unlinked brand mentions
+  - find_email: Extract contact emails from URLs
+
+Usage:
+    python serp_scraper.py --mode autosuggest --keyword "project management software"
+    python serp_scraper.py --mode trends --keywords "keyword1,keyword2,keyword3"
+    python serp_scraper.py --mode serp_top10 --keyword "best CRM software"
+    python serp_scraper.py --mode link_prospects --industry "marketing" --type guest_post
+"""
+
+import argparse
+import json
+import time
+import re
+import string
+from pathlib import Path
+from datetime import datetime
+from urllib.parse import urlparse, quote_plus
+
+try:
+    import requests
+    from bs4 import BeautifulSoup
+except ImportError:
+    import subprocess
+    subprocess.run(["pip", "install", "requests", "beautifulsoup4", "lxml"], check=True)
+    import requests
+    from bs4 import BeautifulSoup
+
+
+HEADERS = {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+    "Accept-Language": "en-US,en;q=0.9",
+}
+
+
+# ===========================
+# AUTOSUGGEST
+# ===========================
+def scrape_autosuggest(keyword: str, location: str = "us") -> dict:
+    """Scrape Google Autocomplete for a keyword with A-Z suffix variations."""
+    suggestions = []
+    session = requests.Session()
+    session.headers.update(HEADERS)
+
+    # Base keyword
+    suffixes = [""] + list(string.ascii_lowercase)
+
+    for suffix in suffixes:
+        query = f"{keyword} {suffix}".strip()
+        url = f"https://suggestqueries.google.com/complete/search?client=firefox&q={quote_plus(query)}&hl=en&gl={location}"
+        try:
+            resp = session.get(url, timeout=10)
+            data = resp.json()
+            new_suggestions = data[1] if len(data) > 1 else []
+            for s in new_suggestions:
+                if s not in suggestions and s != keyword:
+                    suggestions.append(s)
+        except Exception as e:
+            print(f"  [Autosuggest] Error for suffix '{suffix}': {e}")
+        time.sleep(0.3)
+
+    # Also scrape People Also Ask
+    paa_questions = scrape_paa(keyword, session)
+
+    return {
+        "keyword": keyword,
+        "suggestions": suggestions,
+        "paa_questions": paa_questions,
+        "total_found": len(suggestions),
+        "scraped_at": datetime.now().isoformat()
+    }
+
+
+def scrape_paa(keyword: str, session: requests.Session) -> list:
+    """Scrape People Also Ask questions for a keyword."""
+    url = f"https://www.google.com/search?q={quote_plus(keyword)}&hl=en"
+    questions = []
+    try:
+        resp = session.get(url, timeout=15)
+        soup = BeautifulSoup(resp.text, "lxml")
+        # PAA questions are typically in <div> with jsname attribute or data-expandable
+        for el in soup.find_all(attrs={"data-q": True}):
+            q = el.get("data-q", "").strip()
+            if q and q not in questions:
+                questions.append(q)
+
+        # Fallback: look for question-like text in results
+        for el in soup.find_all("div", class_=re.compile("related")):
+            text = el.get_text(strip=True)
+            if text.endswith("?") and len(text) > 20:
+                questions.append(text)
+
+    except Exception as e:
+        print(f"  [PAA] Error: {e}")
+    return questions[:20]  # Return up to 20
+
+
+# ===========================
+# GOOGLE TRENDS
+# ===========================
+def fetch_trends(keywords: list) -> dict:
+    """Fetch Google Trends interest data for a list of keywords."""
+    try:
+        from pytrends.request import TrendReq
+    except ImportError:
+        import subprocess
+        subprocess.run(["pip", "install", "pytrends"], check=True)
+        from pytrends.request import TrendReq
+
+    pytrends = TrendReq(hl="en-US", tz=360, timeout=(10, 25))
+    results = {}
+
+    # pytrends handles max 5 keywords at once
+    for i in range(0, len(keywords), 5):
+        batch = keywords[i:i+5]
+        try:
+            pytrends.build_payload(batch, timeframe="today 12-m")
+            interest = pytrends.interest_over_time()
+            if not interest.empty:
+                for kw in batch:
+                    if kw in interest.columns:
+                        series = interest[kw]
+                        results[kw] = {
+                            "avg_interest": int(series.mean()),
+                            "trend": "Rising" if series.iloc[-1] > series.iloc[0] else "Declining" if series.iloc[-1] < series.iloc[0] else "Stable",
+                            "peak_month": series.idxmax().strftime("%B") if not series.empty else "N/A",
+                        }
+        except Exception as e:
+            print(f"  [Trends] Error for batch {batch}: {e}")
+        time.sleep(1)
+
+    return {"trends": results, "scraped_at": datetime.now().isoformat()}
+
+
+# ===========================
+# SERP TOP 10
+# ===========================
+def scrape_serp_top10(keyword: str) -> dict:
+    """Scrape the top 10 organic Google results for a keyword."""
+    session = requests.Session()
+    session.headers.update(HEADERS)
+
+    url = f"https://www.google.com/search?q={quote_plus(keyword)}&num=10&hl=en"
+    results = []
+
+    try:
+        resp = session.get(url, timeout=15)
+        soup = BeautifulSoup(resp.text, "lxml")
+
+        for g in soup.find_all("div", class_="g"):
+            link = g.find("a", href=True)
+            h3 = g.find("h3")
+            snippet_el = g.find("div", attrs={"data-sncf": True}) or g.find("span", class_="aCOpRe")
+
+            if link and h3:
+                results.append({
+                    "position": len(results) + 1,
+                    "url": link["href"],
+                    "title": h3.get_text(strip=True),
+                    "snippet": snippet_el.get_text(strip=True) if snippet_el else "",
+                    "domain": urlparse(link["href"]).netloc,
+                })
+
+        if not results:
+            print("  [SERP] Warning: No results found. Google may have blocked the request.")
+
+    except Exception as e:
+        print(f"  [SERP] Error: {e}")
+
+    return {
+        "keyword": keyword,
+        "results": results,
+        "scraped_at": datetime.now().isoformat()
+    }
+
+
+# ===========================
+# LINK PROSPECTS
+# ===========================
+def find_link_prospects(industry: str, prospect_type: str = "guest_post") -> dict:
+    """Find backlink opportunities using Google advanced search operators."""
+    session = requests.Session()
+    session.headers.update(HEADERS)
+
+    queries = {
+        "guest_post": [
+            f'"{industry}" "write for us"',
+            f'"{industry}" "guest post guidelines"',
+            f'"{industry}" "submit a guest post"',
+            f'"{industry}" "become a contributor"',
+        ],
+        "resource_links": [
+            f'"{industry}" inurl:resources',
+            f'"{industry}" "helpful resources"',
+            f'"{industry}" "tools and resources"',
+            f'"{industry}" "best tools"',
+        ],
+        "unlinked_mentions": [],  # handled separately
+    }
+
+    prospects = []
+    for query in queries.get(prospect_type, []):
+        url = f"https://www.google.com/search?q={quote_plus(query)}&num=10&hl=en"
+        try:
+            resp = session.get(url, timeout=15)
+            soup = BeautifulSoup(resp.text, "lxml")
+            for g in soup.find_all("div", class_="g"):
+                link = g.find("a", href=True)
+                h3 = g.find("h3")
+                if link and h3:
+                    domain = urlparse(link["href"]).netloc
+                    # Filter out massive sites (unlikely to respond)
+                    if not any(skip in domain for skip in ["forbes.com", "huffpost.com", "entrepreneur.com"]):
+                        prospects.append({
+                            "url": link["href"],
+                            "domain": domain,
+                            "title": h3.get_text(strip=True),
+                            "source_query": query,
+                            "type": prospect_type,
+                        })
+            time.sleep(1)
+        except Exception as e:
+            print(f"  [Prospects] Error for query '{query}': {e}")
+
+    # Deduplicate by domain
+    seen_domains = set()
+    unique_prospects = []
+    for p in prospects:
+        if p["domain"] not in seen_domains:
+            seen_domains.add(p["domain"])
+            unique_prospects.append(p)
+
+    return {
+        "industry": industry,
+        "type": prospect_type,
+        "prospects": unique_prospects,
+        "total_found": len(unique_prospects),
+        "scraped_at": datetime.now().isoformat()
+    }
+
+
+# ===========================
+# EMAIL FINDER
+# ===========================
+def find_contact_email(url: str) -> dict:
+    """Try to find a contact email for a given website."""
+    session = requests.Session()
+    session.headers.update(HEADERS)
+    base_domain = urlparse(url).netloc
+    email_pattern = re.compile(r"[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}")
+
+    emails_found = set()
+    pages_to_check = [
+        url,
+        f"https://{base_domain}/contact",
+        f"https://{base_domain}/about",
+        f"https://{base_domain}/contact-us",
+        f"https://{base_domain}/write-for-us",
+    ]
+
+    for page in pages_to_check:
+        try:
+            resp = session.get(page, timeout=10)
+            if resp.status_code == 200:
+                emails = set(email_pattern.findall(resp.text))
+                # Filter out generic/system emails
+                filtered = {e for e in emails if not any(skip in e for skip in
+                    ["example.com", "sentry.io", "yoursite", "noreply", "no-reply"])}
+                emails_found.update(filtered)
+        except Exception:
+            pass
+        time.sleep(0.5)
+
+    return {
+        "domain": base_domain,
+        "emails_found": list(emails_found),
+        "has_contact": len(emails_found) > 0,
+    }
+
+
+# ===========================
+# MAIN
+# ===========================
+def main():
+    parser = argparse.ArgumentParser(description="SEO SERP and Data Scraper")
+    parser.add_argument("--mode", required=True, choices=["autosuggest", "trends", "serp_top10", "link_prospects", "find_email"])
+    parser.add_argument("--keyword", help="Primary keyword")
+    parser.add_argument("--keywords", help="Comma-separated list of keywords (for trends)")
+    parser.add_argument("--industry", help="Industry/niche (for link_prospects)")
+    parser.add_argument("--type", default="guest_post", choices=["guest_post", "resource_links"], help="Prospect type")
+    parser.add_argument("--url", help="URL to check (for find_email)")
+    parser.add_argument("--location", default="us", help="Country code for autosuggest")
+    parser.add_argument("--output", help="Output JSON file path")
+    args = parser.parse_args()
+
+    data = {}
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+
+    if args.mode == "autosuggest":
+        assert args.keyword, "--keyword is required for autosuggest mode"
+        print(f"[Autosuggest] Scraping for: {args.keyword}")
+        data = scrape_autosuggest(args.keyword, args.location)
+
+    elif args.mode == "trends":
+        keywords = [k.strip() for k in (args.keywords or args.keyword or "").split(",") if k.strip()]
+        assert keywords, "--keywords or --keyword is required for trends mode"
+        print(f"[Trends] Fetching trends for {len(keywords)} keywords")
+        data = fetch_trends(keywords)
+
+    elif args.mode == "serp_top10":
+        assert args.keyword, "--keyword is required for serp_top10 mode"
+        print(f"[SERP] Scraping top 10 results for: {args.keyword}")
+        data = scrape_serp_top10(args.keyword)
+
+    elif args.mode == "link_prospects":
+        assert args.industry, "--industry is required for link_prospects mode"
+        print(f"[Prospects] Finding {args.type} opportunities for: {args.industry}")
+        data = find_link_prospects(args.industry, args.type)
+
+    elif args.mode == "find_email":
+        assert args.url, "--url is required for find_email mode"
+        print(f"[Email] Finding contact info for: {args.url}")
+        data = find_contact_email(args.url)
+
+    # Save output
+    output_path = args.output or f".tmp/{args.mode}_{timestamp}.json"
+    Path(output_path).parent.mkdir(parents=True, exist_ok=True)
+    with open(output_path, "w", encoding="utf-8") as f:
+        json.dump(data, f, indent=2, ensure_ascii=False)
+    print(f"\n[Output] Saved to: {output_path}")
+    print(json.dumps(data, indent=2, ensure_ascii=False)[:2000] + "..." if len(json.dumps(data)) > 2000 else json.dumps(data, indent=2))
+
+
+if __name__ == "__main__":
+    main()

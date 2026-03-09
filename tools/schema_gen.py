@@ -1,0 +1,220 @@
+#!/usr/bin/env python3
+"""
+Schema Generator Tool
+Generates valid JSON-LD schema markup for AEO/GEO optimization.
+Supports: Article, FAQPage, LocalBusiness, BreadcrumbList, Organization, WebSite
+
+Usage:
+    python schema_gen.py --type Article --title "My Article" --url https://example.com/article
+    python schema_gen.py --type FAQPage --faq-file .tmp/faq_data.json
+    python schema_gen.py --type LocalBusiness --business-name "Acme Corp" --city "Austin" --state "TX"
+"""
+
+import argparse
+import json
+from datetime import datetime
+from pathlib import Path
+
+
+def generate_article_schema(title: str, url: str, author: str = "Site Author",
+                             description: str = "", published: str = None, org_name: str = "") -> dict:
+    return {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "headline": title[:110],
+        "description": description[:300] if description else "",
+        "url": url,
+        "datePublished": published or datetime.now().strftime("%Y-%m-%d"),
+        "dateModified": datetime.now().strftime("%Y-%m-%d"),
+        "author": {
+            "@type": "Person",
+            "name": author
+        },
+        "publisher": {
+            "@type": "Organization",
+            "name": org_name or "Your Agency",
+            "logo": {
+                "@type": "ImageObject",
+                "url": f"https://yoursite.com/logo.png"
+            }
+        },
+        "mainEntityOfPage": {
+            "@type": "WebPage",
+            "@id": url
+        }
+    }
+
+
+def generate_faq_schema(faq_pairs: list) -> dict:
+    """
+    faq_pairs: list of {"question": "...", "answer": "..."} dicts
+    """
+    return {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+            {
+                "@type": "Question",
+                "name": q["question"],
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": q["answer"]
+                }
+            }
+            for q in faq_pairs
+        ]
+    }
+
+
+def generate_local_business_schema(name: str, url: str, phone: str = "",
+                                    street: str = "", city: str = "", state: str = "",
+                                    zip_code: str = "", country: str = "US",
+                                    business_type: str = "LocalBusiness",
+                                    description: str = "") -> dict:
+    return {
+        "@context": "https://schema.org",
+        "@type": business_type,
+        "name": name,
+        "url": url,
+        "telephone": phone,
+        "description": description,
+        "address": {
+            "@type": "PostalAddress",
+            "streetAddress": street,
+            "addressLocality": city,
+            "addressRegion": state,
+            "postalCode": zip_code,
+            "addressCountry": country
+        }
+    }
+
+
+def generate_organization_schema(name: str, url: str, logo_url: str = "",
+                                  description: str = "", social_links: list = None) -> dict:
+    schema = {
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        "name": name,
+        "url": url,
+        "description": description,
+        "logo": {
+            "@type": "ImageObject",
+            "url": logo_url or f"{url}/logo.png"
+        }
+    }
+    if social_links:
+        schema["sameAs"] = social_links
+    return schema
+
+
+def generate_breadcrumb_schema(breadcrumbs: list) -> dict:
+    """
+    breadcrumbs: list of {"name": "...", "url": "..."} in order from root to current page
+    """
+    return {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+            {
+                "@type": "ListItem",
+                "position": idx + 1,
+                "name": item["name"],
+                "item": item["url"]
+            }
+            for idx, item in enumerate(breadcrumbs)
+        ]
+    }
+
+
+def wrap_in_script_tag(schema: dict) -> str:
+    """Wrap schema dict in a <script> tag for HTML embedding."""
+    return f'<script type="application/ld+json">\n{json.dumps(schema, indent=2)}\n</script>'
+
+
+def main():
+    parser = argparse.ArgumentParser(description="JSON-LD Schema Generator")
+    parser.add_argument("--type", required=True,
+                        choices=["Article", "FAQPage", "LocalBusiness", "Organization", "BreadcrumbList"])
+    parser.add_argument("--output", help="Output file path (JSON or HTML)")
+    parser.add_argument("--wrap-html", action="store_true", help="Wrap in <script> tag")
+
+    # Article args
+    parser.add_argument("--title")
+    parser.add_argument("--url")
+    parser.add_argument("--author", default="Site Author")
+    parser.add_argument("--description", default="")
+    parser.add_argument("--published")
+    parser.add_argument("--org-name", default="")
+
+    # FAQ args
+    parser.add_argument("--faq-file", help="JSON file with list of {question, answer} pairs")
+    parser.add_argument("--faq-json", help="Inline JSON string with FAQ pairs")
+
+    # LocalBusiness args
+    parser.add_argument("--business-name")
+    parser.add_argument("--phone", default="")
+    parser.add_argument("--street", default="")
+    parser.add_argument("--city", default="")
+    parser.add_argument("--state", default="")
+    parser.add_argument("--zip", default="")
+    parser.add_argument("--country", default="US")
+    parser.add_argument("--business-type", default="LocalBusiness")
+
+    # Organization args
+    parser.add_argument("--logo-url", default="")
+    parser.add_argument("--social-links", help="Comma-separated social profile URLs")
+
+    # Breadcrumb args
+    parser.add_argument("--breadcrumbs-json", help="JSON string: [{name, url}, ...]")
+
+    args = parser.parse_args()
+
+    schema = {}
+
+    if args.type == "Article":
+        assert args.title and args.url, "--title and --url required for Article schema"
+        schema = generate_article_schema(args.title, args.url, args.author,
+                                          args.description, args.published, args.org_name)
+
+    elif args.type == "FAQPage":
+        if args.faq_file:
+            with open(args.faq_file, "r", encoding="utf-8") as f:
+                faq_pairs = json.load(f)
+        elif args.faq_json:
+            faq_pairs = json.loads(args.faq_json)
+        else:
+            print("[Error] --faq-file or --faq-json required for FAQPage"); return
+        schema = generate_faq_schema(faq_pairs)
+
+    elif args.type == "LocalBusiness":
+        assert args.business_name and args.url, "--business-name and --url required"
+        schema = generate_local_business_schema(
+            args.business_name, args.url, args.phone,
+            args.street, args.city, args.state, args.zip,
+            args.country, args.business_type, args.description
+        )
+
+    elif args.type == "Organization":
+        assert args.business_name and args.url, "--business-name and --url required"
+        social = [s.strip() for s in args.social_links.split(",")] if args.social_links else []
+        schema = generate_organization_schema(args.business_name, args.url,
+                                              args.logo_url, args.description, social)
+
+    elif args.type == "BreadcrumbList":
+        assert args.breadcrumbs_json, "--breadcrumbs-json required"
+        schema = generate_breadcrumb_schema(json.loads(args.breadcrumbs_json))
+
+    # Output
+    output_content = wrap_in_script_tag(schema) if args.wrap_html else json.dumps(schema, indent=2)
+
+    if args.output:
+        Path(args.output).parent.mkdir(parents=True, exist_ok=True)
+        with open(args.output, "w", encoding="utf-8") as f:
+            f.write(output_content)
+        print(f"[Output] Saved to: {args.output}")
+    else:
+        print(output_content)
+
+
+if __name__ == "__main__":
+    main()

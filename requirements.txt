@@ -1,0 +1,18 @@
+# SEO AI OS — Python Dependencies
+# Install all with: pip install -r requirements.txt
+
+# --- Web Scraping & Crawling ---
+requests>=2.31.0
+beautifulsoup4>=4.12.0
+lxml>=4.9.0
+pytrends>=4.9.0          # Google Trends (free, no API key needed)
+
+# --- PDF Report Generation ---
+reportlab>=4.0.0
+
+# --- Optional: Faster async crawling (for large sites) ---
+# httpx>=0.27.0
+# aiohttp>=3.9.0
+
+# --- Environment Management ---
+python-dotenv>=1.0.0
