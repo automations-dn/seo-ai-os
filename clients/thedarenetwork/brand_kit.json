@@ -1,0 +1,53 @@
+{
+  "client_info": {
+    "client_name": "The Dare Network",
+    "website_url": "https://thedarenetwork.com",
+    "industry": "TBD",
+    "location": "TBD",
+    "onboarding_date": "2026-03-10",
+    "status": "active"
+  },
+
+  "brand_voice": {
+    "tone": ["professional", "approachable"],
+    "persona": "TBD",
+    "writing_style_notes": "TBD",
+    "cta_style": "TBD"
+  },
+
+  "target_audience": {
+    "primary_persona": "TBD",
+    "pain_points": [],
+    "demographics": {
+      "age_range": "TBD",
+      "job_titles": [],
+      "platforms_they_use": []
+    }
+  },
+
+  "seo_settings": {
+    "primary_keywords": [],
+    "negative_keywords": [],
+    "target_locations": [],
+    "language": "en",
+    "content_pillars": []
+  },
+
+  "competitors": {
+    "top_3_competitors": []
+  },
+
+  "technical_settings": {
+    "cms": "TBD",
+    "gsc_connected": false,
+    "ga4_connected": false,
+    "sitemap_url": "https://thedarenetwork.com/sitemap.xml",
+    "robots_txt_url": "https://thedarenetwork.com/robots.txt"
+  },
+
+  "reporting": {
+    "report_frequency": "monthly",
+    "report_recipients": [],
+    "custom_report_template": null
+  }
+}

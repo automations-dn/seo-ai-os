@@ -6,61 +6,62 @@ description: /audit - Run a full SEO audit for a client (Technical, On-Page, AEO
 
 ## Trigger
 ```
-/audit <client_name> [--type first_time|post_onboarding|monthly]
+/audit <website_url_or_client_name> [--type first_time|post_onboarding]
 ```
-**Example:** `/audit acme_corp --type first_time`
+**Examples:**
+- `/audit thedarenetwork.com` — quick audit, no client record created
+- `/audit acme_corp --type first_time` — audit for an existing client in `clients/`
 
-## Objective
-Produce a comprehensive SEO audit report with scores across Technical SEO, On-Page, Content Quality, AEO/GEO Readiness, and Core Web Vitals. Save to `clients/<client_name>/audit_history/`.
+---
 
-## Required Inputs
-1. `<client_name>` — must match folder name in `clients/`
-2. `--type` — defaults to `first_time` if not specified
+## ⚠️ CRITICAL RULE: Client List vs. Standalone Audit
+
+> **DO NOT add a site to the client list just because someone asks for an audit.**
+
+- If the user says **"run an audit on [site]"** or **"audit [site]"** → run the audit and output the report. Do NOT create a client folder or ask for brand kit details.
+- If the user says **"add [name] as a client"** or **"onboard [name]"** → follow the `/add_client` workflow and collect all brand kit details first.
+- If the user says **"run an audit for my client [name]"** and that client already exists in `clients/` → load the brand kit and run the audit using their stored details.
+- If someone asks to do an audit AND add as a client in the same message → first collect all brand kit information (see `/add_client` workflow) before running the audit.
+
+---
 
 ## Step-by-Step Instructions
 
-### Step 1: Load Client Context
-- Read `clients/<client_name>/brand_kit.json`
-- Extract: `website_url`, `sitemap_url`, `robots_txt_url`, `cms`
-- Confirm GSC and GA4 connection status
+### Step 1: Determine Mode
+
+Check whether a client folder exists:
+- `clients/<name>/brand_kit.json` exists → **Client Mode**: load brand kit, use stored `website_url`
+- No client folder → **Standalone Mode**: use the URL directly, save output to `.tmp/reports/`
 
 ### Step 2: Site Crawl (Technical SEO)
-- Run: `tools/seo_crawler.py --url <website_url> --sitemap <sitemap_url>`
-- Collects: all URLs, HTTP status codes (301, 404, 500), canonical tags, hreflang, noindex tags, internal link graph
-- Output: `.tmp/<client_name>_crawl.json`
+- Run: `python tools/seo_crawler.py --url <website_url> --output .tmp/<slug>_crawl.json`
+- Collects: all URLs, HTTP status codes (200, 301, 404, 500), canonical tags, hreflang, noindex tags, H1s, meta descriptions, schema types, internal link graph
+- Output: `.tmp/<slug>_crawl.json`
 
-### Step 3: Core Web Vitals & Lighthouse
-- Run: `tools/lighthouse_audit.py --url <website_url>`
-- Scores: LCP, CLS, FID/INP, TBT, Speed Index for both Mobile and Desktop
-- Output: `.tmp/<client_name>_lighthouse.json`
-
-### Step 4: On-Page Analysis (Sample Top 10 URLs)
+### Step 3: On-Page Analysis (Top 10 Pages)
 - Read top 10 URLs from crawl output (by internal link count = most important pages)
-- Run: `tools/on_page_analyzer.py --urls <top_10_urls>`
-- Checks: H1 uniqueness, title tag length (50-60 chars), meta description length (120-160 chars), keyword in title, image alt text coverage
-- Output: `.tmp/<client_name>_onpage.json`
+- Run: `python tools/on_page_analyzer.py --urls-file .tmp/<slug>_crawl.json --output .tmp/<slug>_onpage.json`
+- Checks: H1 uniqueness, title tag length (50-60 chars), meta desc length (120-160 chars), keyword presence, image alt text, schema presence
+- Output: `.tmp/<slug>_onpage.json`
 
-### Step 5: AEO / GEO Readiness Scoring
-- Run: `tools/schema_checker.py --url <website_url>`
-- Checks for presence and validity of: FAQ schema, Article schema, LocalBusiness schema, BreadcrumbList, Organization schema
-- Bonus checks: Does the site have a structured "Who/What/Why" answer block? Does it have a clear author entity?
-- Score: 0-100 based on checklist
-- Output: `.tmp/<client_name>_aeo_score.json`
+### Step 4: AEO / GEO Schema Check
+- Review crawl data for schema types found on each page
+- Check for: FAQPage, Article, Organization, LocalBusiness, BreadcrumbList schemas
+- Score AEO readiness 0–100 based on coverage
 
-### Step 6: GSC Data Pull (if connected)
-- Run: `tools/fetch_gsc_data.py --client <client_name>`
-- Pulls: Impressions, Clicks, CTR, Avg Position for top 50 queries
-- Checks: Index coverage errors, mobile usability errors
-- Output: `.tmp/<client_name>_gsc.json`
+### Step 5: GSC Data (Client Mode Only)
+- Only attempt if the client brand kit has GSC credentials configured
+- If not connected: skip and note clearly in the report
 
-### Step 7: Generate Audit Report
-- Run: `tools/report_builder.py --client <client_name> --type audit --data-dir .tmp/`
-- Compiles all `.tmp/<client_name>_*.json` files into a structured report
-- Uses template: `templates/audit_report_template.md`
-- Saves final report: `clients/<client_name>/audit_history/<YYYY-MM-DD>_audit.md`
+### Step 6: Generate Word Report
+- Run: `python tools/report_builder.py --url <website_url> --type audit`
+  - **Client Mode**: `python tools/report_builder.py --client <name> --type audit`
+- Output file: `clients/<name>/audit_history/<YYYY-MM-DD>_audit_report.docx`
+  - **Standalone**: `.tmp/reports/<YYYY-MM-DD>_audit_report.docx`
 
-### Step 8: Present Summary to User
-Display a concise summary table in chat:
+### Step 7: Present Summary + Download Link
+
+Display the summary table in chat:
 
 | Category | Score | Critical Issues |
 |---|---|---|
@@ -68,11 +69,18 @@ Display a concise summary table in chat:
 | Core Web Vitals | /100 | e.g. LCP 4.2s (Poor) |
 | On-Page | /100 | e.g. 5 missing H1s |
 | AEO/GEO Readiness | /100 | e.g. No FAQ Schema |
-| GSC Index Health | /100 | e.g. 23 noindex errors |
 
-Then ask: **"Audit complete. Do you want me to start fixing Critical Issues now, or generate the PDF client report first?"**
+Then provide the download link:
+```
+📄 Download Audit Report: [YYYY-MM-DD_audit_report.docx](file:///path/to/report.docx)
+```
+
+Then ask: **"Audit complete. Do you want me to start fixing the Critical Issues, or is there anything else?"**
+
+---
 
 ## Edge Cases
-- If GSC is not connected: skip Step 6, note it clearly in the report and add a recommendation to connect it.
-- If Lighthouse fails on a URL: retry once. If it fails again, skip and flag in report.
-- If the site has > 500 pages: only crawl up to 500 URLs and note the limit.
+- GSC not connected → skip GSC step, note in report
+- Site has >500 pages → crawl up to 500 URLs, note the limit
+- Lighthouse unavailable → skip CWV section, add manual Lighthouse instructions in report
+- User asks to audit AND add client → collect brand kit details first via `/add_client`, then run audit

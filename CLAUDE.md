@@ -15,6 +15,38 @@ This is the **SEO AI Operating System**, built for a marketing agency to automat
 
 ---
 
+## 🚨 Global Agent Rules — Read Before Every Task
+
+These rules apply to every interaction, regardless of which workflow is running:
+
+### Rule 1: Never Auto-Create a Client Record
+- **Running an audit** on a URL ≠ adding that site as a client.
+- Only create a folder in `clients/` and fill `brand_kit.json` if the user **explicitly** says "add as a client", "onboard", or "set up as a new client".
+- If someone asks to audit a site AND add them as a client, **collect all brand kit details first** (use the `/add_client` questions), then run the audit.
+
+### Rule 2: Brand Kit Collection — Ask Every Field
+When onboarding a new client, **ask for every field** in `clients/_template/brand_kit.json` before creating the folder. Do not guess or leave fields blank. Ask conversationally, one section at a time:
+1. Basic info (name, website, industry, location)
+2. Brand voice & tone
+3. Target audience
+4. Primary + secondary keywords
+5. Competitors
+6. Technical settings (CMS, GSC connected, GA4 connected)
+7. Reporting preferences
+
+### Rule 3: Audit Output Must Be a Downloadable Word File
+- All audit reports are generated as `.docx` files using `tools/report_builder.py`.
+- After generating the report, **always provide a clickable download link** in the chat:
+  ```
+  📄 Download: [ClientName_Audit_YYYY-MM-DD.docx](file:///full/path/to/report.docx)
+  ```
+- The format must match the Dare Network audit template in `templates/Example Audit template.docx`.
+
+### Rule 4: Work Process Flow (for new tasks)
+1. Ask → Confirm intent → Execute → Show summary → Provide output file link → Ask what's next
+
+---
+
 You're working inside the **WAT framework** (Workflows, Agents, Tools). This architecture separates concerns so that probabilistic AI handles reasoning while deterministic code handles execution. That separation is what makes this system reliable.
 
 ## The WAT Architecture
