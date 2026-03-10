@@ -45,6 +45,50 @@ When onboarding a new client, **ask for every field** in `clients/_template/bran
 ### Rule 4: Work Process Flow (for new tasks)
 1. Ask → Confirm intent → Execute → Show summary → Provide output file link → Ask what's next
 
+### Rule 5: Industry Detection — Always Auto-Detect First
+Before running any audit or content work, detect the site type from homepage signals:
+- **E-commerce**: `/products`, `/collections`, `/cart`, "add to cart", product schema → adjust for product page focus
+- **Local Service**: phone number, address, city mentions, Google Maps embed → focus on local SEO, GBP
+- **SaaS**: pricing page, `/features`, `/integrations`, "free trial", "sign up" → focus on conversion pages
+- **Publisher/Blog**: `/blog`, `/articles`, author pages, article schema → focus on content clusters
+- **Agency**: `/case-studies`, `/portfolio`, client logos → focus on E-E-A-T and authority
+Tailor all recommendations to the detected industry type.
+
+### Rule 6: Weighted SEO Scoring — Use This Formula
+When calculating or reporting an overall SEO Health Score (0-100), always use this weighted breakdown:
+
+| Category | Weight |
+|---|---|
+| Technical SEO (crawlability, indexation, speed) | 25% |
+| Content Quality (depth, E-E-A-T, thin content) | 25% |
+| On-Page SEO (titles, metas, headings) | 20% |
+| Schema / Structured Data | 10% |
+| Core Web Vitals (LCP, INP, CLS) | 10% |
+| Image SEO (alt text, compression, file names) | 5% |
+| AI Search Readiness (AEO/GEO signals) | 5% |
+
+### Rule 7: Schema & Core Web Vitals — Current Rules (2024-2026)
+⚠️ These are facts, not suggestions. Getting them wrong gives bad advice to clients:
+- **FAQ Schema is RESTRICTED** — Only for government and healthcare sites since Aug 2023. Do NOT recommend FAQPage schema to commercial/e-commerce/agency sites.
+- **HowTo Schema is DEPRECATED** — Since Sept 2023. Never recommend it.
+- **FID is REMOVED** — Replaced by **INP (Interaction to Next Paint)** on March 12, 2024. Never reference FID. Always use INP. Target: < 200ms.
+- **Core Web Vitals targets**: LCP < 2.5s | INP < 200ms | CLS < 0.1
+
+### Rule 8: E-E-A-T — Always Evaluate (Sept 2025 QRG)
+Every content audit must include an E-E-A-T assessment:
+- **Experience**: Is there first-hand knowledge shown? (photos, case studies, real examples)
+- **Expertise**: Are author credentials visible? Are claims backed by data?
+- **Authoritativeness**: Is the brand cited by others? Press mentions, backlinks?
+- **Trustworthiness**: HTTPS, clear contact info, privacy policy, return policy (for e-commerce)
+
+### Rule 9: Image SEO — Include in Every Audit
+Image issues are often the fastest wins. Always check:
+- Missing `alt` attributes (critical for accessibility + SEO)
+- Images not served in WebP/AVIF format
+- Images not lazy-loaded (`loading="lazy"`)
+- Large images that are not compressed (>100KB for hero images is a red flag)
+- Filenames that are generic (`image001.jpg` instead of `red-bandhani-saree.jpg`)
+
 ---
 
 You're working inside the **WAT framework** (Workflows, Agents, Tools). This architecture separates concerns so that probabilistic AI handles reasoning while deterministic code handles execution. That separation is what makes this system reliable.

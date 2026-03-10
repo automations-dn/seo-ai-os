@@ -2,11 +2,18 @@
 """
 Schema Generator Tool
 Generates valid JSON-LD schema markup for AEO/GEO optimization.
-Supports: Article, FAQPage, LocalBusiness, BreadcrumbList, Organization, WebSite
+
+⚠️  IMPORTANT — Google Schema Deprecation Status (2024-2026):
+  - FAQPage schema: RESTRICTED to government and healthcare sites only (since Aug 2023).
+    Do NOT use for commercial, agency, or e-commerce clients.
+  - HowTo schema: DEPRECATED (since Sept 2023). Not supported by Google.
+  - SpecialAnnouncement: DEPRECATED (July 2025).
+
+Supported types for commercial sites:
+  Article, LocalBusiness, Organization, WebSite, BreadcrumbList, Product, Service
 
 Usage:
     python schema_gen.py --type Article --title "My Article" --url https://example.com/article
-    python schema_gen.py --type FAQPage --faq-file .tmp/faq_data.json
     python schema_gen.py --type LocalBusiness --business-name "Acme Corp" --city "Austin" --state "TX"
 """
 
@@ -134,7 +141,8 @@ def wrap_in_script_tag(schema: dict) -> str:
 def main():
     parser = argparse.ArgumentParser(description="JSON-LD Schema Generator")
     parser.add_argument("--type", required=True,
-                        choices=["Article", "FAQPage", "LocalBusiness", "Organization", "BreadcrumbList"])
+                        choices=["Article", "LocalBusiness", "Organization", "BreadcrumbList", "Product", "Service"],
+                        help="Schema type. Note: FAQPage is restricted to gov/health sites. HowTo is deprecated.")
     parser.add_argument("--output", help="Output file path (JSON or HTML)")
     parser.add_argument("--wrap-html", action="store_true", help="Wrap in <script> tag")
 
