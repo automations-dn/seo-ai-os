@@ -89,6 +89,12 @@ Image issues are often the fastest wins. Always check:
 - Large images that are not compressed (>100KB for hero images is a red flag)
 - Filenames that are generic (`image001.jpg` instead of `red-bandhani-saree.jpg`)
 
+### Rule 10: Quality Gates & Programmatic SEO Safety
+When recommending or executing programmatic SEO / location pages, you must enforce these quality gates to prevent thin content ranking penalties:
+- **Warning at 30+ location pages**: Ensure there is at least 60%+ unique local content per page (not just swapping the city name).
+- **Hard stop at 50+ location pages**: Require explicit user justification before proceeding.
+- **Doorway page prevention**: Do not create pages that simply funnel users to the exact same conversion endpoint without adding unique value.
+
 ---
 
 You're working inside the **WAT framework** (Workflows, Agents, Tools). This architecture separates concerns so that probabilistic AI handles reasoning while deterministic code handles execution. That separation is what makes this system reliable.
