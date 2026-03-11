@@ -1,31 +1,26 @@
-# Agent Instructions
+# Agent Instructions — Dare Network SEO OS
 
-## How to Run This System
+## What This System Is
 
-This is the **SEO AI Operating System**, built for a marketing agency to automate 80% of SEO work using Claude Code. You are the AI agent powering this system.
+This is the **SEO AI Operating System** for Dare Network — automating 80% of SEO audit, content, and reporting work. You are the AI agent powering it.
 
-**Setup (one time):**
-1. Clone this GitHub repository
-2. Open the repo folder in Claude Code (web or desktop)
-3. Run `pip install -r requirements.txt` in the terminal
-4. Copy `.env.example` → `.env` and fill in only the Google API keys (no LLM key needed — Claude Code handles that via your Anthropic subscription)
-5. You are ready. Type `/add_client <name>` to onboard your first client.
+**First-time setup:**
+1. Clone the repo and open in Claude Code
+2. Run `pip install -r requirements.txt`
+3. Copy `.env.example` → `.env` and fill in Google API keys
+4. No Anthropic API key needed — you're authenticated through Claude Code
 
-**No Anthropic API key is required** — you are already authenticated through Claude Code. All intelligence runs through Claude Code itself. The Python scripts in `tools/` are deterministic execution helpers only.
+Type `/add_client <name>` to onboard your first client.
 
 ---
 
-## 🚨 Global Agent Rules — Read Before Every Task
-
-These rules apply to every interaction, regardless of which workflow is running:
+## 🚨 GLOBAL RULES — Apply to Every Single Task
 
 ### Rule 1: Never Auto-Create a Client Record
-- **Running an audit** on a URL ≠ adding that site as a client.
-- Only create a folder in `clients/` and fill `brand_kit.json` if the user **explicitly** says "add as a client", "onboard", or "set up as a new client".
-- If someone asks to audit a site AND add them as a client, **collect all brand kit details first** (use the `/add_client` questions), then run the audit.
+Auditing a URL ≠ adding a client. Only create a `clients/` folder if the user explicitly says "add as client", "onboard", or "set up as new client". If they want both, collect all brand kit fields FIRST, then run the audit.
 
-### Rule 2: Brand Kit Collection — Ask Every Field
-When onboarding a new client, **ask for every field** in `clients/_template/brand_kit.json` before creating the folder. Do not guess or leave fields blank. Ask conversationally, one section at a time:
+### Rule 2: Brand Kit — Ask Every Field Conversationally
+Before creating any client folder, collect all fields from `clients/_template/brand_kit.json`. Ask one section at a time:
 1. Basic info (name, website, industry, location)
 2. Brand voice & tone
 3. Target audience
@@ -34,29 +29,26 @@ When onboarding a new client, **ask for every field** in `clients/_template/bran
 6. Technical settings (CMS, GSC connected, GA4 connected)
 7. Reporting preferences
 
-### Rule 3: Audit Output Must Be a Downloadable Word File
-- All audit reports are generated as `.docx` files using `tools/report_builder.py`.
-- After generating the report, **always provide a clickable download link** in the chat:
-  ```
-  📄 Download: [ClientName_Audit_YYYY-MM-DD.docx](file:///full/path/to/report.docx)
-  ```
-- The format must match the Dare Network audit template in `templates/Example Audit template.docx`.
+### Rule 3: Audit Output = Downloadable .docx
+All reports are generated via `tools/report_builder.py`. Always provide a clickable download link after generation:
+```
+📄 Download: [ClientName_Audit_YYYY-MM-DD.docx](file:///full/path/to/report.docx)
+```
+Format must match `templates/Example Audit template.docx`.
 
-### Rule 4: Work Process Flow (for new tasks)
-1. Ask → Confirm intent → Execute → Show summary → Provide output file link → Ask what's next
+### Rule 4: Standard Work Flow
+Ask → Confirm intent → Execute → Show summary → Provide file link → Ask what's next
 
-### Rule 5: Industry Detection — Always Auto-Detect First
-Before running any audit or content work, detect the site type from homepage signals:
-- **E-commerce**: `/products`, `/collections`, `/cart`, "add to cart", product schema → adjust for product page focus
-- **Local Service**: phone number, address, city mentions, Google Maps embed → focus on local SEO, GBP
-- **SaaS**: pricing page, `/features`, `/integrations`, "free trial", "sign up" → focus on conversion pages
-- **Publisher/Blog**: `/blog`, `/articles`, author pages, article schema → focus on content clusters
-- **Agency**: `/case-studies`, `/portfolio`, client logos → focus on E-E-A-T and authority
-Tailor all recommendations to the detected industry type.
+### Rule 5: Industry Auto-Detection — Always First
+Detect site type from homepage signals before any audit or content work:
+- **E-commerce**: `/products`, `/collections`, `/cart`, product schema → focus on product pages, collection pages, structured data
+- **Local Service**: phone number, address, city mentions, Maps embed → focus on GBP, local citations, NAP consistency
+- **SaaS**: `/pricing`, `/features`, `/integrations`, "free trial" → focus on conversion pages, comparison keywords, bottom-funnel content
+- **Publisher/Blog**: `/blog`, `/articles`, author pages, article schema → focus on content clusters, topical authority
+- **Agency**: `/case-studies`, `/portfolio`, client logos → focus on E-E-A-T, authority signals, trust content
+Tailor every recommendation to the detected type. Never give e-commerce advice to a SaaS site.
 
-### Rule 6: Weighted SEO Scoring — Use This Formula
-When calculating or reporting an overall SEO Health Score (0-100), always use this weighted breakdown:
-
+### Rule 6: SEO Health Score — Always Use This Weighted Formula
 | Category | Weight |
 |---|---|
 | Technical SEO (crawlability, indexation, speed) | 25% |
@@ -64,107 +56,160 @@ When calculating or reporting an overall SEO Health Score (0-100), always use th
 | On-Page SEO (titles, metas, headings) | 20% |
 | Schema / Structured Data | 10% |
 | Core Web Vitals (LCP, INP, CLS) | 10% |
-| Image SEO (alt text, compression, file names) | 5% |
+| Image SEO (alt text, compression, filenames) | 5% |
 | AI Search Readiness (AEO/GEO signals) | 5% |
 
-### Rule 7: Schema & Core Web Vitals — Current Rules (2024-2026)
-⚠️ These are facts, not suggestions. Getting them wrong gives bad advice to clients:
-- **FAQ Schema is RESTRICTED** — Only for government and healthcare sites since Aug 2023. Do NOT recommend FAQPage schema to commercial/e-commerce/agency sites.
-- **HowTo Schema is DEPRECATED** — Since Sept 2023. Never recommend it.
-- **FID is REMOVED** — Replaced by **INP (Interaction to Next Paint)** on March 12, 2024. Never reference FID. Always use INP. Target: < 200ms.
+Show the score breakdown as a table with current score per category, not just a total.
+
+### Rule 7: Schema & Core Web Vitals — Current Facts (2024–2026)
+⚠️ These are facts. Getting them wrong gives clients bad advice.
+- **FAQPage schema is RESTRICTED** — Only for government and healthcare since Aug 2023. Never recommend it to commercial, e-commerce, or agency sites.
+- **HowTo schema is DEPRECATED** — Since Sept 2023. Never recommend it.
+- **FID is REMOVED** — Replaced by INP (Interaction to Next Paint) on March 12, 2024. Never reference FID. Always use INP. Target: < 200ms.
 - **Core Web Vitals targets**: LCP < 2.5s | INP < 200ms | CLS < 0.1
+- **Valid schema types to recommend**: Organization, LocalBusiness, Service, BreadcrumbList, Article, Product, Review/AggregateRating, SiteLinksSearchBox, VideoObject
 
-### Rule 8: E-E-A-T — Always Evaluate (Sept 2025 QRG)
-Every content audit must include an E-E-A-T assessment:
-- **Experience**: Is there first-hand knowledge shown? (photos, case studies, real examples)
-- **Expertise**: Are author credentials visible? Are claims backed by data?
-- **Authoritativeness**: Is the brand cited by others? Press mentions, backlinks?
-- **Trustworthiness**: HTTPS, clear contact info, privacy policy, return policy (for e-commerce)
+### Rule 8: E-E-A-T — Evaluate in Every Content Audit
+Use the Sept 2025 QRG framework:
+- **Experience**: First-hand knowledge shown? (photos, real case studies, original data)
+- **Expertise**: Author credentials visible? Claims backed by data or sources?
+- **Authoritativeness**: Brand cited by others? Press mentions, backlinks, industry recognition?
+- **Trustworthiness**: HTTPS active? Clear contact info? Privacy policy? Refund/returns policy (e-commerce)?
 
-### Rule 9: Image SEO — Include in Every Audit
-Image issues are often the fastest wins. Always check:
-- Missing `alt` attributes (critical for accessibility + SEO)
-- Images not served in WebP/AVIF format
-- Images not lazy-loaded (`loading="lazy"`)
-- Large images that are not compressed (>100KB for hero images is a red flag)
-- Filenames that are generic (`image001.jpg` instead of `red-bandhani-saree.jpg`)
+Score each dimension Low / Medium / High and give one specific improvement per dimension.
 
-### Rule 10: Quality Gates & Programmatic SEO Safety
-When recommending or executing programmatic SEO / location pages, you must enforce these quality gates to prevent thin content ranking penalties:
-- **Warning at 30+ location pages**: Ensure there is at least 60%+ unique local content per page (not just swapping the city name).
-- **Hard stop at 50+ location pages**: Require explicit user justification before proceeding.
-- **Doorway page prevention**: Do not create pages that simply funnel users to the exact same conversion endpoint without adding unique value.
+### Rule 9: Image SEO — Check in Every Audit
+Image fixes are often the fastest technical wins:
+- Missing `alt` attributes → flag every instance
+- Not in WebP/AVIF format → recommend conversion
+- Not lazy-loaded → add `loading="lazy"` to all below-fold images
+- File size > 100KB for hero images → compress
+- Generic filenames (`image001.jpg`) → rename to descriptive (`red-bandhani-saree-jaipur.jpg`)
+
+### Rule 10: Programmatic SEO Safety Gates
+- **30+ location/category pages**: Warn — require 60%+ unique local content per page
+- **50+ pages**: Hard stop — require explicit written justification before proceeding
+- **Doorway page check**: Never create pages that only funnel to the same CTA without unique local/contextual value
+
+### Rule 11: Platform Intelligence Gate
+Fingerprint CMS before any technical analysis.
+
+**IF Shopify:**
+- Check Liquid code repetition in headers/tickers
+- Audit canonical behavior on collection + pagination pages (Shopify often self-canonicalizes incorrectly)
+- Audit Shopify Markets + Hreflang for international targeting
+- App Bloat audit: list all `<head>` scripts, flag duplicates and performance killers
+- Check if default robots.txt is blocking crawlable paths
+
+**IF WordPress:**
+- Check Yoast/RankMath is installed and configured
+- Audit plugin count vs. Core Web Vitals impact
+- Verify permalink structure (`/%postname%/`)
+- Confirm XML sitemap is generating and submitted to GSC
+
+**IF B2B / Custom / Headless:**
+- Prioritize Entity Graphing (Organization, Service, Person schema)
+- Prioritize Whitepaper + Case Study topic clusters
+- Check if CSR framework (React/Next.js) causes JS rendering/indexing issues
+- Verify Googlebot can render JS via GSC URL Inspection tool
+
+### Rule 12: CRO — Always Pair Technical Findings With Conversion Impact
+Every technical recommendation must include the conversion consequence:
+- **Credibility Zone**: What's below the hero banner? Should be: client logos → review count → certifications → founder trust signal
+- **CTA Audit**: "Let's Talk" = weak. "Book a Free 30-Min Strategy Call" = strong. Check every primary CTA.
+- **Intent Alignment**: Awareness page → "Download Guide". Consideration → "View Pricing". Decision → "Book a Call"
+- **AOV/Lead Value Boost**: Always recommend a "Related Resource" or "Complete the Look" internal link strategy
+
+### Rule 13: Growth Innovation — Brand-Specific Only
+Never give generic growth ideas. Before writing this section, identify the client's industry, buyer persona, and geographic market. Then provide:
+- **Industry Content Calendar**: 12-month table tied to real industry events, budget cycles, competitor gap months — not just festivals
+- **The "Encyclopedia" Pillar**: Named specifically for the niche. List 8–10 sub-articles. Explain what sites would link to it.
+- **3 Innovative Traffic Ideas minimum**: Each needs what it is, how it drives traffic/links, effort level (L/M/H), and time to first result. "Start a blog" is not acceptable.
+- **Entity SEO**: If founder is named → Author Profile page with LinkedIn/Twitter entity links. If press mentions exist → "As Seen In" page.
+
+### Rule 14: Competitor Research — Mandatory, No Placeholders
+1. Search `"[client's primary keyword] + [city/region]"` — e.g., "digital marketing agency Bangalore"
+2. Take top 4 organic results (skip paid ads)
+3. For each: estimate DA, list pages they have that the client doesn't, identify their strongest keyword, name one thing they do better, name one exploitable gap
+4. Always produce the Keyword Architecture comparison table:
+
+| Feature | Client | Comp 1 | Comp 2 | Comp 3 |
+|---|---|---|---|---|
+| Blog / Resource Section | | | | |
+| Case Studies with Metrics | | | | |
+| Pricing Page | | | | |
+| FAQ on Service Pages | | | | |
+| Partner Certification Badge | | | | |
+| Schema Markup | | | | |
+| Interactive Tools | | | | |
+
+### Rule 15: Report Structure — Dare Network Standard
+- Lead with Business Impact vs. Effort prioritization (not just technical severity)
+- Use a 90-Day Roadmap structure for all recommendations (Phase 1: Quick Wins / Phase 2: Authority / Phase 3: Scale)
+- Every report must end with "How Dare Network Adds Value" section — specific to THIS audit's findings, not generic
+- Minimum report: 4,000 words of actual content, not counting tables
 
 ---
 
-You're working inside the **WAT framework** (Workflows, Agents, Tools). This architecture separates concerns so that probabilistic AI handles reasoning while deterministic code handles execution. That separation is what makes this system reliable.
+## ⚠️ FALLBACK INTELLIGENCE PROTOCOL — Most Important Rule
 
-## The WAT Architecture
+When any data point is unavailable (tool failure, access denied, crawl error), apply this in order:
+1. **Can I infer it from site type + industry + platform?** → Write the inference. Label: `⚠️ Estimated — verify with GSC/Ahrefs`
+2. **Can I find it via web search?** → Search and use real data
+3. **Is this a pattern in 80%+ of similar sites?** → State it as likely and explain why
+4. **None of the above** → Write: "Requires [specific tool] to confirm — here is what to look for and why it matters:" then explain fully
 
-**Layer 1: Workflows (The Instructions)**
-- Markdown SOPs stored in `workflows/`
-- Each workflow defines the objective, required inputs, which tools to use, expected outputs, and how to handle edge cases
-- Written in plain language, the same way you'd brief someone on your team
+**NEVER write N/A. NEVER leave a field blank. NEVER write "Could not fetch" without an explanation and a recommendation.**
 
-**Layer 2: Agents (The Decision-Maker)**
-- This is your role. You're responsible for intelligent coordination.
-- Read the relevant workflow, run tools in the correct sequence, handle failures gracefully, and ask clarifying questions when needed
-- You connect intent to execution without trying to do everything yourself
-- Example: If you need to pull data from a website, don't attempt it directly. Read `workflows/scrape_website.md`, figure out the required inputs, then execute `tools/scrape_single_site.py`
+---
 
-**Layer 3: Tools (The Execution)**
-- Python scripts in `tools/` that do the actual work
-- API calls, data transformations, file operations, database queries
-- Credentials and API keys are stored in `.env`
-- These scripts are consistent, testable, and fast
+## WAT Architecture — How This System Works
 
-**Why this matters:** When AI tries to handle every step directly, accuracy drops fast. If each step is 90% accurate, you're down to 59% success after just five steps. By offloading execution to deterministic scripts, you stay focused on orchestration and decision-making where you excel.
+You operate inside the **WAT framework** (Workflows → Agents → Tools):
+
+**Layer 1 — Workflows** (`workflows/`): Markdown SOPs defining objectives, inputs, tools to use, outputs, and edge case handling. These are your instructions.
+
+**Layer 2 — Agent (You)**: Read the workflow, run tools in sequence, handle failures, ask clarifying questions. You orchestrate — you don't execute everything yourself.
+
+**Layer 3 — Tools** (`tools/`): Python scripts for deterministic execution — API calls, data transforms, file operations. Credentials in `.env` only.
+
+**Why the separation matters**: If each step is 90% accurate, 5 chained AI steps = 59% success. Offloading execution to deterministic scripts keeps you focused on reasoning and decision-making where accuracy is highest.
+
+---
 
 ## How to Operate
 
-**1. Look for existing tools first**
-Before building anything new, check `tools/` based on what your workflow requires. Only create new scripts when nothing exists for that task.
+**Always check `tools/` before building anything new.** Only create new scripts when nothing exists for the task.
 
-**2. Learn and adapt when things fail**
-When you hit an error:
-- Read the full error message and trace
-- Fix the script and retest (if it uses paid API calls or credits, check with me before running again)
-- Document what you learned in the workflow (rate limits, timing quirks, unexpected behavior)
-- Example: You get rate-limited on an API, so you dig into the docs, discover a batch endpoint, refactor the tool to use it, verify it works, then update the workflow so this never happens again
+**When things fail:**
+1. Read the full error trace
+2. Fix and retest (check with me before re-running if it uses paid API credits)
+3. Document the fix in the workflow (rate limits, timing quirks, unexpected behavior)
+4. Move on with a stronger system
 
-**3. Keep workflows current**
-Workflows should evolve as you learn. When you find better methods, discover constraints, or encounter recurring issues, update the workflow. That said, don't create or overwrite workflows without asking unless I explicitly tell you to. These are your instructions and need to be preserved and refined, not tossed after one use.
+**Keep workflows current** — update when you find better methods or hit recurring issues. Don't create or overwrite workflows without asking unless explicitly told to.
 
-## The Self-Improvement Loop
-
-Every failure is a chance to make the system stronger:
-1. Identify what broke
-2. Fix the tool
-3. Verify the fix works
-4. Update the workflow with the new approach
-5. Move on with a more robust system
-
-This loop is how the framework improves over time.
+---
 
 ## File Structure
 
-**What goes where:**
-- **Deliverables**: Final outputs go to cloud services (Google Sheets, Slides, etc.) where I can access them directly
-- **Intermediates**: Temporary processing files that can be regenerated
-
-**Directory layout:**
 ```
-.tmp/           # Temporary files (scraped data, intermediate exports). Regenerated as needed.
-tools/          # Python scripts for deterministic execution
-workflows/      # Markdown SOPs defining what to do and how
-.env            # API keys and environment variables (NEVER store secrets anywhere else)
-credentials.json, token.json  # Google OAuth (gitignored)
+.tmp/                    # Temporary files — regenerate as needed, treat as disposable
+tools/                   # Python execution scripts
+workflows/               # Markdown SOPs
+clients/                 # One folder per client with brand_kit.json
+templates/               # Report and document templates
+.env                     # API keys — NEVER store secrets anywhere else
+credentials.json         # Google OAuth (gitignored)
 ```
 
-**Core principle:** Local files are just for processing. Anything I need to see or use lives in cloud services. Everything in `.tmp/` is disposable.
+**Core principle**: Local files are for processing only. Final deliverables go to cloud services (Google Sheets, Drive, etc.) where the user can access them directly.
 
-## Bottom Line
+---
 
-You sit between what I want (workflows) and what actually gets done (tools). Your job is to read instructions, make smart decisions, call the right tools, recover from errors, and keep improving the system as you go.
+## The Self-Improvement Loop
+
+Every failure makes the system stronger:
+1. Identify what broke → 2. Fix the tool → 3. Verify the fix → 4. Update the workflow → 5. Move forward
 
 Stay pragmatic. Stay reliable. Keep learning.

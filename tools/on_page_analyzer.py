@@ -109,19 +109,63 @@ def analyze_page(url: str, keyword: str = None) -> dict:
         # --- Word Count ---
         for tag in soup(["script", "style", "nav", "footer", "header"]):
             tag.decompose()
-        result["word_count"] = len(soup.get_text(separator=" ").split())
+        
+        body_text = soup.get_text(separator=" ").strip()
+        result["word_count"] = len(body_text.split())
         if result["word_count"] < 300:
             result["issues"].append(f"HIGH: Thin content ({result['word_count']} words)")
+            
+        # --- Advanced CRO & Trust Signals ---
+        # 1. Trust Signals
+        has_phone = bool(re.search(r'\b\d{3}[-.\s]??\d{3}[-.\s]??\d{4}\b', body_text)) or bool(soup.find("a", href=re.compile(r'^tel:')))
+        has_email = bool(re.search(r'[\w\.-]+@[\w\.-]+', body_text)) or bool(soup.find("a", href=re.compile(r'^mailto:')))
+        policy_links = len(soup.find_all("a", href=re.compile(r'(policy|privacy|terms|returns|refund)', re.I)))
+        result["cro_trust"] = {
+            "has_contact_info": has_phone or has_email,
+            "policy_links": policy_links,
+            "ssl_secure": url.startswith("https://")
+        }
+        if not (has_phone or has_email): result["issues"].append("MEDIUM: No visible contact info (Trust Signal)")
+        
+        # 2. Intent-to-CTA Alignment
+        ctas = soup.find_all(["a", "button"], class_=re.compile(r'(btn|button|cta)', re.I))
+        cta_texts = [cta.get_text(strip=True) for cta in ctas if cta.get_text(strip=True)][:5]
+        result["cro_ctas"] = cta_texts
+        if not cta_texts and result["word_count"] > 200:
+            result["issues"].append("MEDIUM: No clear Call-to-Action buttons found")
+
+        # --- Advanced E-E-A-T & Entity Validation ---
+        # 1. Author Profile Validation
+        author_meta = soup.find("meta", attrs={"name": "author"})
+        author_link = soup.find("a", attrs={"rel": "author"})
+        has_author = bool(author_meta) or bool(author_link) or bool(re.search(r'By\s+[A-Z][a-z]+\s+[A-Z][a-z]+', body_text[:1000]))
+        result["ee_at_author"] = has_author
+        
+        # 2. Expert Citations
+        external_links = soup.find_all("a", href=re.compile(r'^https?://(?!' + re.escape(urlparse(url).netloc) + ')'))
+        edu_gov_links = [link.get('href') for link in external_links if re.search(r'\.(edu|gov|org)', link.get('href', ''))]
+        result["ee_at_citations"] = len(edu_gov_links)
 
         # --- Schema ---
         schema_types = []
+        schema_same_as = False
         for script in soup.find_all("script", attrs={"type": "application/ld+json"}):
             try:
                 data = json.loads(script.string or "{}")
-                if isinstance(data, dict): schema_types.append(data.get("@type", "Unknown"))
-                elif isinstance(data, list): schema_types += [d.get("@type") for d in data if isinstance(d, dict)]
+                if isinstance(data, dict): 
+                    schema_types.append(data.get("@type", "Unknown"))
+                    if "sameAs" in data and data.get("@type") in ["Organization", "Person"]: schema_same_as = True
+                elif isinstance(data, list): 
+                    for d in data:
+                        if isinstance(d, dict):
+                            schema_types.append(d.get("@type", "Unknown"))
+                            if "sameAs" in d and d.get("@type") in ["Organization", "Person"]: schema_same_as = True
             except Exception:
                 pass
+        result["schema_types"] = schema_types
+        result["schema_same_as"] = schema_same_as
+        if not schema_same_as and ("Organization" in schema_types or "Person" in schema_types):
+            result["issues"].append("MEDIUM: Schema Organization/Person missing 'sameAs' entity validation (E-E-A-T gap)")
         result["schema_types"] = schema_types
         if not schema_types:
             result["issues"].append("MEDIUM: No JSON-LD schema found — add Article/FAQ schema for AEO")

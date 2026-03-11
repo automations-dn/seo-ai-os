@@ -36,7 +36,9 @@ def run_lighthouse(url: str, strategy: str = "mobile", api_key: str = None) -> d
         api_key = os.getenv("GOOGLE_API_KEY")
 
     if not api_key:
-        raise ValueError("GOOGLE_API_KEY not found in environment. Add it to .env file.")
+        print("[Lighthouse] GOOGLE_API_KEY not set in .env — skipping Core Web Vitals measurement.")
+        print("[Lighthouse] Get a free key: console.cloud.google.com → Credentials → API Key → enable PageSpeed Insights API")
+        return {"url": url, "strategy": strategy, "status": "skipped", "reason": "GOOGLE_API_KEY not configured"}
 
     api_url = "https://www.googleapis.com/pagespeedonline/v5/runPagespeed"
 
@@ -58,10 +60,10 @@ def run_lighthouse(url: str, strategy: str = "mobile", api_key: str = None) -> d
         categories = lighthouse_result.get("categories", {})
         audits = lighthouse_result.get("audits", {})
 
-        # Extract Core Web Vitals
+        # Extract Core Web Vitals — INP replaced FID on March 12 2024
         cwv = {
             "lcp": audits.get("largest-contentful-paint", {}).get("numericValue"),
-            "fid": audits.get("max-potential-fid", {}).get("numericValue"),
+            "inp": audits.get("interaction-to-next-paint", {}).get("numericValue"),
             "cls": audits.get("cumulative-layout-shift", {}).get("numericValue"),
             "fcp": audits.get("first-contentful-paint", {}).get("numericValue"),
             "tti": audits.get("interactive", {}).get("numericValue"),
@@ -132,7 +134,7 @@ def audit_url(url: str, output_path: str = None) -> dict:
         "desktop_performance": desktop_perf,
         "mobile_lcp_ms": results["mobile"].get("core_web_vitals", {}).get("lcp"),
         "mobile_cls": results["mobile"].get("core_web_vitals", {}).get("cls"),
-        "mobile_fid_ms": results["mobile"].get("core_web_vitals", {}).get("fid"),
+        "mobile_inp_ms": results["mobile"].get("core_web_vitals", {}).get("inp"),
         "overall_status": "Good" if mobile_perf >= 90 else "Needs Improvement" if mobile_perf >= 50 else "Poor"
     }
 

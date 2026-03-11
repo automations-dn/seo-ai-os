@@ -75,6 +75,34 @@ To unlock the full power of this OS, you need to connect three APIs. The system 
 
 ---
 
+## 🧠 V2 Upgrades: Installing MCP Servers
+
+To upgrade this OS from replacing 80% to replacing 95% of manual labor, you need to give Claude Code direct access to real-time search data and JavaScript rendering. You do this by installing **MCP Servers** directly into Claude Code.
+
+### 1. The DataForSEO MCP (Required for V2)
+**Why:** Replaces Ahrefs/Semrush. Gives Claude Code exact search volumes, Keyword Difficulty (KD), and live backlink profiles for the `/competitor_gap` and `/keyword_research` workflows.
+
+**How to install:**
+1. Create a free account at [DataForSEO](https://dataforseo.com/).
+2. Get your API Login and API Password from their dashboard.
+3. Open your IDE terminal and run:
+   ```bash
+   claude mcp add dataforseo -- npx @dataforseo/mcp-server
+   ```
+4. Claude Code will ask for your login and password. It only costs fractions of a cent per API call (pay-as-you-go).
+
+### 2. The Playwright MCP (Highly Recommended)
+**Why:** Standard Python scrapers only see raw HTML. The Playwright MCP allows Claude Code to open a headless browser, see JavaScript-rendered content (React, Next.js, Shopify templates), and take visual screenshots for your audit reports.
+
+**How to install:**
+1. Open your IDE terminal and run:
+   ```bash
+   claude mcp add playwright -- npx @playwright/mcp-server
+   ```
+2. No API keys needed! It runs locally on your machine.
+
+---
+
 ## 🛡️ Why Trust This System? (The 80% Rule)
 
 Can one person with this Operating System replace a 5-person SEO team? **Yes, absolutely.**
