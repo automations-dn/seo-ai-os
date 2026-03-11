@@ -2,63 +2,83 @@
 description: /content_draft - Write a full SEO-optimized article from an approved content brief
 ---
 
-# Workflow: Content Draft Generation
+# Workflow: Content Draft Generation (100% Humanized & Ranking-Optimized)
 
 ## Trigger
 ```
-/content_draft <client_name> [--brief <path_to_brief>] [--keyword "<target_keyword>"]
+/content_draft <client_name> [--brief <path_to_brief>]
 ```
-**Example:** `/content_draft acme_corp --brief active_campaigns/best_project_mgmt_brief.md`
 
 ## Objective
-Generate a fully SEO-optimized, AEO/GEO-ready article in the client's brand voice, complete with internal/external links and JSON-LD schema markup. Paste result for review.
+Generate a fully SEO-optimized, AEO/GEO-ready article that ranks #1. The output MUST bypass AI detectors (100% humanized) through high burstiness, varied sentence lengths, and the absolute elimination of standard AI jargon. It must include exact Titles, Metas, and CMS-ready formatting.
 
-## Required Inputs
-1. `<client_name>` — loads brand_kit for brand voice injection
-2. `--brief` — path to an approved content brief OR
-3. `--keyword` — if brief not provided, run `/content_brief` workflow first and wait for approval
+---
+
+## 🚨 CRITICAL RULE: The "100% Human" Writing Guidelines
+
+You must write like a Senior Subject Matter Expert, not an AI. 
+
+**1. BANNED AI VOCABULARY:**
+Do NOT use these words under any circumstances: *delve, moreover, furthermore, tapestry, paramount, seamless, dynamic, robust, landscape, testament, elevate, unleash, unlock, navigate, symphony, beacon, in today's digital age, in conclusion, to summarize.*
+
+**2. Burstiness & Perplexity:**
+- Vary your sentence lengths drastically. Use very short, punchy sentences (3-5 words). Follow them with longer, descriptive sentences.
+- Avoid perfectly symmetrical paragraph lengths. Humans write in asymmetrical blocks.
+
+**3. Tone & Voice:**
+- Use active voice only. Avoid passive voice.
+- Limit transition words (like "however," "therefore"). Humans use them sparingly.
+- Sound opinionated, authoritative, and direct. Get straight to the point. No fluff.
+
+**4. E-E-A-T Elements (Experience & Expertise):**
+- Phrase concepts using first-hand terminology where appropriate to the brand: *"In our experience,"* *"When we tested this,"* *"What we usually see is..."*
+
+---
 
 ## Step-by-Step Instructions
 
 ### Step 1: Load Context
-- Read `clients/<client_name>/brand_kit.json`
-- Extract: `tone`, `persona`, `writing_style_notes`, `cta_style`, `primary_keywords`, `negative_keywords`
-- Read the brief file (or `.tmp/<client_name>_brief.md` if just generated)
+- Read `clients/<client_name>/brand_kit.json`.
+- Internalize the `tone`, `persona`, and `target_audience`.
+- Read the content brief provided.
 
-### Step 2: Draft Section by Section (Following the Brief Structure)
-For each H2 section in the brief:
-1. Write content covering the topic thoroughly
-2. Naturally include 1-2 LSI keywords from the brief
-3. For FAQ section: write concise, quotable answers (2-3 sentences max per answer — optimized for AI snippet extraction)
-4. For conclusion: use the client's `cta_style`
-5. Keep tone aligned to `persona` and `writing_style_notes`
+### Step 2: The SEO Package (CMS Metadata)
+Before writing the article, you must generate the exact metadata the user will copy/paste into their CMS:
+- **Title Tag:** Exactly 50-60 characters. Primary Keyword at the front.
+- **Meta Description:** Exactly 120-160 characters. End with a Call to Action (CTA).
+- **URL Slug:** `primary-keyword-format`
 
-**Word count target:** Match estimated range from brief
+### Step 3: Write the Draft (Section by Section)
 
-### Step 3: Inject Internal & External Links
-- For each internal link from the brief: find the most natural placement in the text and embed it
-- For external links: cite 2-3 authoritative sources (gov sites, .edu, or high-authority industry sites)
+**The Hook (Introduction):**
+- Maximum 3 paragraphs. 
+- Introduce the core problem immediately.
+- Use the target keyword in the first 75 words.
+- Provide the TL;DR / Direct Answer immediately (for AI Overviews / Google AEO extraction).
 
-### Step 4: Generate JSON-LD Schema
-- Run: `tools/schema_gen.py --type <required_schema> --content <draft_file>`
-- Generates valid, tested JSON-LD code blocks for the required schema types (Article, FAQ, etc.)
-- Embed at the top of the draft in a `<script type="application/ld+json">` block
+**The Body:**
+- Follow the H2 and H3 structure from the brief.
+- Naturally weave in LSI / Semantic secondary keywords. Do not keyword stuff.
+- **Formatting:** Use bullet points, bolded text for emphasis, and short paragraphs to make the content highly scannable (which decreases bounce rate, increasing rankings).
+- **Internal Links:** Embed the exact internal links from the brief naturally into the text.
 
-### Step 5: SEO Final Check
-Before presenting draft, self-check:
-- [ ] Primary keyword in H1, first 100 words, and at least 2 H2s
-- [ ] Meta title is 50-60 characters
-- [ ] Meta description is 120-160 characters
-- [ ] No negative keywords from brand_kit used
-- [ ] All internal links present
-- [ ] Schema code is valid JSON
-- [ ] At least one "direct answer" block exists (for AEO extraction)
+**The FAQ Section (If applicable):**
+- Write exactly 2-3 sentences per answer. Be blunt and factual. Format as Q&A for Featured Snippet optimization.
 
-### Step 6: Present Draft for Review
-Save draft to: `clients/<client_name>/active_campaigns/<slug>_draft.md`
-Then display the draft in chat (or a summary if very long) and ask:
-**"Draft complete! Do you want to make any edits before I format this for WordPress/CMS publishing?"**
+**The Conclusion:**
+- Do not write a summary. Write an actionable next step.
+- Include the client's specific Call to Action (CTA).
 
-## Edge Cases
-- If brief is missing required fields (e.g., no internal links section): proceed without them and flag the gap.
-- If brand_kit has contradictory tone settings: default to the first tone listed and flag it to the user.
+### Step 4: SEO Final Checking
+Perform a strict check before outputting:
+- [ ] Is the primary keyword in the H1, URL, Title Tag, Meta Description, and first 100 words?
+- [ ] Are all banned AI words completely eliminated?
+- [ ] Does it sound human (varied sentence length)?
+- [ ] Are paragraphs short and scannable?
+- [ ] Are internal links included naturally?
+
+### Step 5: Output Generation
+Present the final draft in clean Markdown format in the chat so the user can literally "select all, copy, and paste" into WordPress/Shopify.
+
+Ask the user: 
+**"Here is the 100% human-optimized draft and CMS package. Would you like me to refine the tone, or shall we save this to the client's folder?"**
