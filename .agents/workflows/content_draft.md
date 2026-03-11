@@ -80,5 +80,7 @@ Perform a strict check before outputting:
 ### Step 5: Output Generation
 Present the final draft in clean Markdown format in the chat so the user can literally "select all, copy, and paste" into WordPress/Shopify.
 
+**CRITICAL RULE:** Do NOT attempt to save this output to a file. The user specifically requested that content drafts only be outputted into the chat interface an not saved into the `clients/` directory.
+
 Ask the user: 
-**"Here is the 100% human-optimized draft and CMS package. Would you like me to refine the tone, or shall we save this to the client's folder?"**
+**"Here is the 100% human-optimized draft and CMS package. Let me know if you need any tone adjustments!"**

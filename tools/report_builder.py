@@ -576,20 +576,6 @@ def main():
 
     print(f"\n[SUCCESS] Report saved!")
     print(f"[File]    {abs_path}")
-    print(f"[Opening] Launching in Microsoft Word now...")
-
-    # Auto-open the file — works on Windows (Word), macOS (Preview), Linux (LibreOffice)
-    try:
-        import subprocess, sys
-        if sys.platform == "win32":
-            os.startfile(abs_path)
-        elif sys.platform == "darwin":
-            subprocess.run(["open", abs_path])
-        else:
-            subprocess.run(["xdg-open", abs_path])
-        print(f"[DONE] File opened. Edit and save it from Word directly.")
-    except Exception as e:
-        print(f"[Note] Could not auto-open: {e}")
-        print(f"[Manual] Copy this path into Windows Explorer: {abs_path}")
+    print(f"\n📄 **Download Link:** [Click here to open the report](file:///{abs_path.replace(chr(92), '/')})")
 
 if __name__=="__main__": main()
