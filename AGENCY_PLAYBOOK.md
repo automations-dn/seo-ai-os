@@ -4,58 +4,99 @@ Welcome to the **SEO AI Operating System**. This guide is written for agency own
 
 ---
 
-## 📅 The Monthly Agency Routine
+## 📅 The Master SEO Campaign SOP (Dependency Chains)
 
-To get "100x better results" for your clients, you don't need to do *more* random tasks; you need to do the *right* tasks consistently. Here is the exact order of operations to run your clients through the SEO AI OS.
+As a Senior SEO Expert managing a team (the tools and workflows), you don't just say "write an article." You enforce a strict, systematic process where one output feeds into the next. 
 
-### 1. The Onboarding Phase (Month 1, Week 1)
-When you close a new client, your first step is bringing them into the AI OS context.
+This playbook defines the **Dependency Chains**—the exact order of operations the OS must follow to guarantee a #1 ranking result.
 
-**Action:** Type `/add_client <client_name>` in your IDE terminal.
-**What happens:** I will ask you a series of questions to build their `brand_kit.json`. I need to know their target audience, competitors, voice/tone, and primary keywords. Do not skip these—this is what makes the AI generate *good* content instead of generic content.
+---
 
-### 2. The Comprehensive Audit (Month 1, Week 2)
-You need a baseline of where the client currently stands, and you need to find the critical blockers immediately.
+### ⛓️ Dependency Chain 1: The Content Engine (From Idea to Publication)
+*Never write an article blindly. This is the exact sequence to creating content that actually ranks and drives revenue.*
 
-**Action:** Type `/audit <client_name> --type first_time`
-**What happens:** 
-1. I automatically crawl the site, evaluating Technical SEO, On-Page SEO, Core Web Vitals (INP, LCP, CLS), and Schema.
-2. I auto-detect their industry (SaaS, E-comm, Local, etc.) and tailor the grading scale.
-3. I generate a beautiful, branded Word document (`.docx`) matching the Dare Network template.
-4. **Your job:** Send this Word doc to the client. It looks like you spent 10 hours on it. It took 3 minutes.
+**Step 1: Data Gathering (The Researcher)**
+- **Tool:** `competitor_gap.py` or `/keyword_research`
+- **Action:** Pull the raw data. Find out exactly what keywords the client's competitors rank for that the client does not. Export this raw, high-volume/low-difficulty data to `.tmp/`.
 
-### 3. Deep-Dive Page Optimization (Month 1, Weeks 3-4)
-Identify the client's top 5 most important pages (e.g., core service pages, category pages).
+**Step 2: Semantic Grouping (The Strategist)**
+- **Tool:** `keyword_clusterer.py`
+- **Action:** Take the raw data from Step 1 and run it through the Machine Learning NLP clusterer. This groups 500 random keywords into 10 logical **Pillar Topics**. 
 
-**Action:** Type `/page <client_url> --keyword "<target_keyword>"`
-**What happens:**
-1. I do a focused, aggressive breakdown of that single page.
-2. I check against the Sept 2025 E-E-A-T Quality Rater Guidelines.
-3. I evaluate Image SEO (alt text, WebP, sizes).
-4. I check AEO (Answer Engine Optimization) to ensure the page will get cited by Google's AI Overviews and ChatGPT.
-5. **Your job:** Take my generated replacement `<title>`, meta description, and H1 tags, and paste them into their CMS. Implement the image fixes.
+**Step 3: Architecture & Intent (The Editor)**
+- **Tool:** `/content_brief <client_name> --topic "<Topic from Step 2>"`
+- **Action:** Before a single word of the article is written, the editor must define the H1, the H2s, the exact LSI keywords to hit, and the required internal links. This brief is saved and reviewed.
 
-### 4. Content Generation (Month 2+)
-Now you start driving new organic traffic. You need an article brief and then the article itself.
+**Step 4: Humanized Execution (The Writer)**
+- **Tool:** `/content_draft <client_name> --brief <path_to_brief_from_step_3>`
+- **Action:** Now, and only now, do we write the article. The writer uses the approved brief, the client's established `brand_kit.json` (for tone), and strictly adheres to the 100% humanized, anti-AI word list.
 
-**Action 1:** Type `/content_brief <client_name>`
-**What happens:** I look at their brand kit, competitors, and keywords, and generate a highly structured outline. Review this with the client to get approval.
+**Step 5: Technical Injection (The Developer)**
+- **Tool:** `schema_gen.py`
+- **Action:** The developer takes the finalized draft and injects valid JSON-LD `Article` and `FAQPage` (if applicable) schema so the search engine can digest it instantly.
 
-**Action 2:** Type `/content_draft <client_name>`
-**What happens:** I write the full, SEO-optimized article based on the brief, fully formatted in markdown, matching their brand voice.
+---
 
-### 5. Link Building & Outreach (Month 3+)
-To increase Domain Authority, you need backlinks.
+### ⛓️ Dependency Chain 2: The Master Audit (Technical, UI/UX, & AI Readiness)
+*A Senior Audit is not just running a crawler. It is a multi-layered diagnostic looking at Code, Content, Trust, and AI Search. This is the exact sequence to execute `/audit` comprehensively.*
 
-**Action:** Type `/link_building <client_name>`
-**What happens:** I find link opportunities and draft highly personalized outreach emails.
-*(Note: Requires connecting Hunter.io API in `.env` for finding contact emails).*
+**Step 1: The Identity Baseline**
+- **Tool:** `/add_client` -> `brand_kit.json`
+- **Action:** Establish the client's industry, core competencies, and tone. *Why?* Because an audit for a B2B SaaS requires different E-E-A-T signals (Whitepapers, LinkedIn Authors) than a Local Plumber (Google Reviews, LocalBusiness Schema).
 
-### 6. The Monthly Report (End of Every Month)
-Retention is driven by communication. 
+**Step 2: Site Architecture & Deep Crawl (The Technical Foundation)**
+- **Tool:** `seo_crawler.py`
+- **Action:** Crawl the site (up to 500 pages) to map the internal link graph, find orphaned pages, check HTTP status codes (404s, 301 chains), and verify canonical tag hygiene. This outputs `.tmp/crawl.json`.
 
-**Action:** Type `/monthly_report <client_name>`
-**What happens:** I compile all the work done, pull the latest data from GSC/GA4 (if connected), and generate a clean monthly summary report.
+**Step 3: Performance & Core Web Vitals (The User Experience)**
+- **Tool:** Google PageSpeed API / Lighthouse (via Python integration)
+- **Action:** Analyze the top 5 highest-traffic URLs. Check LCP, FID, and CLS. A site failing CWV will bleed the conversions we work so hard to generate. 
+
+**Step 4: Page-Level Optimization & Trust (On-Page SEO)**
+- **Tool:** `on_page_analyzer.py`
+- **Action:** For the top 10 URLs, aggressively check Title/Meta length, H1 presence, and Image Alt Attributes. Crucially, scan the body text for "Missing Trust Signals" (Phone numbers, Policy links, Author bios) which are massive E-E-A-T ranking factors.
+
+**Step 5: Advanced AI & Semantic Search (AEO/GEO Readiness)**
+- **Tool:** `schema_gen.py` & Crawl Data Review
+- **Action:** Scan the raw HTML for valid JSON-LD. Does the site have `Organization` schema with a declared `SameAs` array linking to their social profiles? Do they have `LocalBusiness` for local targeting? Provide the exact missing code blocks to inject.
+
+**Step 6: The Executive Synthesis**
+- **Tool:** `report_builder.py` -> `/audit` final output
+- **Action:** Synthesize Steps 2-5 into a branded Word document. The AI formats this so you can present the issues *and* the immediate solutions to the client.
+
+---
+
+### ⛓️ Dependency Chain 3: Programmatic SEO (Scalable Architecture)
+*Programmatic SEO can result in an algorithmic penalty if done poorly. We follow a strict, gated process.*
+
+**Step 1: The Seed Data**
+- **Tool:** `/keyword_research`
+- **Action:** Identify the high-volume modifier. Example: "SaaS Marketing Agency in [City]" or "Alternative to [Competitor]". 
+
+**Step 2: The Quality Gate Architect**
+- **Tool:** `/programmatic_seo <client_name>`
+- **Action:** The AI strictly enforces *Rule 10: Quality Gates*. It designs a 5-column database schema that guarantees at least 60% of the content on every single programmatic page will be completely unique (e.g., pulling local APIs, specific case studies, unique H2s).
+
+**Step 3: Template Design**
+- **Tool:** Human/AI Collaboration
+- **Action:** Build the master template where the variables from Step 2 will be injected. Add breadcrumb schema dynamically. 
+
+---
+
+### ⛓️ Dependency Chain 4: The Outbound Engine (Link Building)
+*Links are still the #1 off-page ranking factor. We automate the outreach preparation.*
+
+**Step 1: Target Acquisition**
+- **Tool:** DataForSEO MCP / `competitor_gap.py` (Backlink mode)
+- **Action:** Identify which high-Domain Authority (DA) sites are linking to the client's competitors but not to the client.
+
+**Step 2: The Contact Sniper**
+- **Tool:** `/link_building` -> Hunter.io API integration
+- **Action:** Take the target URLs from Step 1, ping Hunter.io, and retrieve the exact email address of the Content Manager or Editor for that specific site.
+
+**Step 3: Personalized Outreach**
+- **Tool:** `/link_building` -> AI Writer
+- **Action:** Generate a highly personalized email pitch offering a specific value exchange (a guest post, a broken link fix, or a data-backed resource), styled in the client's tone from their `brand_kit.json`.
 
 ---
 
