@@ -145,7 +145,91 @@ def fetch_trends(keywords: list) -> dict:
 # SERP TOP 10
 # ===========================
 def scrape_serp_top10(keyword: str) -> dict:
-    """Scrape the top 10 organic Google results for a keyword."""
+    """Scrape the top 10 organic Google results for a keyword using Playwright for better reliability."""
+    results = []
+
+    try:
+        from playwright.sync_api import sync_playwright
+    except ImportError:
+        print("  [SERP] Playwright not installed, falling back to requests (less reliable)")
+        return scrape_serp_top10_fallback(keyword)
+
+    url = f"https://www.google.com/search?q={quote_plus(keyword)}&num=10&hl=en"
+
+    try:
+        with sync_playwright() as p:
+            # Launch browser in headless mode with stealth settings
+            browser = p.chromium.launch(
+                headless=True,
+                args=['--disable-blink-features=AutomationControlled']
+            )
+
+            context = browser.new_context(
+                viewport={'width': 1920, 'height': 1080},
+                user_agent='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+            )
+
+            page = context.new_page()
+
+            # Navigate to Google search
+            page.goto(url, wait_until='networkidle', timeout=30000)
+
+            # Wait a bit for JS rendering
+            page.wait_for_timeout(2000)
+
+            # Get page content
+            html = page.content()
+            soup = BeautifulSoup(html, "lxml")
+
+            # Try multiple selectors for organic results
+            result_divs = soup.find_all("div", class_="g") or \
+                         soup.find_all("div", {"data-hveid": True})
+
+            for g in result_divs[:10]:  # Limit to top 10
+                link = g.find("a", href=True)
+                h3 = g.find("h3")
+
+                # Try multiple snippet selectors
+                snippet_el = (g.find("div", attrs={"data-sncf": True}) or
+                             g.find("span", class_="aCOpRe") or
+                             g.find("div", class_="VwiC3b"))
+
+                if link and h3:
+                    href = link.get("href", "")
+                    # Filter out non-organic results
+                    if href.startswith("http") and not any(x in href for x in ["/search?", "google.com/search"]):
+                        results.append({
+                            "position": len(results) + 1,
+                            "url": href,
+                            "title": h3.get_text(strip=True),
+                            "snippet": snippet_el.get_text(strip=True) if snippet_el else "",
+                            "domain": urlparse(href).netloc,
+                        })
+
+                        if len(results) >= 10:
+                            break
+
+            browser.close()
+
+        if not results:
+            print("  [SERP] Warning: No results found with Playwright. Google may have shown CAPTCHA.")
+            print("  [SERP] Trying fallback method...")
+            return scrape_serp_top10_fallback(keyword)
+
+    except Exception as e:
+        print(f"  [SERP] Playwright error: {e}")
+        print("  [SERP] Trying fallback method...")
+        return scrape_serp_top10_fallback(keyword)
+
+    return {
+        "keyword": keyword,
+        "results": results,
+        "scraped_at": datetime.now().isoformat()
+    }
+
+
+def scrape_serp_top10_fallback(keyword: str) -> dict:
+    """Fallback method using requests (less reliable, kept for compatibility)."""
     session = requests.Session()
     session.headers.update(HEADERS)
 
@@ -171,7 +255,9 @@ def scrape_serp_top10(keyword: str) -> dict:
                 })
 
         if not results:
-            print("  [SERP] Warning: No results found. Google may have blocked the request.")
+            print("  [SERP] Warning: No results found. Google blocked the request.")
+            print("  [SERP] Recommendation: This feature requires Playwright for reliable scraping.")
+            print("  [SERP] Install with: pip install playwright && playwright install chromium")
 
     except Exception as e:
         print(f"  [SERP] Error: {e}")

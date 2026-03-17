@@ -14,7 +14,7 @@ description: /audit - Run a full SEO audit for a client (Technical, On-Page, AEO
 
 ---
 
-## ⚠️ CRITICAL RULE: Client List vs. Standalone Audit
+## [WARNING] CRITICAL RULE: Client List vs. Standalone Audit
 
 > **DO NOT add a site to the client list just because someone asks for an audit.**
 

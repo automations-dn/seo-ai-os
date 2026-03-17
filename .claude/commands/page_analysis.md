@@ -63,11 +63,11 @@ Check the page/site for signals (see CLAUDE.md Rule 5) and note the site type. A
 For every image on the page check:
 | Check | Pass/Fail |
 |---|---|
-| Has descriptive `alt` attribute | ✅ / ❌ |
-| Served in WebP or AVIF format | ✅ / ❌ |
-| Has `loading="lazy"` attribute | ✅ / ❌ |
-| File size < 100KB (estimate by URL) | ✅ / ❌ |
-| Filename is descriptive (not `img_001.jpg`) | ✅ / ❌ |
+| Has descriptive `alt` attribute | [OK] / [ERROR] |
+| Served in WebP or AVIF format | [OK] / [ERROR] |
+| Has `loading="lazy"` attribute | [OK] / [ERROR] |
+| File size < 100KB (estimate by URL) | [OK] / [ERROR] |
+| Filename is descriptive (not `img_001.jpg`) | [OK] / [ERROR] |
 
 ### Step 5: E-E-A-T Assessment
 Score each dimension 1-3:

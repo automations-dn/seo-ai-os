@@ -47,7 +47,7 @@ Include sections that pull from the database variables you defined in Step 2.
 Ask the user: **"How many of these pages are you planning to generate?"**
 
 - If **< 30**: "Looks safe. Proceed with building the database."
-- If **30 - 50**: "⚠️ WARNING: You are approaching the threshold for doorway page penalties. Ensure your database variables provide genuine unique value."
+- If **30 - 50**: "[WARNING] WARNING: You are approaching the threshold for doorway page penalties. Ensure your database variables provide genuine unique value."
 - If **> 50**: "🛑 HARD STOP: Launching 50+ programmatic pages simultaneously is highly risky for this domain. I strongly recommend rolling out a batch of 10 pages first, waiting for indexing and ranking data, and then expanding."
 
 ### Step 5: Output Generation

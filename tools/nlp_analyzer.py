@@ -11,6 +11,7 @@ Usage:
     python nlp_analyzer.py --mode gap --serp-data .tmp/serp_analysis.json --client-url https://example.com/page
     python nlp_analyzer.py --mode internal_links --client acme_corp --keyword "target keyword"
     python nlp_analyzer.py --mode benchmark --urls "url1,url2,url3" --keyword "keyword"
+    python nlp_analyzer.py --mode readability --file path/to/draft.md
 """
 
 import argparse
@@ -191,23 +192,69 @@ def find_internal_link_opportunities(client_name: str, target_keyword: str) -> d
     # Sort by relevance
     suggestions.sort(key=lambda x: x["relevance_score"], reverse=True)
 
-    return {
-        "client": client_name,
-        "target_keyword": target_keyword,
-        "internal_link_opportunities": suggestions[:10],
-        "total_found": len(suggestions),
-        "note": "Review these pages to add a natural internal link pointing to your new article.",
-    }
+def analyze_readability_and_stylometry(text_or_file_path: str) -> dict:
+    """
+    Computes Flesch Reading Ease and detects AI Stylometry (patterns of LLMs).
+    """
+    if Path(text_or_file_path).exists():
+        with open(text_or_file_path, "r", encoding="utf-8") as f:
+            text = f.read()
+    else:
+        text = text_or_file_path
 
+    # Flesch Reading Ease Math
+    words = len(re.findall(r'\w+', text))
+    sentences = len(re.split(r'[.!?]+', text)) - 1
+    if sentences == 0: sentences = 1
+    if words == 0: words = 1
+
+    def count_syllables(word):
+        word = word.lower()
+        count = 0
+        vowels = "aeiouy"
+        if word[0] in vowels: count += 1
+        for index in range(1, len(word)):
+            if word[index] in vowels and word[index - 1] not in vowels:
+                count += 1
+        if word.endswith("e"): count -= 1
+        if count == 0: count += 1
+        return count
+
+    syllables = sum(count_syllables(w) for w in re.findall(r'\w+', text))
+    flesch_score = 206.835 - 1.015 * (words / sentences) - 84.6 * (syllables / words)
+
+    # Interpreting Flesch
+    if flesch_score > 80: level = "Easy (Grade 6)"
+    elif flesch_score > 60: level = "Standard (Grade 8-9)"
+    elif flesch_score > 30: level = "Difficult (College+)"
+    else: level = "Very Difficult (Academic/Technical)"
+    
+    # AI Stylometry Target Words
+    ai_markers = ["furthermore", "moreover", "in conclusion", "crucial", "essential", "vital", "tapestry", "delve", "navigating", "testament", "orchestrate"]
+    found_markers = [marker for marker in ai_markers if marker in text.lower()]
+    ai_probability = min(len(found_markers) * 15, 100) # Simple heuristic
+
+    return {
+        "analysis_date": datetime.now().isoformat(),
+        "total_words": words,
+        "total_sentences": sentences,
+        "flesch_reading_ease": round(flesch_score, 2),
+        "reading_level": level,
+        "machine_readability": "Excellent" if flesch_score >= 60 else "Poor (Too complex for optimal AI extraction)",
+        "ai_stylometry_markers_found": found_markers,
+        "ai_probability_score": f"{ai_probability}%",
+        "action": "Rewrite required to simplify and humanize text." if ai_probability > 50 or flesch_score < 50 else "Approved for publishing."
+    }
 
 def main():
     parser = argparse.ArgumentParser(description="NLP SEO Analyzer")
-    parser.add_argument("--mode", required=True, choices=["gap", "benchmark", "internal_links"])
+    parser.add_argument("--mode", required=True, choices=["gap", "benchmark", "internal_links", "readability"])
     parser.add_argument("--serp-data", help="Path to SERP JSON file (for gap mode)")
     parser.add_argument("--client-url", help="Client page URL (for gap mode)")
     parser.add_argument("--client", help="Client name (for internal_links mode)")
     parser.add_argument("--keyword", help="Target keyword")
     parser.add_argument("--urls", help="Comma-separated URLs (for benchmark mode)")
+    parser.add_argument("--file", help="File to analyze for readability/stylometry")
     parser.add_argument("--output", help="Output JSON file path")
     args = parser.parse_args()
 
@@ -229,6 +276,11 @@ def main():
         assert args.client and args.keyword, "--client and --keyword required"
         print(f"[Internal Links] Finding link opportunities for '{args.keyword}' in {args.client}'s content")
         data = find_internal_link_opportunities(args.client, args.keyword)
+
+    elif args.mode == "readability":
+        assert args.file, "--file required for readability mode"
+        print(f"[Readability & Stylometry] Analyzing file: {args.file}")
+        data = analyze_readability_and_stylometry(args.file)
 
     output_path = args.output or f".tmp/nlp_{args.mode}_{timestamp}.json"
     Path(output_path).parent.mkdir(parents=True, exist_ok=True)

@@ -23,17 +23,33 @@ def load_brand_kit(client_name):
 
 def mock_gap_data(client_url, competitors):
     """
-    Since we don't have active DataForSEO credentials in this demo environment, 
-    this function simulates pulling millions of rows of search data and finding the delta.
-    In a live V2 environment with the DataForSEO MCP enabled, Claude Code would pull 
-    this data dynamically via the MCP server beforehand and pass it in.
+    [WARNING] MOCK DATA - For demonstration purposes only.
+
+    In production, this would call DataForSEO API or Ahrefs API to:
+    1. Get ranking keywords for each competitor domain
+    2. Get ranking keywords for client domain
+    3. Find gaps (keywords competitors rank for that client doesn't)
+    4. Return with real volume/KD metrics
+
+    To implement real data:
+    - Option 1: Use DataForSEO API (https://dataforseo.com) - $0.0001 per keyword
+    - Option 2: Use Ahrefs API (requires subscription)
+    - Option 3: Manual export from Ahrefs/SEMrush and load from CSV
+
+    For now, returns representative structure with generic data.
     """
+    print("[Notice] Using MOCK data for competitor gap analysis.")
+    print("[Notice] For real keyword data, integrate DataForSEO API or load from CSV export.")
+
+    # Generate semi-realistic mock data based on actual domains
+    base_industry = "marketing" if "marketing" in client_url or any("marketing" in c for c in competitors) else "software"
+
     return [
-        {"keyword": f"buy {competitors[0].split('.')[0]} alternatives", "volume": 1200, "kd": 14, "comp_rank": 3, "client_rank": 0},
-        {"keyword": "best handloom brands in india", "volume": 5400, "kd": 28, "comp_rank": 2, "client_rank": 0},
-        {"keyword": "premium ethnic wear online", "volume": 8100, "kd": 45, "comp_rank": 5, "client_rank": 0},
-        {"keyword": "how to identify pure silk", "volume": 3600, "kd": 22, "comp_rank": 1, "client_rank": 0},
-        {"keyword": "sustainable fashion d2c", "volume": 2900, "kd": 31, "comp_rank": 4, "client_rank": 0},
+        {"keyword": f"{base_industry} services near me", "volume": 2400, "kd": 18, "comp_rank": 3, "client_rank": 0},
+        {"keyword": f"best {base_industry} agency bangalore", "volume": 1800, "kd": 32, "comp_rank": 2, "client_rank": 0},
+        {"keyword": f"{base_industry} company reviews", "volume": 3200, "kd": 25, "comp_rank": 5, "client_rank": 0},
+        {"keyword": f"top {base_industry} consultants", "volume": 1500, "kd": 28, "comp_rank": 1, "client_rank": 0},
+        {"keyword": f"affordable {base_industry} solutions", "volume": 1100, "kd": 22, "comp_rank": 4, "client_rank": 0},
     ]
 
 def main():

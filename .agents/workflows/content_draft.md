@@ -43,38 +43,47 @@ Do NOT use these words under any circumstances: *delve, moreover, furthermore, t
 - Read the content brief provided.
 
 ### Step 2: The SEO Package (CMS Metadata)
-Before writing the article, you must generate the exact metadata the user will copy/paste into their CMS:
+Before writing the article, you must generate the exact metadata and technical code the user will copy/paste into their CMS:
 - **Title Tag:** Exactly 50-60 characters. Primary Keyword at the front.
 - **Meta Description:** Exactly 120-160 characters. End with a Call to Action (CTA).
 - **URL Slug:** `primary-keyword-format`
+- **JSON-LD Schema Script (Articles + FAQ + HowTo):** 
+    - Generate a consolidated `@graph` JSON-LD block.
+    - **Instructions for User:** Include a clear note: *"Copy this block into your CMS <head> section or dedicated Schema field."*
 
 ### Step 3: Write the Draft (Section by Section)
 
-**The Hook (Introduction):**
-- Maximum 3 paragraphs. 
-- Introduce the core problem immediately.
-- Use the target keyword in the first 75 words.
-- Provide the TL;DR / Direct Answer immediately (for AI Overviews / Google AEO extraction).
+**The TL;DR / Key Takeaways:**
+- Place a boxed summary section immediately below the intro or at the very top.
+- 3–5 bullet points summarizing the article for AI search engines.
+
+**The Table of Contents:**
+- Create a linked Table of Contents targeting the H2/H3 anchors defined in the brief.
 
 **The Body:**
 - Follow the H2 and H3 structure from the brief.
 - Naturally weave in LSI / Semantic secondary keywords. Do not keyword stuff.
+- **Comparison Tables:** If comparing concepts (e.g., "X vs Y"), you MUST use a Markdown table.
 - **Formatting:** Use bullet points, bolded text for emphasis, and short paragraphs to make the content highly scannable (which decreases bounce rate, increasing rankings).
-- **Internal Links:** Embed the exact internal links from the brief naturally into the text.
+- **Internal/External Links:** Embed links naturally. Stats MUST be hyperlinked to authoritative sources.
 
-**The FAQ Section (If applicable):**
-- Write exactly 2-3 sentences per answer. Be blunt and factual. Format as Q&A for Featured Snippet optimization.
+**The FAQ Section:**
+- Format as Q&A for Featured Snippet optimization. (Triggers FAQ Schema).
+
+**The Glossary (Ending):**
+- Append a "Glossary of Terms" defining 3-5 technical concepts used in the article.
 
 **The Conclusion:**
-- Do not write a summary. Write an actionable next step.
-- Include the client's specific Call to Action (CTA).
+- Do not write a summary. Write an actionable next step with the client's CTA.
 
 ### Step 4: SEO Final Checking
 Perform a strict check before outputting:
-- [ ] Is the primary keyword in the H1, URL, Title Tag, Meta Description, and first 100 words?
-- [ ] Are all banned AI words completely eliminated?
-- [ ] Does it sound human (varied sentence length)?
-- [ ] Are paragraphs short and scannable?
+- [ ] Is the primary keyword in the H1, URL, Title, and Meta?
+- [ ] Are all banned AI words eliminated?
+- [ ] Is there a TL;DR box and a linked Table of Contents?
+- [ ] Are all statistics hyperlinked to external sources?
+- [ ] Is the JSON-LD `@graph` schema included with instructions?
+- [ ] Is there a Glossary section?
 - [ ] Are internal links included naturally?
 
 ### Step 5: Output Generation
@@ -82,5 +91,18 @@ Present the final draft in clean Markdown format in the chat so the user can lit
 
 **CRITICAL RULE:** Do NOT attempt to save this output to a file. The user specifically requested that content drafts only be outputted into the chat interface an not saved into the `clients/` directory.
 
+### Step 6: Mandatory Human Review Checklist
+Append this exact checklist to the very bottom of your response so the human team member must review it before publishing:
+
+```markdown
+---
+### 🛑 HUMAN QA REQUIRED BEFORE PUBLISHING:
+1. [ ] **Internal Links:** Did you manually test the internal links to ensure they make sense in context?
+2. [ ] **Brand Tone:** Did you verify the CTA matches the exact offer this month?
+3. [ ] **Media:** Did you insert the custom client images/videos into the CMS before hitting publish?
+4. [ ] **AEO Check:** Does the first paragraph directly answer the user's query in <50 words for AI Overviews?
+---
+```
+
 Ask the user: 
-**"Here is the 100% human-optimized draft and CMS package. Let me know if you need any tone adjustments!"**
+**"Here is the 100% human-optimized draft and CMS package. Please complete the QA checklist above before publishing!"**

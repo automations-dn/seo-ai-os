@@ -3,7 +3,7 @@
 Schema Generator Tool
 Generates valid JSON-LD schema markup for AEO/GEO optimization.
 
-⚠️  IMPORTANT — Google Schema Deprecation Status (2024-2026):
+[WARNING]  IMPORTANT — Google Schema Deprecation Status (2024-2026):
   - FAQPage schema: RESTRICTED to government and healthcare sites only (since Aug 2023).
     Do NOT use for commercial, agency, or e-commerce clients.
   - HowTo schema: DEPRECATED (since Sept 2023). Not supported by Google.
@@ -97,7 +97,10 @@ def generate_local_business_schema(name: str, url: str, phone: str = "",
 
 
 def generate_organization_schema(name: str, url: str, logo_url: str = "",
-                                  description: str = "", social_links: list = None) -> dict:
+                                  description: str = "", social_links: list = None,
+                                  entity_mode: bool = False, wikidata_id: str = "",
+                                  wikipedia_url: str = "", address: dict = None,
+                                  phone: str = "", email: str = "") -> dict:
     schema = {
         "@context": "https://schema.org",
         "@type": "Organization",
@@ -109,8 +112,42 @@ def generate_organization_schema(name: str, url: str, logo_url: str = "",
             "url": logo_url or f"{url}/logo.png"
         }
     }
+    
+    if entity_mode:
+        schema["@id"] = f"{url}/#organization"
+        
+    same_as = []
     if social_links:
-        schema["sameAs"] = social_links
+        same_as.extend(social_links)
+        
+    if entity_mode:
+        if wikidata_id:
+            same_as.append(f"https://www.wikidata.org/wiki/{wikidata_id}")
+        if wikipedia_url:
+            same_as.append(wikipedia_url)
+            
+    if same_as:
+        schema["sameAs"] = same_as
+
+    if entity_mode and address:
+        schema["address"] = {
+            "@type": "PostalAddress",
+            "streetAddress": address.get("streetAddress", ""),
+            "addressLocality": address.get("addressLocality", ""),
+            "addressRegion": address.get("addressRegion", ""),
+            "postalCode": address.get("postalCode", ""),
+            "addressCountry": address.get("addressCountry", "")
+        }
+        
+    if entity_mode and (phone or email):
+        schema["contactPoint"] = {
+            "@type": "ContactPoint"
+        }
+        if phone:
+            schema["contactPoint"]["telephone"] = phone
+        if email:
+            schema["contactPoint"]["email"] = email
+
     return schema
 
 
@@ -171,6 +208,10 @@ def main():
     # Organization args
     parser.add_argument("--logo-url", default="")
     parser.add_argument("--social-links", help="Comma-separated social profile URLs")
+    parser.add_argument("--entity-mode", action="store_true", help="Enable rich entity schema")
+    parser.add_argument("--wikidata-id", default="")
+    parser.add_argument("--wikipedia-url", default="")
+    parser.add_argument("--email", default="")
 
     # Breadcrumb args
     parser.add_argument("--breadcrumbs-json", help="JSON string: [{name, url}, ...]")
@@ -203,10 +244,26 @@ def main():
         )
 
     elif args.type == "Organization":
-        assert args.business_name and args.url, "--business-name and --url required"
+        # Support both --org-name and --business-name for flexibility
+        org_name = args.org_name or args.business_name
+        assert org_name and args.url, "--org-name (or --business-name) and --url required"
         social = [s.strip() for s in args.social_links.split(",")] if args.social_links else []
-        schema = generate_organization_schema(args.business_name, args.url,
-                                              args.logo_url, args.description, social)
+        
+        address_dict = None
+        if args.entity_mode and (args.street or args.city or args.state or args.zip or args.country):
+            address_dict = {
+                "streetAddress": args.street,
+                "addressLocality": args.city,
+                "addressRegion": args.state,
+                "postalCode": args.zip,
+                "addressCountry": args.country
+            }
+            
+        schema = generate_organization_schema(org_name, args.url,
+                                              args.logo_url, args.description, social,
+                                              args.entity_mode, args.wikidata_id,
+                                              args.wikipedia_url, address_dict,
+                                              args.phone, args.email)
 
     elif args.type == "BreadcrumbList":
         assert args.breadcrumbs_json, "--breadcrumbs-json required"

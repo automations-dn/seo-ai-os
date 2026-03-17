@@ -9,19 +9,19 @@
   },
 
   "brand_voice": {
-    "tone": ["professional", "approachable"],
-    "persona": "TBD",
-    "writing_style_notes": "TBD",
-    "cta_style": "TBD"
+    "tone": ["professional", "approachable", "confident", "bold", "performance-driven", "fast-moving"],
+    "persona": "The outcomes-obsessed growth expert. We don't just execute tasks, we take ownership and scale bolder brands.",
+    "writing_style_notes": "Use active voice, be direct. Focus on funnels, revenue, testing, and scaling systems.",
+    "cta_style": "Book a Discovery Call / Let's start your growth journey"
   },
 
   "target_audience": {
-    "primary_persona": "TBD",
-    "pain_points": [],
+    "primary_persona": "Founders and Marketing Directors of B2B & D2C Brands looking to scale their revenue.",
+    "pain_points": ["Stagnant revenue", "Inefficient ad spend", "Need full-funnel growth systems", "Poor SEO"],
     "demographics": {
-      "age_range": "TBD",
-      "job_titles": [],
-      "platforms_they_use": []
+      "age_range": "30-55",
+      "job_titles": ["Founder", "CEO", "Marketing Director", "CMO", "E-commerce Owner"],
+      "platforms_they_use": ["LinkedIn", "Twitter", "Instagram"]
     }
   },
 
@@ -47,7 +47,7 @@
   },
 
   "technical_settings": {
-    "cms": "TBD",
+    "cms": "WordPress/Shopify",
     "gsc_connected": false,
     "ga4_connected": false,
     "sitemap_url": "https://thedarenetwork.com/sitemap.xml",

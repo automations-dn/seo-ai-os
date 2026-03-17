@@ -1,20 +1,21 @@
 {
   "permissions": {
     "allow": [
-      "Bash(python tools/seo_crawler.py --url https://thedarenetwork.com --output .tmp/thedarenetwork_crawl.json)",
-      "Bash(python tools/on_page_analyzer.py --urls-file .tmp/thedarenetwork_crawl.json --output .tmp/thedarenetwork_onpage.json)",
-      "Bash(python tools/on_page_analyzer.py --help)",
-      "Bash(python tools/on_page_analyzer.py --urls \"https://thedarenetwork.com,https://thedarenetwork.com/about,https://thedarenetwork.com/web-development,https://thedarenetwork.com/search-engine-optimization,https://thedarenetwork.com/performance-marketing,https://thedarenetwork.com/case-studies,https://thedarenetwork.com/contact,https://thedarenetwork.com/blogs,https://thedarenetwork.com/blogs/how-header-tags-improve-ranking,https://thedarenetwork.com/blogs/how-to-grow-business-using-seo\" --output .tmp/thedarenetwork_onpage.json)",
-      "Bash(python tools/pagespeed_checker.py --url https://thedarenetwork.com --output .tmp/thedarenetwork_cwv.json)",
-      "Bash(python tools/lighthouse_audit.py --url https://thedarenetwork.com --output .tmp/thedarenetwork_cwv.json)",
-      "Bash(python tools/report_builder.py --url https://thedarenetwork.com --type audit)",
-      "Bash(python tools/on_page_analyzer.py --urls https://thedarenetwork.com --client thedarenetwork --output .tmp/thedarenetwork_onpage.json)",
-      "Bash(python tools/report_builder.py --client thedarenetwork --type audit)",
-      "Bash(PYTHONIOENCODING=utf-8 python tools/report_builder.py --client thedarenetwork --type audit)",
-      "Bash(set PYTHONIOENCODING=utf-8)",
-      "SlashCommand(/content_brief thedarenetwork --keyword \"performance marketing\")",
-      "SlashCommand(/content_brief:*)",
-      "Bash(curl -s https://thedarenetwork.com)"
+      "Bash(if [ -f \"clients/thedarenetwork/brand_kit.json\" ])",
+      "Bash(then echo \"[OK] Client ''''thedarenetwork'''' found\")",
+      "Bash(cat clients/thedarenetwork/brand_kit.json)",
+      "Bash(else echo \"[WARNING] Client not found - will run standalone audit\")",
+      "Bash(python tools/seo_crawler.py --url https://thedarenetwork.com --max-pages 20 --output .tmp/thedarenetwork_audit_crawl.json)",
+      "Bash(python -c \"import json; data = json.load(open(''.tmp/thedarenetwork_audit_crawl.json'')); print(''Pages crawled:'', len(data[''pages''])); print(''''); print(''Sample page data:''); page = data[''pages''][0]; print(f\"\"URL: {page[''url'']}\"\"); print(f\"\"Title: {page.get(''title'', ''N/A'')}\"\"); print(f\"\"H1: {page.get(''h1'', ''N/A'')}\"\"); print(f\"\"Meta desc length: {len(page.get(''meta_description'', ''''))}\"\"); print(f\"\"Internal links: {page.get(''internal_links_count'', 0)}\"\"); print(f\"\"Schema types: {'', ''.join(page.get(''schema_types'', []))}\"\");\")",
+      "Bash(python tools/serp_scraper.py --mode autosuggest --keyword \"growth marketing\" --output .tmp/thedarenetwork_keywords.json)",
+      "Bash(python tools/schema_gen.py --type Organization --org-name \"The Dare Network\" --url \"https://thedarenetwork.com\" --entity-mode --wikidata-id \"Q12345678\" --wikipedia-url \"https://en.wikipedia.org/wiki/The_Dare_Network\" --street \"123 MG Road\" --city \"Bengaluru\" --state \"Karnataka\" --zip \"560001\" --country \"IN\" --phone \"+91-80-12345678\" --email \"hello@thedarenetwork.com\" --social-links \"https://www.linkedin.com/company/thedarenetwork,https://twitter.com/thedarenetwork\" --logo-url \"https://thedarenetwork.com/logo.png\" --description \"Growth marketing agency specializing in performance-driven campaigns\")",
+      "Bash(mkdir -p \".agents/skills/entity-building\")",
+      "Bash(python tools/entity_auditor.py --brand-name \"The Dare Network\" --website \"https://thedarenetwork.com\" --output \".tmp/thedarenetwork_entity_audit.json\")",
+      "Bash(python tools/entity_auditor.py --brand \"The Dare Network\" --website \"https://thedarenetwork.com\" --output \".tmp/thedarenetwork_entity_audit.json\")",
+      "Bash(cat \".tmp/thedarenetwork_entity_audit.json\")",
+      "Bash(python -m json.tool)",
+      "Bash(python tools/programmatic_quality_scorer.py --help)",
+      "Bash(python tools/programmatic_quality_scorer.py --urls .tmp/test_programmatic_urls.txt --output .tmp/test_quality_report.json --verbose)"
     ],
     "deny": [],
     "ask": []

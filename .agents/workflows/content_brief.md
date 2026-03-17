@@ -43,7 +43,11 @@ Analyze competitor content and produce a detailed, actionable content brief with
 
 ### Step 5: AEO/GEO Structure Requirements
 - Based on search intent (question-based = FAQ schema, guide = Article schema)
-- Determine required JSON-LD schema types
+- **Mandatory Structural Blocks:**
+    - **TL;DR:** Identify 3-5 punchy "Key Takeaways" to be placed at the top.
+    - **TOC Anchors:** Define the exact jump-link IDs for each H2/H3 for the Table of Contents.
+    - **Glossary Terms:** Identify 3-5 technical terms that need definitions at the end.
+    - **Schema Type:** Determine required JSON-LD schema types (Article + FAQ + HowTo).
 - Identify 3-5 "direct answer" opportunities: short, quotable answers that LLMs will extract
 
 ### Step 6: Assemble & Present Content Brief
@@ -70,9 +74,16 @@ H1: [title]
     H3: Q2...
   H2: [Conclusion + CTA: "<cta_style from brand_kit>"]
 
-REQUIRED SCHEMA: Article + FAQ
+REQUIRED SCHEMA: Article + FAQ + HowTo (as @graph JSON-LD)
 INTERNAL LINKS TO INCLUDE: [3-5 links with anchor text]
-EXTERNAL LINKS TO CITE: [2-3 authoritative sources]
+EXTERNAL LINKS TO CITE: [2-3 authoritative sources for stats]
+
+ELITE SEO COMPONENTS:
+- [ ] TL;DR / Key Takeaways Box (Required at top)
+- [ ] Table of Contents (Required - anchor-linked)
+- [ ] Comparison Table (Required for concepts vs concepts)
+- [ ] Glossary of Terms (Required at footer)
+- [ ] JSON-LD Schema Script (Articles + FAQ + HowTo)
 
 TONE NOTES: Write as "<persona>". Use <tone> voice.
 ```

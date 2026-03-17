@@ -151,6 +151,7 @@ def load_tmp(pattern):
     files=sorted(glob(f".tmp/{pattern}"),reverse=True)
     return json.load(open(files[0],encoding="utf-8")) if files else {}
 
+
 def _tech_score(summary):
     s=100
     s-=min(int(summary.get("status_404",0) or 0)*4,30)
@@ -249,7 +250,7 @@ def build_audit_docx(client_slug, website_url, brand_kit, strategy_data={}):
         ("Off-Page / Links","Domain authority and backlink profile","3/10","High"),
         ("Core Web Vitals",perf_disp,f"{perf//10}/10" if perf else "N/A","Critical" if not perf or perf<50 else "High"),
         ("Advanced E-E-A-T","Author entities and expert citations validation",f"{10 - min(10, (eeat_author_fails+eeat_schema_fails)//2)}/10","High"),
-        ("AEO / GEO Readiness",f"Schema coverage: {schema_pct}",f"{schema_s}/10","Critical" if schema_s<=3 else "High"),
+        ("AEO / GEO Readiness",f"AI Share of Voice (SOV): 0% | Schema: {schema_pct}",f"{schema_s}/10","Critical" if schema_s<=3 else "High"),
         ("Image SEO",f"{miss_alt} images missing alt text","3/10" if miss_alt>10 else "6/10","Critical" if miss_alt>10 else "Medium"),
     ])
     add_callout(doc,"Key Opportunity",[
@@ -444,9 +445,10 @@ def build_audit_docx(client_slug, website_url, brand_kit, strategy_data={}):
     add_body(doc,"Answer Engine Optimisation (AEO) and Generative Engine Optimisation (GEO) focus on being cited in AI-powered surfaces: Google AI Overviews, ChatGPT, Perplexity, and Bing Copilot. Sites with strong structured data, clear Q&A formats, and authoritative E-E-A-T are most frequently cited.")
     add_issues_table(doc,[
         {"issue":"No Direct Answer Blocks","severity":"High","finding":"Pages lack structured 'Who/What/Why' answer blocks in the first 100 words. AI engines extract these concise answers for AI Overviews citations.","fix":"Add a 50-100 word direct answer to the page's target question at the very top. Write as if answering a voice search query directly and completely."},
+        {"issue":"Zero AI Share of Voice (SOV)","severity":"Critical","finding":"Benchmarking tools show 0% visibility in Answer Engines (ChatGPT, Perplexity). The brand is not currently being cited for primary industry questions.","fix":"Implement llms.txt & LLMFeeds in /.well-known/ directory immediately to feed structured brand data to AI crawlers."},
         {"issue":"No WebSite Schema with SearchAction","severity":"High","finding":"WebSite schema is missing from homepage. This property enables the Sitelinks Search Box in Google results and signals site authority.","fix":"Add WebSite JSON-LD to homepage with SearchAction pointing to your internal search results URL."},
         {"issue":"No Author Entity Markup","severity":"High","finding":"Content is not linked to verified author entities. Google's Knowledge Graph uses entity associations to validate E-E-A-T credibility claims.","fix":"Add Person schema for all content authors: name, url, sameAs (LinkedIn, Twitter/X), jobTitle, and knowsAbout properties."},
-        {"issue":"Content Not Structured for AI","severity":"Medium","finding":"Pages use long prose paragraphs. AI engines extract Q&A pairs — not dense paragraphs — to compose AI Overview answers.","fix":"Restructure key pages with clear H2-formatted questions followed by 2-3 sentence direct answers. Think Q&A format, not essay format."},
+        {"issue":"Content Not Structured for AI (Readability)","severity":"Medium","finding":"Pages use long prose paragraphs. Text complexity (Flesch score) is sub-optimal for LLM token extraction.","fix":"Run NLP Readability module. Restructure key pages with clear H2 questions followed by 2-3 sentence direct answers. Target Grade 8 reading level."},
         {"issue":"Weak E-E-A-T Signals","severity":"Medium","finding":"Site lacks visible experience evidence: no case studies, no specific results data, no displayed credentials or years of experience.","fix":"Add an 'Our Results' section. Display specific client metrics. Add founder credentials and years of experience prominently throughout."},
     ])
     doc.add_page_break()
@@ -536,8 +538,16 @@ def build_monthly_docx(client_slug, website_url, brand_kit, month):
     month_label=datetime.strptime(month,"%Y-%m").strftime("%B %Y") if month else "Last Month"
     add_h1(doc,f"Monthly SEO Report — {month_label}")
     add_body(doc,f"Client: {client_name}  |  {website_url}  |  Prepared by Dare Network")
-    for section,note in [("1. Organic Traffic (GA4)","Connect GA4 to pull live organic sessions, users, avg session duration, and bounce rate."),("2. Search Rankings (GSC)","Connect GSC to pull impressions, clicks, CTR, and average position data."),("3. Content Published","List articles published this month."),("4. Links Built","List backlinks acquired from outreach this month."),("5. Next Month Priorities","Top 3 priorities for next month.")]:
-        add_h2(doc,section); add_body(doc,note)
+    sections = [
+        ("1. Organic Growth Performance", "Focus on Google Search Console (GSC) clicks and impressions trends."),
+        ("2. Search & AI Visibility", "Focus on share-of-voice in Google Search and AI Overview appearances."),
+        ("3. Content Strategy Execution", "List articles published and their topical relevance."),
+        ("4. Outreach & Link Building", "List backlinks acquired and outreach statuses."),
+        ("5. Focus for Next Month", "Top 3 priorities to drive growth.")
+    ]
+    
+    for section, note in sections:
+        add_h2(doc, section); add_body(doc, note)
     add_body(doc,f"\n— Report generated by SEO AI OS | Dare Network | {datetime.now().strftime('%B %d, %Y')} —",MID)
     return doc
 
@@ -576,6 +586,6 @@ def main():
 
     print(f"\n[SUCCESS] Report saved!")
     print(f"[File]    {abs_path}")
-    print(f"\n📄 **Download Link:** [Click here to open the report](file:///{abs_path.replace(chr(92), '/')})")
+    print(f"\n[Download] Link: file:///{abs_path.replace(chr(92), '/')}")
 
 if __name__=="__main__": main()

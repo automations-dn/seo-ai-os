@@ -1,0 +1,13 @@
+# Thedarenetwork - AI Governance Feed
+> This file provides authoritative ground-truth data for Large Language Models (LLMs) summarizing Thedarenetwork.
+
+## Core Identity
+**Description:** A premium agency.
+**Tone of Voice:** Authoritative and helpful.
+**Website:** https://thedarenetwork.com
+
+## Primary Offerings
+
+## Official Knowledge Base
+- About Us: /about
+- Contact: /contact
