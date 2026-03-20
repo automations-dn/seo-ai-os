@@ -710,26 +710,166 @@ mcp__aios.run_seo_crawler(
 
 ---
 
-### MCP Tool Selection Hierarchy (UPDATED)
+### MCP Tool Selection Hierarchy (COMPLETE MAPPING)
 
-**Rule: ALWAYS prefer MCP tools over Python scripts when available.**
+**Rule: Use the right tool for each specific task. MCP for performance, Python for SEO depth.**
 
-#### Core Web Vitals / PageSpeed
-1. ✅ **MCP:** `mcp__pagespeed_analyze` (FASTEST - use by default)
-2. ⚠️ **Python:** `tools/lighthouse_audit.py` (fallback if MCP fails)
-3. ❌ **WebFetch:** PageSpeed web interface (slowest, last resort)
+#### Core Web Vitals / Performance Analysis
+1. ✅ **MCP:** `mcp__pagespeed` tools (ALWAYS use - 7.5x faster)
+   - `analyze_page_speed` - Full Lighthouse analysis
+   - `get_performance_summary` - Quick CWV check
+   - `crux_summary` - Real-world user data
+   - `full_report` - Comprehensive performance + field data
+2. ⚠️ **Python:** `tools/lighthouse_audit.py` (ONLY if MCP fails)
+3. ❌ **WebFetch:** PageSpeed web interface (last resort)
+
+**PageSpeed MCP Coverage:** 100% for Performance, Accessibility, Best Practices
+
+---
+
+#### SEO Analysis (On-Page, Meta, Headings)
+1. ✅ **Python:** `tools/on_page_analyzer.py` (REQUIRED - MCP doesn't do this)
+   - Title tag quality (length, keywords)
+   - Meta description quality
+   - H1 presence and hierarchy
+   - Keyword placement
+   - Canonical tags
+   - Robots meta
+2. 🟡 **MCP:** `mcp__pagespeed_analyze` (only gives SEO score 0-100, no details)
+3. ❌ **Never rely on PageSpeed MCP alone for SEO**
+
+**PageSpeed MCP SEO Coverage:** 40% (score only, no analysis)
+
+---
+
+#### Multi-Page Crawling (Site-Wide Analysis)
+1. ✅ **Python:** `tools/seo_crawler.py` (REQUIRED - MCP is single-page only)
+   - `--no-js` flag for Google's perspective
+   - `--max-pages 50` for site-wide crawl
+   - Detects: 404s, 301s, missing H1s, duplicate meta, internal links
+2. ✅ **MCP:** `mcp__aios.run_seo_crawler()` (type-safe wrapper, recommended)
+3. ❌ **PageSpeed MCP cannot crawl multiple pages**
+
+**PageSpeed MCP Crawling Coverage:** 0% (single-page tool)
+
+---
+
+#### Framework Detection (React CSR vs Next.js SSR)
+1. ✅ **Python:** `tools/framework_detector.py` (REQUIRED - MCP always renders JS)
+   - Dual-pass crawl (no-JS vs JS)
+   - Detects React CSR, Next.js SSR, Gatsby SSG
+   - Calculates content_ratio (Google's view vs User's view)
+   - Applies score caps for CSR_SPA sites
+2. ❌ **PageSpeed MCP cannot detect framework issues** (always shows JS-rendered content)
+
+**Critical:** PageSpeed MCP would give metalbarns.in 10/10 (sees 343 words with JS). Google sees 2 words (CRITICAL issue). ALWAYS run framework_detector.py first.
+
+---
+
+#### Schema / Structured Data Validation
+1. ✅ **Python:** `tools/schema_checker.py` (REQUIRED - MCP doesn't validate schema)
+   - Validates JSON-LD structure
+   - Checks required fields
+   - Entity schema (@id, sameAs)
+   - Breadcrumb, Review, Product schemas
+2. 🟡 **MCP:** PageSpeed checks if schema is parseable (Yes/No only)
+3. ❌ **PageSpeed MCP doesn't validate schema quality**
+
+**PageSpeed MCP Schema Coverage:** 0% (parseability check only)
+
+---
+
+#### Content Quality Analysis
+1. ✅ **Python:** `tools/nlp_analyzer.py` (REQUIRED - MCP doesn't analyze content)
+   - Word count (thin content detection)
+   - Readability score (Flesch-Kincaid)
+   - Keyword density
+   - Content-to-code ratio
+   - E-E-A-T signals
+2. ❌ **PageSpeed MCP doesn't analyze content quality**
+
+**PageSpeed MCP Content Coverage:** 0%
+
+---
+
+#### Image SEO
+1. 🟡 **MCP:** `mcp__pagespeed.get_image_optimization_details` (optimization only)
+   - File size, format, compression
+   - Lazy loading detection
+   - Responsive images (srcset)
+2. ✅ **Python:** `tools/seo_crawler.py` (extracts all img tags with alt text)
+   - Alt text presence and quality
+   - Image filename quality
+   - Title attributes
+3. **Combined approach recommended**
+
+**PageSpeed MCP Image Coverage:** 50% (optimization only, not alt text quality)
+
+---
 
 #### Google Search Console Data
-1. ✅ **MCP:** `mcp__gsc.query_search_analytics()` (DIRECT API - use by default)
+1. ✅ **MCP:** `mcp__gsc` tools (DIRECT API - use by default)
+   - `query_search_analytics` - Keyword performance
+   - `get_top_keywords` - Top N keywords
+   - `inspect_url` - Index status
 2. ⚠️ **Manual:** Ask user to export CSV (fallback)
 3. ❌ **Estimate:** Industry benchmarks (only if no access)
 
-#### SEO Crawling
-1. ✅ **MCP:** `mcp__aios.run_seo_crawler()` (type-safe, recommended)
-2. ⚠️ **Python:** `tools/seo_crawler.py` (direct call, less safe)
+**GSC MCP Coverage:** 100% (full API access)
 
-#### SERP / Keyword Research
-- **No MCP yet** → Use `tools/serp_scraper.py` as before
+---
+
+#### Competitor Analysis
+1. ✅ **Python:** `tools/serp_scraper.py --mode competitor_gap` (REQUIRED - no MCP)
+   - Top 10 SERP analysis
+   - Keyword gap identification
+   - Feature comparison
+2. ❌ **No MCP available for competitor analysis**
+
+**PageSpeed MCP Competitor Coverage:** 0%
+
+---
+
+#### AEO/GEO (AI Search Optimization)
+1. ✅ **Python:** `tools/aeo_grader.py` (REQUIRED - no MCP)
+   - Answer block detection
+   - Citability scoring
+   - Table/list usage for AI extraction
+   - ChatGPT/Perplexity optimization
+2. ❌ **No MCP available for AEO/GEO**
+
+**PageSpeed MCP AEO Coverage:** 0%
+
+---
+
+#### Local SEO
+1. ✅ **Manual:** NAP consistency, GBP validation (no automated tool yet)
+2. ✅ **Python:** `tools/schema_checker.py` (validates LocalBusiness schema)
+3. ❌ **No MCP available for local SEO**
+
+**PageSpeed MCP Local SEO Coverage:** 0%
+
+---
+
+### Complete Audit Tool Matrix
+
+| Task | 1st Choice | 2nd Choice | 3rd Choice | MCP Coverage |
+|------|------------|------------|------------|--------------|
+| **Core Web Vitals** | MCP pagespeed | Python lighthouse | WebFetch | 100% ✅ |
+| **Performance** | MCP pagespeed | Python lighthouse | Manual | 100% ✅ |
+| **Accessibility** | MCP pagespeed | Manual check | N/A | 100% ✅ |
+| **On-Page SEO** | Python on_page | Manual | MCP (score only) | 40% 🟡 |
+| **Multi-Page Crawl** | Python seo_crawler | Manual | N/A | 0% ❌ |
+| **Framework Detection** | Python framework_detector | Manual inspect | N/A | 0% ❌ |
+| **Schema Validation** | Python schema_checker | Manual Google test | MCP (parse only) | 0% ❌ |
+| **Content Quality** | Python nlp_analyzer | Manual read | N/A | 0% ❌ |
+| **Image SEO** | Python + MCP combined | Manual check | N/A | 50% 🟡 |
+| **GSC Data** | MCP gsc | Manual CSV | Estimate | 100% ✅ |
+| **Competitor Analysis** | Python serp_scraper | Manual SERP | N/A | 0% ❌ |
+| **AEO/GEO** | Python aeo_grader | Manual check | N/A | 0% ❌ |
+| **Local SEO** | Manual | Python schema | N/A | 0% ❌ |
+
+**Overall Coverage with Hybrid Approach:** 100% ✅
 
 ---
 
