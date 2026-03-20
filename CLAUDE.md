@@ -36,10 +36,60 @@ All reports are generated via `tools/report_builder.py`. Always provide a clicka
 ```
 Format must match `templates/Example Audit template.docx`.
 
-### Rule 4: Standard Work Flow
+### Rule 4: URL-to-Slug File Naming — CRITICAL (Prevents the 10/10 Bug)
+**MANDATORY: All file naming MUST use `tools/utils.py::url_to_slug()` function.**
+
+**The Bug That Was Fixed (2026-03-18):**
+When generating reports, `report_builder.py` was converting URLs inconsistently:
+- Tools saved: `.tmp/metalbarns_framework.json` (domain only)
+- Report builder looked for: `.tmp/metalbarns_in_framework.json` (domain + TLD with underscore)
+- Result: `framework_data` was always empty → score caps never applied → false 10/10 scores
+
+**The Solution:**
+1. ✅ Created `tools/utils.py` with centralized `url_to_slug()` function
+2. ✅ Updated `report_builder.py` to import and use `url_to_slug()`
+3. ✅ Added pre-flight validation that blocks report generation if required files missing
+4. ✅ All tools now use consistent slug format
+
+**Standard Slug Format:**
+```python
+from utils import url_to_slug
+
+# Examples:
+url_to_slug("https://metalbarns.in") → "metalbarns"
+url_to_slug("https://www.thedarenetwork.com") → "thedarenetwork"
+url_to_slug("http://example.org/about") → "example"
+```
+
+**File Naming Convention:**
+```bash
+.tmp/{slug}_{file_type}.json
+
+# Examples:
+.tmp/metalbarns_framework.json
+.tmp/metalbarns_crawl_nojs.json
+.tmp/metalbarns_lighthouse.json
+.tmp/thedarenetwork_serp.json
+```
+
+**Validation Before Report Generation:**
+```bash
+# Check if all required files exist
+python tools/validate_audit_files.py --url https://metalbarns.in
+
+# report_builder.py now auto-validates and blocks if files missing
+```
+
+**CRITICAL RULES:**
+- ❌ NEVER manually convert URLs to slugs with `.replace()` chains
+- ✅ ALWAYS use `from utils import url_to_slug`
+- ✅ ALWAYS use pattern: `.tmp/{url_to_slug(url)}_{file_type}.json`
+- ✅ When calling audit tools, always use the same slug for all file outputs
+
+### Rule 5: Standard Work Flow
 Ask → Confirm intent → Execute → Show summary → Provide file link → Ask what's next
 
-### Rule 5: Industry Auto-Detection — Always First
+### Rule 6: Industry Auto-Detection — Always First
 Detect site type from homepage signals before any audit or content work:
 - **E-commerce**: `/products`, `/collections`, `/cart`, product schema → focus on product pages, collection pages, structured data
 - **Local Service**: phone number, address, city mentions, Maps embed → focus on GBP, local citations, NAP consistency
@@ -48,7 +98,7 @@ Detect site type from homepage signals before any audit or content work:
 - **Agency**: `/case-studies`, `/portfolio`, client logos → focus on E-E-A-T, authority signals, trust content
 Tailor every recommendation to the detected type. Never give e-commerce advice to a SaaS site.
 
-### Rule 6: SEO Health Score — Always Use This Weighted Formula
+### Rule 7: SEO Health Score — Always Use This Weighted Formula
 | Category | Weight |
 |---|---|
 | Technical SEO (crawlability, indexation, speed) | 25% |
@@ -61,7 +111,7 @@ Tailor every recommendation to the detected type. Never give e-commerce advice t
 
 Show the score breakdown as a table with current score per category, not just a total.
 
-### Rule 7: Schema & Core Web Vitals — Current Facts (2026)
+### Rule 8: Schema & Core Web Vitals — Current Facts (2026)
 [WARNING] These are facts. Getting them wrong gives clients bad advice.
 - **Entity Schema is Priority**: Every Organization must have `@id`, `address`, `contactPoint`, and `sameAs` linking to Wikidata/Wikipedia to establish the Knowledge Graph.
 - **FAQPage/HowTo**: No longer recommended due to heavy restrictions and deprecations since 2023. Focus on `Article`, `Service`, `Organization`, and `Product` schemas.
@@ -69,7 +119,7 @@ Show the score breakdown as a table with current score per category, not just a 
 - **Core Web Vitals targets**: LCP < 2.5s | INP < 200ms | CLS < 0.1
 - **Valid schema types to recommend**: Organization, LocalBusiness, Service, BreadcrumbList, Article, Product, Review/AggregateRating.
 
-### Rule 8: E-E-A-T — Evaluate in Every Content Audit
+### Rule 9: E-E-A-T — Evaluate in Every Content Audit
 Use the Sept 2025 QRG framework:
 - **Experience**: First-hand knowledge shown? (photos, real case studies, original data)
 - **Expertise**: Author credentials visible? Claims backed by data or sources?
@@ -78,7 +128,7 @@ Use the Sept 2025 QRG framework:
 
 Score each dimension Low / Medium / High and give one specific improvement per dimension.
 
-### Rule 9: Image SEO — Check in Every Audit
+### Rule 10: Image SEO — Check in Every Audit
 Image fixes are often the fastest technical wins:
 - Missing `alt` attributes → flag every instance
 - Not in WebP/AVIF format → recommend conversion
@@ -86,12 +136,12 @@ Image fixes are often the fastest technical wins:
 - File size > 100KB for hero images → compress
 - Generic filenames (`image001.jpg`) → rename to descriptive (`red-bandhani-saree-jaipur.jpg`)
 
-### Rule 10: Programmatic SEO Quality Gates (2026 Standards)
+### Rule 11: Programmatic SEO Quality Gates (2026 Standards)
 - **3-Variable Minimum**: Refuse to build location/programmatic pages unless the client provides a dataset with at least 3 distinct, semantically unique variables per page. Stop swapping just `[City]`.
 - **Boilerplate Ratio**: Use `tools/programmatic_quality_scorer.py`. Boilerplate portion of the text must be < 40%.
 - **Indexing Monitor**: For bulk generation (>50 pages), mandate a 10-page phased rollout and check `tools/indexing_monitor.py`. If >20% get "Crawled - currently not indexed", the template failed the doorway test.
 
-### Rule 11: Platform Intelligence Gate
+### Rule 12: Platform Intelligence Gate
 Fingerprint CMS before any technical analysis.
 
 **IF Shopify:**
@@ -113,21 +163,64 @@ Fingerprint CMS before any technical analysis.
 - Check if CSR framework (React/Next.js) causes JS rendering/indexing issues
 - Verify Googlebot can render JS via GSC URL Inspection tool
 
-### Rule 12: CRO — Always Pair Technical Findings With Conversion Impact
+### Rule 11b: Framework Detection & SPA Rules — CRITICAL (2026 Standards)
+
+**[MANDATORY] Run `framework_detector.py` BEFORE any audit or crawl.**
+
+**RULE: Framework detection is STEP 0 of every audit — non-negotiable.**
+
+**RULE: ALWAYS run seo_crawler.py in --no-js mode first (Google's perspective).**
+
+**RULE: The no-JS crawl result is the AUTHORITATIVE technical SEO score.**
+The JS crawl result is the user experience score. They are different metrics.
+
+**RULE: If framework_detector returns CSR_SPA, technical SEO score is capped at 2/10 regardless of what the JS crawl finds.**
+
+**RULE: Never report "Technical SEO: 10/10" for any React CRA, Vue SPA, or Angular CSR site.**
+
+**RULE: Issue #1 for any CSR_SPA site is ALWAYS the framework migration, not any on-page issue.**
+All other issues should note: "⚠️ Blocked by architecture — fix framework first before addressing this issue."
+
+**Examples:**
+- React CRA (CSR) → CRITICAL, cap scores, recommend Next.js migration
+- Next.js (SSR/SSG) → GOOD, proceed normally
+- Vue SPA (CSR) → CRITICAL, cap scores, recommend Nuxt.js migration
+- Gatsby (SSG) → GOOD, proceed normally
+- Static HTML → GOOD, proceed normally
+
+**CSR sites have invisible content to Google:**
+If `nojs_word_count / js_word_count < 0.1` (less than 10% visible), this is a CRITICAL issue that must be Issue #1 in the audit.
+
+**Framework detection workflow:**
+```bash
+# STEP 0 (ALWAYS FIRST)
+python tools/framework_detector.py --url {url} --output .tmp/framework.json
+
+# STEP 1: No-JS crawl (Google's view) — AUTHORITATIVE
+python tools/seo_crawler.py --url {url} --no-js --output .tmp/crawl_nojs.json
+
+# STEP 2: JS crawl (User's view) — REFERENCE ONLY
+python tools/seo_crawler.py --url {url} --output .tmp/crawl_js.json
+
+# STEP 3: Compare and flag rendering issues
+# If content_ratio < 0.1 → CRITICAL_SPA_RENDERING_ISSUE
+```
+
+### Rule 13: CRO — Always Pair Technical Findings With Conversion Impact
 Every technical recommendation must include the conversion consequence:
 - **Credibility Zone**: What's below the hero banner? Should be: client logos → review count → certifications → founder trust signal
 - **CTA Audit**: "Let's Talk" = weak. "Book a Free 30-Min Strategy Call" = strong. Check every primary CTA.
 - **Intent Alignment**: Awareness page → "Download Guide". Consideration → "View Pricing". Decision → "Book a Call"
 - **AOV/Lead Value Boost**: Always recommend a "Related Resource" or "Complete the Look" internal link strategy
 
-### Rule 13: Growth Innovation — Brand-Specific Only
+### Rule 14: Growth Innovation — Brand-Specific Only
 Never give generic growth ideas. Before writing this section, identify the client's industry, buyer persona, and geographic market. Then provide:
 - **Industry Content Calendar**: 12-month table tied to real industry events, budget cycles, competitor gap months — not just festivals
 - **The "Encyclopedia" Pillar**: Named specifically for the niche. List 8–10 sub-articles. Explain what sites would link to it.
 - **3 Innovative Traffic Ideas minimum**: Each needs what it is, how it drives traffic/links, effort level (L/M/H), and time to first result. "Start a blog" is not acceptable.
 - **Entity SEO**: If founder is named → Author Profile page with LinkedIn/Twitter entity links. If press mentions exist → "As Seen In" page.
 
-### Rule 14: Competitor Research — Mandatory, No Placeholders
+### Rule 15: Competitor Research — Mandatory, No Placeholders
 1. Search `"[client's primary keyword] + [city/region]"` — e.g., "digital marketing agency Bangalore"
 2. Take top 4 organic results (skip paid ads)
 3. For each: estimate DA, list pages they have that the client doesn't, identify their strongest keyword, name one thing they do better, name one exploitable gap
@@ -143,13 +236,13 @@ Never give generic growth ideas. Before writing this section, identify the clien
 | Schema Markup | | | | |
 | Interactive Tools | | | | |
 
-### Rule 15: Report Structure — Dare Network Standard
+### Rule 16: Report Structure — Dare Network Standard
 - Lead with Business Impact vs. Effort prioritization (not just technical severity)
 - Use a 90-Day Roadmap structure for all recommendations (Phase 1: Quick Wins / Phase 2: Authority / Phase 3: Scale)
 - Every report must end with "How Dare Network Adds Value" section — specific to THIS audit's findings, not generic
 - Minimum report: 4,000 words of actual content, not counting tables
 
-### Rule 16: Content Writing — FAQ & Conclusion Standards (Non-Negotiable)
+### Rule 17: Content Writing — FAQ & Conclusion Standards (Non-Negotiable)
 **Every blog post, article, or long-form content MUST follow these rules:**
 
 **FAQ Section Rules:**

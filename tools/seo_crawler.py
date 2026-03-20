@@ -326,6 +326,142 @@ async def async_crawl_site(start_url: str, sitemap_url: str = None, max_pages: i
         }
     }
 
+def crawl_site_nojs(start_url: str, sitemap_url: str = None, max_pages: int = 500) -> dict:
+    """Crawl site without JavaScript - Google's perspective using requests library."""
+    base_domain = urlparse(start_url).netloc
+    to_visit = [start_url]
+    visited = set()
+    results = []
+
+    # Add sitemap URLs if provided
+    if sitemap_url:
+        try:
+            print(f"[Sitemap] Fetching {sitemap_url}...")
+            resp = requests.get(sitemap_url, timeout=10, headers={
+                'User-Agent': 'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)'
+            })
+            resp.raise_for_status()
+            soup = BeautifulSoup(resp.text, "lxml-xml")
+            sitemap_urls = {loc.get_text() for loc in soup.find_all("loc")}
+            sitemap_valid = {u for u in sitemap_urls if urlparse(u).netloc == base_domain}
+            to_visit.extend(list(sitemap_valid))
+            print(f"[OK] [Sitemap] Added {len(sitemap_valid)} URLs from sitemap")
+        except Exception as e:
+            print(f"[WARNING] [Sitemap] Could not parse sitemap: {str(e)[:80]}")
+
+    print(f"[Crawl] Starting no-JS crawl (requests library) - max {max_pages} pages")
+
+    while to_visit and len(visited) < max_pages:
+        url = to_visit.pop(0)
+        if url in visited:
+            continue
+
+        visited.add(url)
+        print(f"[{len(visited)}/{max_pages}] Crawling (no-JS): {url}")
+
+        result = {
+            "url": url,
+            "status_code": None,
+            "title": None,
+            "meta_description": None,
+            "h1": [],
+            "canonical": None,
+            "noindex": False,
+            "internal_links": [],
+            "images_missing_alt": 0,
+            "word_count": 0,
+            "schema_types": [],
+            "error": None,
+        }
+
+        try:
+            headers = {
+                'User-Agent': 'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)'
+            }
+            resp = requests.get(url, headers=headers, timeout=15, allow_redirects=True)
+            result["status_code"] = resp.status_code
+            result["final_url"] = resp.url
+
+            if resp.status_code != 200:
+                result["error"] = f"HTTP {resp.status_code}"
+                results.append(result)
+                continue
+
+            soup = BeautifulSoup(resp.text, "lxml")
+
+            # Title
+            title_tag = soup.find("title")
+            result["title"] = title_tag.get_text(strip=True) if title_tag else None
+
+            # Meta description
+            meta_desc = soup.find("meta", attrs={"name": "description"})
+            result["meta_description"] = meta_desc.get("content", "").strip() if meta_desc else None
+
+            # H1s
+            result["h1"] = [h.get_text(strip=True) for h in soup.find_all("h1")]
+
+            # Canonical
+            canonical = soup.find("link", attrs={"rel": "canonical"})
+            result["canonical"] = canonical.get("href") if canonical else None
+
+            # Noindex
+            robots_meta = soup.find("meta", attrs={"name": re.compile("robots", re.I)})
+            if robots_meta:
+                content = robots_meta.get("content", "").lower()
+                result["noindex"] = "noindex" in content
+
+            # Internal links
+            for a in soup.find_all("a", href=True):
+                normalized = normalize_url(a["href"], url)
+                if normalized and urlparse(normalized).netloc == base_domain:
+                    if normalized not in result["internal_links"]:
+                        result["internal_links"].append(normalized)
+                    if normalized not in visited and normalized not in to_visit:
+                        to_visit.append(normalized)
+
+            # Images missing alt
+            result["images_missing_alt"] = sum(
+                1 for img in soup.find_all("img") if not img.get("alt")
+            )
+
+            # Word count
+            for tag in soup(["script", "style", "nav", "footer", "header", "noscript"]):
+                tag.decompose()
+            text = soup.get_text(separator=" ")
+            result["word_count"] = len(text.split())
+
+            # Schema types
+            result["schema_types"] = extract_schema_types(resp.text, url)
+
+        except requests.exceptions.Timeout:
+            result["error"] = "Timeout"
+        except requests.exceptions.RequestException as e:
+            result["error"] = f"Request error: {str(e)[:100]}"
+        except Exception as e:
+            result["error"] = f"Unexpected error: {str(e)[:100]}"
+
+        results.append(result)
+        time.sleep(0.5)  # Rate limiting
+
+    return {
+        "crawl_date": datetime.now().isoformat(),
+        "start_url": start_url,
+        "crawl_mode": "no-js",
+        "pages_crawled": len(results),
+        "pages": results,
+        "summary": {
+            "total_pages": len(results),
+            "status_200": sum(1 for p in results if p.get("status_code") == 200),
+            "status_301": sum(1 for p in results if p.get("status_code") in [301, 302, 307, 308]),
+            "status_404": sum(1 for p in results if p.get("status_code") == 404),
+            "status_500": sum(1 for p in results if p.get("status_code", 0) and p.get("status_code", 0) >= 500),
+            "missing_h1": sum(1 for p in results if not p.get("h1") and p.get("status_code") == 200),
+            "missing_title": sum(1 for p in results if not p.get("title") and p.get("status_code") == 200),
+            "missing_meta_desc": sum(1 for p in results if not p.get("meta_description") and p.get("status_code") == 200),
+            "noindex_pages": sum(1 for p in results if p.get("noindex") and p.get("status_code") == 200),
+        }
+    }
+
 def main():
     parser = argparse.ArgumentParser(description="SEO Async Playwright Crawler with Error Recovery")
     parser.add_argument("--url", required=True, help="Website URL to crawl")
@@ -333,6 +469,7 @@ def main():
     parser.add_argument("--max-pages", type=int, default=500, help="Maximum pages to crawl")
     parser.add_argument("--concurrency", type=int, default=5, help="Number of concurrent pages to crawl")
     parser.add_argument("--output", help="Output JSON file path")
+    parser.add_argument("--no-js", action="store_true", help="Disable JavaScript rendering (Google's perspective - uses requests only)")
     args = parser.parse_args()
 
     # Validate URL format
@@ -347,7 +484,11 @@ def main():
         asyncio.set_event_loop_policy(asyncio.WindowsProactorEventLoopPolicy())
 
     try:
-        data = asyncio.run(async_crawl_site(args.url, args.sitemap, args.max_pages, args.concurrency))
+        if args.no_js:
+            print("[Mode] No-JS crawl enabled - using requests library (Google's perspective)")
+            data = crawl_site_nojs(args.url, args.sitemap, args.max_pages)
+        else:
+            data = asyncio.run(async_crawl_site(args.url, args.sitemap, args.max_pages, args.concurrency))
     except PlaywrightError as e:
         error_msg = str(e).lower()
         if "executable doesn't exist" in error_msg or "browser executable not found" in error_msg:

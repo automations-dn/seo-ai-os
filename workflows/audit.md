@@ -1,144 +1,217 @@
 ---
-description: Run a full SEO and GEO audit for a website with explicit tool orchestration and error handling.
+description: /audit - Run a complete SEO audit with framework detection, dual-pass crawl, competitor analysis, and local SEO (V2.1 - 2026 Standards)
 ---
 
-# Workflow: Complete SEO + GEO Audit
+# Workflow: SEO Audit V2.1 (2026 Standards)
 
 ## Trigger
 ```
-/audit <url> [--client <name>]
+/audit <client_name_or_url> [--competitors domain1.com,domain2.com] [--local] [--output path]
 ```
-**Example:** `/audit https://thedarenetwork.com --client thedarenetwork`
+
+**Examples:**
+- `/audit metalbarns.in --competitors epack.in,kaizenpeb.com --local`
+- `/audit acme_corp`
+- `/audit https://example.com --output .tmp/example_audit.docx`
 
 ---
 
 ## Objective
-Produce a comprehensive, downloadable `.docx` audit report that combines:
-1. **Technical SEO** (crawlability, speed, indexation)
-2. **On-Page SEO** (titles, metas, content quality)
-3. **GEO/AEO Readiness** (AI citability, llms.txt, brand mentions)
-4. **Actionable 90-Day Roadmap** (prioritized by business impact)
-
-**Output:** `reports/{ClientName}_Audit_{YYYY-MM-DD}.docx` — Dare Network branded template
-
----
-
-## Prerequisites
-
-**Before starting:**
-1. Confirm you have access to the URL (not password-protected)
-2. If `--client` flag provided, verify `clients/{client}/brand_kit.json` exists
-3. If new URL (no client record), this is an **audit-only** request — DO NOT create a client folder unless explicitly asked
+Perform a comprehensive SEO audit that:
+1. **Detects SPA/CSR issues FIRST** (React CRA, Vue without SSR, etc.)
+2. **Compares Google's perspective (no-JS) vs User perspective (JS)**
+3. **Benchmarks against competitors**
+4. **Includes local SEO if applicable**
+5. **Produces a 4,000+ word, actionable report with 90-day roadmap**
 
 ---
 
-## Step-by-Step Execution
+## Quality Gates (Check BEFORE Report Generation)
 
-### Step 1: Industry Auto-Detection (MANDATORY FIRST STEP)
+Before running `report_builder.py`, verify:
+
+- [ ] `framework_detector.py` was run and result is in `.tmp/framework.json`
+- [ ] No-JS crawl was run and result is in `.tmp/crawl_nojs.json`
+- [ ] If site is CSR_SPA: Issue #1 is framework migration (not on-page issue)
+- [ ] Competitor section exists (if `--competitors` flag was passed)
+- [ ] Local SEO section exists (if `--local` flag or locations in brand_kit)
+- [ ] Strategic insights section has at least 4 industry-specific points (not generic "start a blog" advice)
+- [ ] 90-day plan is in 3 phases (Foundation / Build-Out / Authority)
+- [ ] AEO/GEO readiness section exists
+
+**If any check fails:** Do NOT generate report yet. Collect missing data first.
+
+---
+
+## STEP 0: Framework Detection (CRITICAL - ALWAYS FIRST)
+
+**Tool:** `tools/framework_detector.py`
+
+**Purpose:** Detect if site uses client-side rendering (CSR) which makes content invisible to Google.
 
 **Execute:**
-Use WebFetch to analyze the homepage and detect business type.
-
 ```bash
-# Fetch homepage
-WebFetch: {url}
+python tools/framework_detector.py \
+  --url "{url}" \
+  --output ".tmp/{client}_framework.json"
 ```
 
-**Extract signals:**
-- Navigation menu items (reveals site structure)
-- Footer content (address, phone → Local Business)
-- URLs in nav: `/products`, `/collections` → E-commerce
-- URLs in nav: `/pricing`, `/features` → SaaS
-- URLs in nav: `/case-studies`, `/portfolio` → Agency
-- Schema.org markup (Organization, LocalBusiness, etc.)
-- Meta description keywords
+**What this detects:**
+- React CRA (CSR) vs Next.js (SSR/SSG)
+- Vue SPA vs Nuxt.js
+- Angular vs Angular Universal
+- Content ratio: what % of content Google can actually see
 
-**Classify as ONE of:**
-- **E-commerce** (product listings, shopping cart, "Add to cart" buttons)
-- **Local Service** (address, phone, Google Maps embed, service area pages)
-- **SaaS** (pricing page, "Free trial" CTA, integrations page)
-- **Publisher/Blog** (blog-heavy nav, article schema, author pages)
-- **Agency/B2B Services** (case studies, client logos, "Our Work" section)
-- **Hybrid** (combination — classify by dominant pattern)
-
-**Set context variable:**
+**Parse result:**
+```json
+{
+  "framework": "React CRA | Next.js | Gatsby | Vue | Nuxt | Static HTML",
+  "render_mode": "CSR_SPA | SSR | SSG | STATIC",
+  "seo_verdict": "CRITICAL | WARNING | GOOD",
+  "nojs_word_count": 150,
+  "js_word_count": 2500,
+  "content_ratio": 0.06,
+  "score_cap": {
+    "technical_seo": 2,
+    "reason": "Content invisible to Google due to CSR rendering"
+  }
+}
 ```
-SITE_TYPE = {detected_type}
-```
 
-**Important:** All subsequent recommendations MUST be tailored to this site type. Never give e-commerce advice to a SaaS site.
+**Decision Tree:**
+- **If `render_mode == "CSR_SPA"`:**
+  - Set `technical_seo_max = 2/10`
+  - Set `on_page_seo_max = 3/10`
+  - Flag Issue #1 as: "CRITICAL — Client-Side React SPA: Site content is invisible to Google. Migrate to Next.js with SSR or SSG."
+  - **Continue audit anyway** — document ALL issues so client knows full scope
+  - Note in every section: "⚠️ Blocked by architecture — fix framework first"
+
+- **If `render_mode == "SSR" or "SSG" or "STATIC"`:**
+  - Proceed normally
+  - No score caps
+
+- **If framework detection fails:**
+  - Use fallback: assume worst-case (CSR_SPA)
+  - Flag: "[WARNING] Framework detection failed — assuming CSR for safety"
+
+**Save to:**
+`.tmp/{client}_framework.json`
 
 ---
 
-### Step 2: Technical SEO Audit — Full Site Crawl
+## STEP 1: Identity Baseline
 
-**Tool:** `seo_crawler.py` (Playwright-powered, renders JavaScript)
+**Goal:** Load client context to tailor audit findings.
+
+**If client folder exists (`clients/{client_name}/`):**
+
+```bash
+# Read brand_kit.json
+cat clients/{client_name}/brand_kit.json
+```
+
+**Extract:**
+- Industry (e.g., "E-commerce", "Local Service", "SaaS", "B2B Agency")
+- Services offered
+- Target locations (for local SEO)
+- Competitors listed
+- Primary keywords
+
+**If only URL provided (no client folder):**
+- Detect industry from homepage signals:
+  - `/products`, `/cart` → E-commerce
+  - Phone number, address, Maps embed → Local Service
+  - `/pricing`, `/integrations`, "free trial" → SaaS
+  - `/case-studies`, client logos → Agency
+- Note: "Standalone audit — no brand kit available"
+
+**Industry detection matters because:**
+- E-commerce = focus on product schema, collection pages, image SEO
+- Local Service = focus on GBP, NAP consistency, LocalBusiness schema
+- SaaS = focus on conversion pages, comparison keywords, bottom-funnel content
+- Agency = focus on E-E-A-T, case studies, trust signals
+
+---
+
+## STEP 2: Site Architecture — Dual-Pass Crawl
+
+**Goal:** Compare what Google sees (no-JS) vs what users see (JS).
+
+### STEP 2A: No-JS Crawl (Google's Perspective) — AUTHORITATIVE
+
+**Tool:** `tools/seo_crawler.py --no-js`
 
 **Execute:**
 ```bash
 python tools/seo_crawler.py \
   --url "{url}" \
   --max-pages 50 \
-  --timeout 300 \
-  --output ".tmp/{client}_crawl.json"
+  --no-js \
+  --output ".tmp/{client}_crawl_nojs.json"
 ```
 
-**Parameters:**
-- `--url`: Target website
-- `--max-pages`: Limit to 50 pages (prevents 10+ minute crawls)
-- `--timeout`: 5-minute maximum (300 seconds)
-- `--output`: Save results to `.tmp/{client}_crawl.json`
+**What this does:**
+- Fetches pages using `requests` library (no JavaScript execution)
+- This is what Googlebot sees if JS fails to render
+- Extracts: titles, meta, H1s, canonicals, internal links, schema, word count
 
-**Validate output:**
+**THIS IS THE AUTHORITATIVE TECHNICAL SCORE.**
+
+### STEP 2B: JS Crawl (User's Perspective) — REFERENCE ONLY
+
+**Tool:** `tools/seo_crawler.py` (default mode with Playwright)
+
+**Execute:**
 ```bash
-# Check file exists
-if [ ! -f ".tmp/{client}_crawl.json" ]; then
-  echo "[ERROR] Crawl failed, file missing"
-  # Fallback: WebFetch homepage + key pages only
-fi
-
-# Check file is not empty
-if [ ! -s ".tmp/{client}_crawl.json" ]; then
-  echo "[ERROR] Crawl file is empty"
-  # Fallback: WebFetch homepage only
-fi
-
-# Check pages_crawled > 0
-# Use Read tool to parse JSON and verify structure
+python tools/seo_crawler.py \
+  --url "{url}" \
+  --max-pages 50 \
+  --output ".tmp/{client}_crawl_js.json"
 ```
 
-**Parse results (Read the JSON file):**
-- Total pages crawled
-- HTTP status codes (200, 301, 404, 500)
-- Pages missing canonical tags
-- Redirect chains (301 → 301 → 200)
-- Broken internal links (404s)
-- Pages with duplicate title tags
-- Pages missing H1 tags
-- Schema types found per page
+**What this does:**
+- Renders JavaScript with Playwright (headless Chrome)
+- Shows what users see in their browser
+- This is NOT what Google reliably sees
 
-**If crawl fails (timeout or 403 blocked):**
-1. Reduce `--max-pages` to 25 and retry
-2. If still fails: Use WebFetch for homepage, `/about`, pricing/product pages only
-3. Document in report: `[WARNING] Full crawl blocked by site, analyzed {N} key pages manually`
+### STEP 2C: Compare and Flag Critical Rendering Issues
 
-**Flag Critical Issues:**
-- [ERROR] Site returns 5xx errors on key pages
-- [ERROR] Robots.txt blocks Googlebot
-- [ERROR] All pages have `noindex` meta tag
-- [ERROR] No sitemap.xml found
-- [ERROR] > 10% of pages return 404
+**Logic:**
+```python
+for page in crawl_nojs["pages"]:
+    page_url = page["url"]
+    js_page = find_matching_page(crawl_js["pages"], page_url)
+
+    if js_page:
+        nojs_wc = page["word_count"]
+        js_wc = js_page["word_count"]
+
+        if nojs_wc > 0 and js_wc > 0:
+            ratio = nojs_wc / js_wc
+
+            if ratio < 0.1:
+                flag_critical_issue({
+                    "page": page_url,
+                    "issue": "CRITICAL_SPA_RENDERING_ISSUE",
+                    "nojs_words": nojs_wc,
+                    "js_words": js_wc,
+                    "ratio": ratio,
+                    "recommendation": "Page has <10% content visible to Google. Implement SSR."
+                })
+```
+
+**Save to:**
+- `.tmp/{client}_crawl_nojs.json`
+- `.tmp/{client}_crawl_js.json`
+- `.tmp/{client}_rendering_comparison.json`
 
 ---
 
-### Step 3: Core Web Vitals Audit
+## STEP 3: Core Web Vitals & Performance
 
-**Tool:** `lighthouse_audit.py` (or PageSpeed MCP if available)
+**Tool:** `tools/lighthouse_audit.py`
 
-**1st Choice: MCP (if configured)**
-Just ask: "Analyze {url} with PageSpeed for mobile and desktop"
-
-**2nd Choice: Python tool**
+**Execute:**
 ```bash
 python tools/lighthouse_audit.py \
   --url "{url}" \
@@ -146,80 +219,118 @@ python tools/lighthouse_audit.py \
   --output ".tmp/{client}_cwv.json"
 ```
 
-**Parameters:**
-- `--strategy both`: Runs mobile + desktop audits
-- `--timeout`: 120 seconds (Lighthouse can be slow)
+**What this checks:**
+- LCP (target: < 2.5s)
+- INP (target: < 200ms) — **NOT FID** (deprecated March 2024)
+- CLS (target: < 0.1)
+- Render-blocking scripts
+- Unoptimized images
+- Missing lazy loading
 
-**Validate output:**
-```bash
-# Check file exists and contains required metrics
-# Use Read tool to parse JSON
-```
+**Flag issues:**
+- LCP > 2.5s → "HIGH: LCP is {lcp}ms, target < 2500ms. Optimize images and server response time."
+- INP > 200ms → "HIGH: INP is {inp}ms, target < 200ms. Reduce JavaScript execution time."
+- CLS > 0.1 → "HIGH: CLS is {cls}, target < 0.1. Add width/height to images and reserve space for ads."
 
-**Parse results:**
-```json
-{
-  "mobile": {
-    "lcp": 2.1,  // Largest Contentful Paint (target: < 2.5s)
-    "inp": 180,  // Interaction to Next Paint (target: < 200ms)
-    "cls": 0.08, // Cumulative Layout Shift (target: < 0.1)
-    "performance_score": 85
-  },
-  "desktop": { ... }
-}
-```
+**Run on top 5 pages:**
+- Homepage
+- Top service/product page
+- Top blog post
+- Contact page
+- Pricing/conversion page
 
-**Flag if:**
-- LCP > 2.5s → [ERROR] Critical
-- INP > 200ms → [ERROR] Critical (NEVER reference FID — it's deprecated)
-- CLS > 0.1 → [WARNING] High Priority
-- Performance score < 70 → [WARNING] Medium Priority
-
-**If tool fails:**
-- Fallback: WebFetch `https://pagespeed.web.dev/analysis?url={url}` and parse HTML table
-- Or: Ask user to run PageSpeed Insights manually and share screenshot
+**Save to:**
+`.tmp/{client}_cwv.json`
 
 ---
 
-### Step 4: On-Page SEO Analysis
+## STEP 4: On-Page SEO & E-E-A-T
 
-**Tool:** `on_page_analyzer.py`
+**Tool:** `tools/on_page_analyzer.py`
 
 **Execute:**
 ```bash
 python tools/on_page_analyzer.py \
-  --url "{url}" \
-  --keyword "{primary_keyword_from_brand_kit}" \
+  --client "{client}" \
+  --top 10 \
+  --keyword "{primary_keyword}" \
   --output ".tmp/{client}_onpage.json"
 ```
 
-**If no brand_kit (audit-only mode):**
-- Infer primary keyword from homepage `<title>` tag
-- Or: Extract from H1 heading
+**What this checks:**
+- Title tags (50-60 chars, keyword present)
+- Meta descriptions (120-160 chars, keyword present)
+- H1 (exactly one per page, keyword present)
+- H2/H3 hierarchy
+- Image alt tags
+- Internal linking
+- Canonical tags
+- Noindex tags
 
-**Parse results:**
-- Title tag (length, keyword placement, uniqueness)
-- Meta description (length, CTA presence, keyword)
-- H1 heading (uniqueness, keyword match)
-- H2-H6 structure (logical hierarchy)
-- Image alt tags (missing, generic, keyword-stuffed)
-- Internal link count (too few = < 3, too many = > 100)
-- Word count (thin content if < 300 words)
-- Keyword density (flag if > 3% — keyword stuffing)
+**E-E-A-T Scan:**
+- Author bios present?
+- Phone numbers visible?
+- Trust signals (testimonials, certifications, badges)?
+- Policy links (Privacy, Terms, Refund)?
+- External citations to .edu/.gov/.org sources?
 
-**Flag issues:**
-- [ERROR] Missing title tag or meta description
-- [ERROR] Duplicate title tags across pages
-- [WARNING] Title > 60 characters (truncated in SERP)
-- [WARNING] Meta description > 160 characters
-- [WARNING] Images missing alt text
-- [WARNING] Generic filenames (image001.jpg → flag for rename)
+**CRO Analysis:**
+- Contact info visible?
+- CTAs clear and action-oriented?
+- Credibility zone below hero (logos, reviews, certifications)?
+
+**Save to:**
+`.tmp/{client}_onpage.json`
+
+### STEP 4B: Local SEO Audit (if `--local` flag or locations in brand_kit)
+
+**For each office location:**
+
+1. **Search "{business name} {city}":**
+   - Does GBP appear?
+   - What info is shown (address, phone, hours, reviews)?
+   - Is it complete or missing fields?
+
+2. **Check website for NAP consistency:**
+   - Is Name, Address, Phone on website?
+   - Does it EXACTLY match GBP listing?
+   - Common errors: "Suite 100" vs "#100", different phone formats
+
+3. **Check LocalBusiness schema:**
+   ```bash
+   python tools/schema_checker.py --url "{url}"
+   ```
+   - Does LocalBusiness schema exist?
+   - Does address in schema match GBP and website footer?
+   - Is `@id` and `sameAs` present for entity linking?
+
+4. **Check location-specific landing pages:**
+   - Example: `/peb-manufacturer-nagpur`, `/services-lucknow`
+   - Do they exist?
+   - Do they have unique content or just template swaps?
+
+5. **Check Local 3-Pack competitors:**
+   - Search "{primary service} {city}"
+   - Who appears in the Local 3-Pack?
+   - Compare their GBP completeness vs client's
+
+**Score Local SEO 0-10 based on:**
+- GBP completeness: 3 points
+- NAP consistency: 2 points
+- Location pages present: 2 points
+- LocalBusiness schema present: 2 points
+- Reviews count & avg rating: 1 point
+
+**Save to:**
+`.tmp/{client}_local_seo.json`
 
 ---
 
-### Step 5: Schema Markup Validation
+## STEP 5: Schema & AEO Readiness
 
-**Tool:** `schema_checker.py`
+### STEP 5A: Schema Validation
+
+**Tool:** `tools/schema_checker.py`
 
 **Execute:**
 ```bash
@@ -228,593 +339,403 @@ python tools/schema_checker.py \
   --output ".tmp/{client}_schema.json"
 ```
 
-**Parse results:**
-- Schema types found (Organization, LocalBusiness, Article, Product, etc.)
-- Validation errors (missing required fields, incorrect format)
-- Warnings (recommended fields missing)
+**What this checks:**
+- JSON-LD schema blocks present
+- Valid schema types: Organization, LocalBusiness, Service, Article, Product, BreadcrumbList
+- **WARNING:** Do NOT recommend FAQPage (restricted since Aug 2023) or HowTo (deprecated)
+- Entity linking: `sameAs` pointing to Wikidata/Wikipedia?
+- Required fields present (address, contactPoint for Organization)
 
-**CRITICAL: Reference Rule 7 from CLAUDE.md**
-- [ERROR] NEVER recommend FAQPage schema for commercial sites (restricted to gov/healthcare since Aug 2023)
-- [ERROR] NEVER recommend HowTo schema (deprecated Sept 2023)
-- [OK] Valid types: Organization, LocalBusiness, Service, BreadcrumbList, Article, Product, Review, VideoObject
+**Flag missing schema:**
+- No Organization schema → "MEDIUM: Add Organization schema to homepage with entity linking"
+- No BreadcrumbList → "LOW: Add BreadcrumbList schema for better navigation understanding"
+- Organization missing `sameAs` → "MEDIUM: Add entity validation via Wikipedia/Wikidata links"
 
-**Tailor to SITE_TYPE:**
-- **E-commerce**: Check for Product schema, AggregateRating, Offer
-- **Local Service**: Check for LocalBusiness, GeoCoordinates, OpeningHours
-- **SaaS**: Check for Organization, SoftwareApplication
-- **Publisher**: Check for Article, Person (author), BreadcrumbList
-- **Agency**: Check for Organization, Service, Review
+### STEP 5B: AEO/GEO Readiness
 
-**Flag if:**
-- No schema found at all → [ERROR] Critical
-- Schema has validation errors → [WARNING] High Priority
-- Missing site-type-appropriate schema → [WARNING] Medium Priority
+**Check for AI citability:**
 
-**Fallback if tool fails:**
-- Manual check: Suggest user run `document.querySelectorAll('script[type="application/ld+json"]')` in browser console
-- Or: Use Google Rich Results Test (renders JavaScript correctly)
+1. **Direct answer blocks:**
+   - Does each key page have a 50-75 word answer block in the first 100 words?
+   - Example: "What is {topic}? {clear 2-sentence answer with context}"
 
----
+2. **llms.txt exists?**
+   ```bash
+   curl {url}/llms.txt
+   ```
+   - If 404: Recommend creating `/llms.txt` with site purpose, expertise, key content
 
-### Step 6: Image SEO Audit
+3. **AI Share of Voice (manual check):**
+   - Search primary keyword in ChatGPT, Perplexity, Claude
+   - Is the client cited?
+   - Position (1st, 2nd, 3rd mention, or not cited)?
 
-**Use crawl data from Step 2**
+4. **Structured data tables:**
+   - Are there comparison tables, pricing tables, feature matrices?
+   - AI engines prioritize tables with unique data
 
-**Analyze:**
-```python
-# From .tmp/{client}_crawl.json
-images_analyzed = 0
-images_missing_alt = 0
-images_generic_filename = 0
-images_large_filesize = 0
+**Score AEO 0-10:**
+- Direct answer blocks: 3 points
+- llms.txt exists: 2 points
+- AI citations found: 3 points
+- Structured tables present: 2 points
 
-for page in crawl_data["pages"]:
-    for img in page["images"]:
-        images_analyzed += 1
-        if not img["alt"]:
-            images_missing_alt += 1
-        if re.match(r"image\d+\.(jpg|png)", img["src"]):
-            images_generic_filename += 1
-        if img["size_kb"] > 100:
-            images_large_filesize += 1
-```
+**Save to:**
+`.tmp/{client}_aeo.json`
 
-**Check for:**
-- Missing `alt` attributes → flag count and example URLs
-- Not in WebP/AVIF format → recommend conversion
-- Not lazy-loaded → check for `loading="lazy"` attribute
-- File size > 100KB → recommend compression
-- Generic filenames (`image001.jpg`) → recommend descriptive names
+### STEP 5C: Competitor Benchmarking (if `--competitors` flag)
 
-**Flag if:**
-- > 20% images missing alt text → [WARNING] High Priority
-- > 50% images not in modern format (WebP/AVIF) → [WARNING] Medium Priority
-- Hero images > 300KB → [WARNING] High Priority (impacts LCP)
+**For each competitor domain:**
 
----
+1. **Run framework detection:**
+   ```bash
+   python tools/framework_detector.py --url "{competitor_url}" --output ".tmp/{competitor}_framework.json"
+   ```
 
-### Step 7: E-E-A-T Evaluation
+2. **Check robots.txt and sitemap:**
+   - Accessible?
+   - How many URLs in sitemap?
 
-**Reference Rule 8 from CLAUDE.md**
+3. **Count indexed pages:**
+   ```
+   site:competitor.com
+   ```
+   Note approximate count
 
-**Use WebFetch to analyze:**
-- Homepage
-- About page (if exists)
-- Author pages (if Publisher/Blog)
-- Contact page
-- Privacy policy / Terms pages
+4. **Check blog/content presence:**
+   - Do they have a blog?
+   - How many posts?
+   - Post frequency?
 
-**Score each dimension (Low / Medium / High):**
+5. **Check schema types:**
+   ```bash
+   python tools/schema_checker.py --url "{competitor_url}"
+   ```
 
-**Experience:**
-- First-hand photos/videos present?
-- Real case studies with client names?
-- Original data or research?
-- Score: Low | Medium | High
-- Improvement: "{Specific action}"
+6. **Check GBP (if local business):**
+   - Review count?
+   - Average rating?
+   - Photos count?
 
-**Expertise:**
-- Author credentials visible?
-- Claims backed by data/sources?
-- Industry certifications shown?
-- Score: Low | Medium | High
-- Improvement: "{Specific action}"
+7. **Score them on same 10 dimensions as client:**
+   - Technical SEO (framework, indexability)
+   - On-Page SEO
+   - Content Volume
+   - Local SEO (if applicable)
+   - Backlinks (estimated via domain metrics)
+   - Portfolio/Social Proof
+   - CTAs & Conversion Design
+   - Mobile Experience
+   - Blog/Content Marketing
+   - Schema Implementation
 
-**Authoritativeness:**
-- Brand cited by others? (Check: Google search "site:wikipedia.org {brand_name}")
-- Press mentions? (Check: Google search "{brand_name} news")
-- Backlinks from industry sites?
-- Score: Low | Medium | High
-- Improvement: "{Specific action}"
+8. **Write competitive insights:**
+   - 3 bullets: "What {competitor} does better than {client}"
+   - 1 bullet: "What {client} can replicate first (fastest win)"
 
-**Trustworthiness:**
-- HTTPS active? (check URL scheme)
-- Clear contact info? (email, phone, address visible)
-- Privacy policy exists?
-- Refund/returns policy? (E-commerce only)
-- About page with team info?
-- Score: Low | Medium | High
-- Improvement: "{Specific action}"
+**Competitor Scorecard Format:**
 
-**Output format:**
-| Dimension | Score | Current State | Specific Improvement |
-|-----------|-------|---------------|---------------------|
-| Experience | Medium | Has 2 case studies but no client photos | Add before/after photos with client permission |
-| Expertise | Low | No author bios on blog posts | Create author pages with LinkedIn credentials |
-| Authoritativeness | Low | No Wikipedia page, no press mentions | Create "As Seen In" page, pitch to industry blogs |
-| Trustworthiness | High | HTTPS, clear contact, privacy policy | None needed |
+| Dimension | Client | Comp 1 | Comp 2 | Comp 3 |
+|-----------|--------|--------|--------|--------|
+| Technical SEO | 4/10 | 7/10 | 6/10 | 8/10 |
+| On-Page SEO | 6/10 | 8/10 | 7/10 | 9/10 |
+| Content Volume | 3/10 | 9/10 | 5/10 | 7/10 |
+| Local SEO | 5/10 | N/A | 8/10 | N/A |
+| Schema Markup | 2/10 | 6/10 | 4/10 | 7/10 |
+| Blog Activity | 1/10 | 8/10 | 3/10 | 6/10 |
+| Mobile Experience | 6/10 | 9/10 | 7/10 | 8/10 |
+| E-E-A-T Signals | 4/10 | 7/10 | 6/10 | 8/10 |
+| CTA Quality | 5/10 | 8/10 | 6/10 | 7/10 |
+| Overall | 4.0 | 7.6 | 5.8 | 7.2 |
+
+**Save to:**
+`.tmp/{client}_competitors.json`
 
 ---
 
-### Step 8: GEO/AEO Readiness Audit
+## STEP 6: Report Synthesis
 
-**8a. AI Crawler Access Check**
-
-Use WebFetch to get `/robots.txt`:
-```
-WebFetch: {url}/robots.txt
-```
-
-**Check for AI crawler blocks:**
-- GPTBot (OpenAI)
-- Claude-Web (Anthropic)
-- Google-Extended (Google Gemini training)
-- PerplexityBot
-- CCBot (Common Crawl)
-
-**Flag if:**
-- All AI crawlers blocked → [ERROR] Critical (site invisible to AI)
-- Some blocked → [WARNING] Document which ones and why it matters
-
-**8b. llms.txt Check**
-
-Use WebFetch to get `/llms.txt` or `/llms-full.txt`:
-```
-WebFetch: {url}/llms.txt
-```
-
-**If exists:**
-- Parse structure (markdown format)
-- Check for: site description, key pages, sitemap reference
-- Validate format
-
-**If missing:**
-- [WARNING] High Priority issue
-- Recommendation: Generate with `python tools/llmstxt_generator.py --url {url}`
-
-**8c. AI Citability Score**
-
-**Tool:** `citability_scorer.py`
-
-```bash
-python tools/citability_scorer.py \
-  --url "{url}" \
-  --output ".tmp/{client}_citability.json"
-```
-
-**Parse results:**
-- Citability score (0-100)
-- Quotable passages found
-- Answer block quality
-- Statistical density
-
-**Flag if:**
-- Score < 40 → [WARNING] Content not optimized for AI citation
-- No question-answer blocks found → Recommend FAQ sections
-- Low statistical density → Recommend adding data/numbers
-
-**If tool fails:**
-- Manual check: Look for H2/H3 structured as questions
-- Check for concise answer paragraphs (50-150 words)
-- Check for numbered lists, tables, data points
-
-**8d. Entity & Knowledge Graph Check**
-
-**Tool:** `entity_auditor.py`
-
-```bash
-python tools/entity_auditor.py \
-  --brand "{client_name}" \
-  --domain "{url}" \
-  --output ".tmp/{client}_entity_audit.json"
-```
-
-**Parse results:**
-- Wikipedia presence
-- Wikidata presence
-- Knowledge Panel eligibility
-- Crunchbase profile
-- Consistent NAP (Name, Address, Phone)
-
-**Flag if:**
-- "Unknown Entity" → [WARNING] Recommend Wiki/Crunchbase profile creation
-- Missing Wikidata → [WARNING] The brand cannot be strongly connected in the semantic graph without it.
-
----
-
-### Step 9: SEO Health Score Calculation
-
-**Reference Rule 6 from CLAUDE.md**
-
-Calculate weighted score:
-
-| Category | Weight | Current Score (0-100) | Weighted |
-|----------|--------|----------------------|----------|
-| Technical SEO | 25% | {score} | {weighted} |
-| Content Quality | 25% | {score} | {weighted} |
-| On-Page SEO | 20% | {score} | {weighted} |
-| Schema/Structured Data | 10% | {score} | {weighted} |
-| Core Web Vitals | 10% | {score} | {weighted} |
-| Image SEO | 5% | {score} | {weighted} |
-| AI Search Readiness | 5% | {score} | {weighted} |
-| **Overall SEO Health** | **100%** | | **{total}** |
-
-**Scoring guidelines:**
-- **Technical SEO**: Deduct points for crawl errors, 404s, slow speed, indexation issues
-- **Content Quality**: Deduct for thin content (< 300 words), duplicate content, low E-E-A-T
-- **On-Page SEO**: Deduct for missing/duplicate titles, poor meta descriptions, weak H1s
-- **Schema**: Deduct if no schema, validation errors, missing site-type-appropriate markup
-- **Core Web Vitals**: Deduct if LCP/INP/CLS exceed thresholds
-- **Image SEO**: Deduct for missing alt text, large file sizes, generic filenames
-- **AI Search Readiness**: Deduct for blocked crawlers, no llms.txt, low citability
-
----
-
-### Step 10: Competitor Research (MANDATORY)
-
-**Reference Rule 14 from CLAUDE.md**
-
-**Execute:**
-1. Search Google for: `"{primary_keyword} {city/region}"` (if Local) OR `"{primary_keyword}"` (if national/SaaS)
-   - Use WebSearch tool
-   - Example: "digital marketing agency Bangalore"
-
-2. Extract top 4 organic results (skip paid ads, skip Google Maps)
-
-3. For each competitor:
-   - Use WebFetch to get homepage
-   - Estimate Domain Authority (look for age, backlink indicators)
-   - List pages they have that client doesn't (use site navigation)
-   - Identify their strongest keyword (from title tag)
-   - Name one thing they do better
-   - Name one exploitable gap
-
-**Produce this table:**
-
-| Metric | Client | Comp 1 | Comp 2 | Comp 3 | Comp 4 |
-|--------|--------|--------|--------|--------|--------|
-| Estimated DA | {DA} | {DA} | {DA} | {DA} | {DA} |
-| Blog/Resources | [OK]/[ERROR] | [OK]/[ERROR] | [OK]/[ERROR] | [OK]/[ERROR] | [OK]/[ERROR] |
-| Case Studies with Metrics | [OK]/[ERROR] | [OK]/[ERROR] | [OK]/[ERROR] | [OK]/[ERROR] | [OK]/[ERROR] |
-| Pricing Page | [OK]/[ERROR] | [OK]/[ERROR] | [OK]/[ERROR] | [OK]/[ERROR] | [OK]/[ERROR] |
-| FAQ on Service Pages | [OK]/[ERROR] | [OK]/[ERROR] | [OK]/[ERROR] | [OK]/[ERROR] | [OK]/[ERROR] |
-| Partner/Certification Badges | [OK]/[ERROR] | [OK]/[ERROR] | [OK]/[ERROR] | [OK]/[ERROR] | [OK]/[ERROR] |
-| Schema Markup | {types} | {types} | {types} | {types} | {types} |
-| Interactive Tools/Calculators | [OK]/[ERROR] | [OK]/[ERROR] | [OK]/[ERROR] | [OK]/[ERROR] | [OK]/[ERROR] |
-| **What they do better** | - | {detail} | {detail} | {detail} | {detail} |
-| **Exploitable gap** | - | {detail} | {detail} | {detail} | {detail} |
-
-**Never use placeholders.** This must be real competitive intelligence.
-
----
-
-### Step 11: Growth Innovation Ideas (Brand-Specific)
-
-**Reference Rule 13 from CLAUDE.md**
-
-**Process:**
-1. Re-read homepage, About page, blog (if exists)
-2. Identify: industry, buyer persona, geographic market, unique angle
-3. Search: `"{industry} content ideas"` and `"{competitor} blog"` to see what exists
-4. Identify the gap: what's missing from the market
-
-**Generate 3+ innovative ideas:**
-
-**Example format (BAD — too generic):**
-[ERROR] "Start a blog and post consistently"
-
-**Example format (GOOD — specific to Dare Network):**
-[OK] **Idea 1: "The SEO Encyclopedia of 2026"**
-- **What:** 50-page glossary covering every SEO term (INP, GEO, LLMO, Citability Score, Entity Graphing, etc.) with origin stories, formulas, and real examples
-- **Why:** Each term targets long-tail searches like "what is INP in SEO" (2,100 monthly searches). Link opportunities: Wikipedia citations, SEO school resources, agency toolkits
-- **How:** Write 1 term page per week, interlink heavily, promote to SEO Twitter
-- **Effort:** Medium (requires SEO expertise, ~2 hours per term)
-- **Time to result:** 3 months to start ranking, 6 months for backlinks
-
-[OK] **Idea 2: "The Dare Network AI Search Report"**
-- **What:** Quarterly report analyzing which brands are being cited most by ChatGPT/Claude/Perplexity in {industry}. Publicly release as PDF.
-- **Why:** Original research = press mentions + backlinks. Brands will share their own rankings.
-- **How:** Test 50 prompts in ChatGPT/Claude/Perplexity, track citation frequency, visualize as leaderboard
-- **Effort:** High (requires testing infrastructure, data viz)
-- **Time to result:** 1 month for first report, immediate social traction
-
-[OK] **Idea 3: "{Industry}-Specific Content Calendar"**
-- **What:** 12-month table of content ideas tied to real industry events, budget cycles, competitor gap months
-- **Why:** Answers "when should I post about X?" — saves agencies 10+ hours of planning
-- **How:** Research industry conferences, fiscal year patterns, seasonal trends; build Google Sheet template
-- **Effort:** Low (one-time research, templatized)
-- **Time to result:** Immediate (can be a lead magnet)
-
-**Each idea must include:**
-- What it is (specific, named)
-- How it drives traffic/links
-- Effort level (L/M/H)
-- Time to first result
-
----
-
-### Step 12: Assemble Audit Data for Report
-
-**Collect all data into a structured JSON:**
-
-```json
-{
-  "client": "{client_name}",
-  "url": "{url}",
-  "audit_date": "{YYYY-MM-DD}",
-  "site_type": "{E-commerce|SaaS|Local|Publisher|Agency}",
-  "seo_health_score": {
-    "overall": 72,
-    "technical": 65,
-    "content": 80,
-    "on_page": 75,
-    "schema": 50,
-    "core_web_vitals": 70,
-    "image_seo": 60,
-    "ai_readiness": 40
-  },
-  "critical_issues": [
-    {"issue": "...", "severity": "Critical", "finding": "...", "fix": "..."}
-  ],
-  "high_priority": [ ... ],
-  "medium_priority": [ ... ],
-  "low_priority": [ ... ],
-  "competitor_analysis": { ... },
-  "growth_ideas": [ ... ],
-  "90_day_roadmap": {
-    "phase_1_quick_wins": [ ... ],
-    "phase_2_authority": [ ... ],
-    "phase_3_scale": [ ... ]
-  }
-}
-```
-
-Save to: `.tmp/{client}_audit_data.json`
-
----
-
-### Step 13: Generate Final Report (.docx)
-
-**Tool:** `report_builder.py`
+**Tool:** `tools/report_builder.py`
 
 **Execute:**
 ```bash
 python tools/report_builder.py \
-  --client "{client}" \
-  --template audit \
-  --data ".tmp/{client}_audit_data.json" \
-  --output "reports/{client}_Audit_{YYYY-MM-DD}.docx"
+  --url "{url}" \
+  --type audit \
+  --strategy standalone \
+  --output ".tmp/reports/{client}_Audit_{date}.docx"
 ```
 
-**Validate output:**
-```bash
-# Check file exists
-if [ ! -f "reports/{client}_Audit_{date}.docx" ]; then
-  echo "[ERROR] Report generation failed"
-  # Retry once
-fi
+**What this does:**
+1. Reads all `.tmp/{client}_*.json` files
+2. Loads template `templates/Example Audit template.docx`
+3. Fills template with data
+4. Generates .docx report
 
-# Check file size > 50KB (not empty)
-if [ $(stat -f%z "reports/{client}_Audit_{date}.docx") -lt 50000 ]; then
-  echo "[WARNING] Report file seems too small, may be incomplete"
-fi
+**Report MUST contain these sections in this order:**
+
+### 1. Cover Page
+- Client name
+- Audit date
+- 4 headline scores:
+  - Technical SEO: X/10
+  - On-Page SEO: X/10
+  - Content Quality: X/10
+  - Overall SEO Health: X/100
+
+### 2. Executive Summary (3 paragraphs max)
+- Paragraph 1: The #1 problem (framework/architecture if CSR, else biggest technical issue)
+- Paragraph 2: The opportunity (what can be achieved if fixed)
+- Paragraph 3: The first action (specific, measurable, achievable in 30 days)
+
+**Example:**
+```
+Your website is built with Create React App (CSR), rendering all content via JavaScript.
+This means Google sees an empty page with ~150 words, while users see 2,500+ words.
+Your technical SEO score is capped at 2/10 until this is resolved.
+
+Migrating to Next.js with SSR would make all content visible to Google, unlocking
+ranking potential for 50+ keywords currently invisible to search engines. Competitors
+using SSR rank 3-5 positions higher for the same keywords.
+
+FIRST ACTION: Migrate homepage and top 5 service pages to Next.js SSR within 30 days.
+Expected result: 200-300% increase in indexed content and improved crawl efficiency.
 ```
 
-**Report structure (auto-generated by tool):**
-1. Executive Summary
-2. SEO Health Score Breakdown (table)
-3. Critical Issues
-4. High Priority Issues
-5. Medium Priority Issues
-6. Technical SEO Deep Dive
-7. Content Quality Analysis
-8. Competitor Analysis
-9. Growth Innovation Ideas
-10. 90-Day Action Plan
-11. How Dare Network Adds Value (specific to findings)
+### 3. Company & Website Overview
+- Industry
+- Services
+- Target audience
+- Current tech stack (from framework detection)
+- Render mode verdict
 
-**Reference Rule 15 from CLAUDE.md:**
-- Lead with Business Impact vs. Effort (not just severity)
-- Use 90-Day Roadmap structure
-- Minimum 4,000 words of actual content
+### 4. Full Audit Findings — ALL Issues Sorted by Severity
 
----
-
-### Step 14: Present to User
-
-**Output in chat:**
-
+**Format:**
 ```
-[OK] Audit Complete: {client_name}
+CRITICAL ISSUES (Fix immediately)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-🏆 Overall SEO Health Score: {score}/100
+Issue #1: Client-Side React SPA Architecture
+📊 Impact: 95% of content invisible to Google
+🔧 Fix: Migrate to Next.js with SSR or SSG
+⏱️ Effort: 40 hours (2-3 weeks with developer)
+💰 Business Impact: Unlocks ranking for 50+ keywords
 
-📊 Category Breakdown:
-  • Technical SEO: {score}/100
-  • Content Quality: {score}/100
-  • On-Page SEO: {score}/100
-  • Core Web Vitals: {score}/100
-  • AI Readiness: {score}/100
+Issue #2: Missing H1 Tags on 12/50 Pages
+📊 Impact: Confuses Google about page topic
+🔧 Fix: Add exactly one H1 per page with target keyword
+⏱️ Effort: 2 hours
+💰 Business Impact: Improves ranking signals for affected pages
 
-🔴 Critical Issues Found: {count}
-🟡 High Priority Issues: {count}
-🟢 Quick Wins Identified: {count}
+HIGH ISSUES (Fix within 30 days)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-📄 Download Full Report:
-[{client}_Audit_{date}.docx](file:///full/path/to/report.docx)
+...
 
-Next Steps:
-Would you like me to:
-1. Generate a Content Brief for the top keyword opportunity? (/content_brief)
-2. Run a Competitor Gap Analysis? (/competitor_gap)
-3. Run an Entity Audit (if brand authority is weak)? (/entity_audit)
-4. Run a Topical Authority Audit (if content gaps identified)? (/topical_audit)
-5. Start Brand Monitoring (to track mentions & reviews)? (/brand_monitor)
-6. Create a monthly reporting schedule? (/monthly_report)
+MEDIUM ISSUES (Fix within 60 days)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+...
+
+LOW ISSUES (Fix within 90 days)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+...
 ```
 
-**Ask:** "What would you like to tackle first?"
+### 5. Competitor Analysis & Benchmarking Scorecard (if data exists)
 
----
+**Include:**
+- Side-by-side scorecard table
+- For each competitor: "What they do better" (3 bullets)
+- "What we can replicate first" (1 bullet per competitor)
 
-## Workflow Integration Triggers
+### 6. Prioritized 90-Day Action Plan (3 Phases)
 
-**After completing audit, automatically suggest related workflows based on findings:**
+**Phase 1 (Days 1-30): Foundation**
+- Fix CRITICAL issues
+- Example tasks:
+  - Migrate framework to Next.js SSR
+  - Fix all missing H1s
+  - Add Organization schema with entity linking
+  - Fix NAP consistency across GBP and website
 
-### IF Entity Score <30 → Suggest /entity_audit
+**Phase 2 (Days 31-60): Content Build-Out**
+- Fix HIGH issues
+- Example tasks:
+  - Publish 4 articles targeting keyword gaps
+  - Add LocalBusiness schema for each location
+  - Optimize top 10 pages for target keywords
+  - Implement image lazy loading
+
+**Phase 3 (Days 61-90+): Authority Building**
+- Fix MEDIUM/LOW issues
+- Off-page activities
+- Example tasks:
+  - Launch link building outreach (target 50 prospects)
+  - Create llms.txt for AI engines
+  - Add FAQ schema to top 5 pages
+  - Set up monthly reporting automation
+
+### 7. Keyword Strategy Map
+
+**Format:**
+
+| Keyword | Search Intent | Volume | Difficulty | Priority | Target Page |
+|---------|---------------|--------|------------|----------|-------------|
+| peb structure manufacturer nagpur | Transactional | 880 | 32 | HIGH | /peb-manufacturer-nagpur |
+| pre engineered buildings cost | Commercial | 1200 | 45 | MEDIUM | /pricing |
+| metal building suppliers india | Informational | 720 | 28 | MEDIUM | /blog/metal-building-suppliers |
+
+**Include:**
+- 20-30 keywords
+- Mapped to specific URLs
+- Prioritized by: (Volume × Intent Match) / Difficulty
+
+### 8. Strategic Insights (4-6 INDUSTRY-SPECIFIC points)
+
+**NOT GENERIC. Examples of GOOD strategic insights:**
+
+**For PEB manufacturer:**
 ```
-[RECOMMENDATION] Your brand has weak entity signals (Entity Score: {score}/100).
+1. Target Infrastructure Projects: Government's ₹111 lakh crore National Infrastructure
+   Pipeline includes 7,000+ projects requiring PEB structures for warehousing, logistics
+   hubs, and industrial parks. Create location pages for each NIP project cluster.
 
-Run a full entity audit to:
-- Check Wikipedia/Wikidata eligibility
-- Generate entity schema
-- Audit NAP consistency
-- Build Knowledge Graph presence
+2. Founder Credentials as Differentiation: Highlight 22 years of experience and ISO 9001
+   certification prominently. Competitors lack this trust signal. Add founder bio page
+   with entity linking.
 
-Execute: /entity_audit {client_name}
+3. Video SEO Gap: Zero competitors produce YouTube content. Create "PEB Structure
+   Installation Timelapse" videos. These rank #1 on YouTube with minimal competition
+   and build trust.
+
+4. Pricing Content Gap: "peb structure cost per sq ft" has 1,200 monthly searches,
+   zero good answers. Create detailed pricing guide with real project examples and ROI
+   calculator.
 ```
 
-### IF Topic Coverage Identified as Weak → Suggest /topical_audit
+**For SaaS:**
 ```
-[RECOMMENDATION] Content gaps detected in your industry topic cluster.
+1. Bottom-of-Funnel Content Gap: Competitors rank for "[tool] vs [tool]" comparison
+   keywords. You don't. Create 10 comparison pages targeting your top competitors.
 
-Run a topical authority audit to:
-- Map semantic topic graph for your core niche
-- Identify missing pillar pages
-- Generate 90-day content roadmap
+2. Free Tool Strategy: Build a simple ROI calculator for [your niche]. Ranks for
+   "calculator" queries, builds backlinks naturally, generates leads.
 
-Execute: /topical_audit "{core_topic}" {domain}
-```
-
-### IF AI Citability Score <40 → Suggest /aeo_optimize
-```
-[RECOMMENDATION] Your content isn't optimized for AI search engines (AEO Score: {score}/100).
-
-Optimize for ChatGPT, Perplexity, and Gemini citations:
-- Add answer blocks and structured data
-- Improve statistical density
-- Generate llms.txt governance file
-
-Execute: /aeo_optimize {url}
+3. G2/Capterra Reviews: You have 8 reviews, competitors have 200+. Launch review
+   campaign (target 50 reviews in 60 days). G2 badges boost conversion by 30%.
 ```
 
-### IF Brand is Established (>3 years) → Suggest /brand_monitor
+### 9. AEO/GEO Readiness — AI Search Optimization
+
+**Include:**
+- Current AI Share of Voice (cited in ChatGPT/Perplexity?)
+- Missing schema for AI citability
+- Direct answer block templates for top 3 queries
+- llms.txt recommendation
+
+**Example:**
 ```
-[RECOMMENDATION] Track your brand's online reputation and mentions.
+Current AI Share of Voice: NOT CITED
 
-Set up brand monitoring to:
-- Discover unlinked mentions (convert to backlinks)
-- Track review velocity and sentiment
-- Monitor competitor brand health
-- Increase AI search visibility
+When we searched ChatGPT for "best peb structure manufacturer in india", you were
+not mentioned. Competitors Epack and Tata BlueScope were cited.
 
-Execute: /brand_monitor {client_name}
+FIXES:
+1. Create llms.txt at /llms.txt with:
+   - Company expertise (ISO 9001, 22,000 sq ft facility)
+   - Manufacturing capabilities
+   - Key differentiators
+
+2. Add direct answer blocks to top 3 pages:
+   Page: /peb-structures
+   Add: "What is a PEB structure? Pre-Engineered Buildings (PEB) are steel structures
+   fabricated at a factory and assembled on-site, reducing construction time by 40%
+   and costs by 30% compared to conventional construction."
+
+3. Add comparison tables:
+   Create "PEB vs Conventional Construction" table with hard data (time, cost,
+   durability metrics). AI engines prioritize tables.
 ```
-
-### IF Programmatic Pages Detected → Suggest Quality Check
-```
-[WARNING] Detected {X} location/programmatic pages on site.
-
-Run quality scorer to prevent Google penalties:
-- Check boilerplate ratio (<40% required)
-- Verify unique variables (≥3 per page)
-- Monitor indexing status
-
-Execute: python tools/programmatic_quality_scorer.py --sitemap {sitemap_url}
-```
-
----
-
-## Error Handling & Fallback Logic
-
-**If seo_crawler.py times out:**
-- Reduce `--max-pages` from 50 to 25
-- If still fails: Crawl homepage + 5 key pages with WebFetch
-- Document: "[WARNING] Full crawl unavailable, analyzed {N} pages"
-
-**If lighthouse_audit.py fails:**
-- Fallback to PageSpeed Insights web interface (WebFetch)
-- Or: Ask user to run manually and share screenshot
-- Never skip Core Web Vitals — infer from site type if needed
-
-**If competitor research finds no competitors:**
-- Expand search to broader keywords
-- Include 1-2 indirect competitors (adjacent industries)
-- Never leave competitor table empty
-
-**If schema_checker.py fails:**
-- Manually parse HTML with Read tool
-- Look for `<script type="application/ld+json">` tags
-- Validate with Google Rich Results Test (give user the URL)
-
-**Rate limiting:**
-- If SERP scraping hits 429: Wait 30 seconds, retry once
-- If WebFetch fails: Wait 10 seconds, retry
-- Document any degraded data sources
 
 ---
 
 ## Expected Outputs
 
-**Files Created:**
-- `.tmp/{client}_crawl.json` — Full site crawl data
-- `.tmp/{client}_cwv.json` — Core Web Vitals scores
-- `.tmp/{client}_onpage.json` — On-page SEO analysis
-- `.tmp/{client}_schema.json` — Schema validation results
-- `.tmp/{client}_citability.json` — AI citability score
-- `.tmp/{client}_audit_data.json` — Aggregated audit data
-- `reports/{client}_Audit_{YYYY-MM-DD}.docx` — **Final deliverable**
+### Files Created:
+1. `.tmp/{client}_framework.json` — Framework detection result
+2. `.tmp/{client}_crawl_nojs.json` — No-JS crawl (Google's view)
+3. `.tmp/{client}_crawl_js.json` — JS crawl (User's view)
+4. `.tmp/{client}_rendering_comparison.json` — Comparison
+5. `.tmp/{client}_cwv.json` — Core Web Vitals
+6. `.tmp/{client}_onpage.json` — On-page analysis
+7. `.tmp/{client}_local_seo.json` — Local SEO audit (if applicable)
+8. `.tmp/{client}_schema.json` — Schema validation
+9. `.tmp/{client}_aeo.json` — AEO/GEO readiness
+10. `.tmp/{client}_competitors.json` — Competitor benchmarking (if applicable)
+11. `.tmp/reports/{client}_Audit_{date}.docx` — Final report
 
-**User-Facing Deliverable:**
-Branded `.docx` report with clickable download link in chat.
-
-**Next Action Prompt:**
-Ask user what they want to tackle first (content brief, gap analysis, monthly reporting).
-
----
-
-## Quality Gates
-
-**Before delivering report:**
-- [ ] Overall SEO Health Score calculated correctly (weighted average)
-- [ ] All sections reference SITE_TYPE-specific recommendations
-- [ ] Competitor analysis has real data (no placeholders)
-- [ ] Growth ideas are brand-specific (not generic "start a blog")
-- [ ] 90-Day Roadmap prioritizes by Business Impact × Effort
-- [ ] Report is 4,000+ words
-- [ ] Schema recommendations follow Rule 7 (no FAQPage for commercial sites)
-- [ ] Core Web Vitals use INP (not deprecated FID)
-- [ ] E-E-A-T scored with specific improvements
-- [ ] Image SEO includes counts and example URLs
-- [ ] .docx file generated successfully and downloadable
+### User-Facing Deliverables:
+1. Executive summary in chat (key highlights, top 3 issues, first action)
+2. Downloadable .docx report (4,000+ words, professionally formatted)
+3. Clickable download link: `📄 Download: [ClientName_Audit_YYYY-MM-DD.docx](file:///path/to/report.docx)`
 
 ---
 
-## Related Workflows
+## Error Handling
 
-- `/competitor_gap` — Deep keyword gap analysis
-- `/content_brief` — Generate SEO content brief from audit findings
-- `/monthly_report` — Set up recurring performance reporting
-- `/on_page` — Deep dive on specific page optimization
+### If `framework_detector.py` fails:
+- Assume worst-case: CSR_SPA
+- Cap technical scores
+- Flag: "[WARNING] Framework detection failed — assuming CSR for safety"
+- Continue audit
+
+### If no-JS crawl fails (403 Forbidden):
+- Check robots.txt
+- Try with different User-Agent
+- Fallback: Use JS crawl only, note limitation
+- Flag: "[WARNING] Site blocks Googlebot user-agent — may impact indexing"
+
+### If lighthouse fails (no GOOGLE_API_KEY):
+- Skip CWV section
+- Flag: "[WARNING] Core Web Vitals unavailable — requires GOOGLE_API_KEY in .env"
+- Recommend manual check via PageSpeed Insights
+
+### If competitor URLs fail:
+- Skip competitor section
+- Note: "Competitor analysis unavailable — provide valid competitor domains for future audits"
+
+---
+
+## Performance Expectations
+
+**Estimated execution time:**
+- Framework detection: 30-45 seconds
+- No-JS crawl (50 pages): 30-60 seconds
+- JS crawl (50 pages): 60-120 seconds
+- On-page analysis: 30-60 seconds
+- Schema check: 10-15 seconds
+- Lighthouse (5 pages): 60-90 seconds
+- Competitor analysis (3 competitors): 120-180 seconds
+- Report generation: 30-60 seconds
+
+**Total: 6-10 minutes** for complete audit with competitors
+
+**If execution exceeds 15 minutes:**
+- Reduce `--max-pages` to 25
+- Skip competitor analysis
+- Generate report with available data
 
 ---
 
 ## Notes
 
-**This workflow is 100% deterministic:**
-- Every tool call has explicit syntax
-- Every output has validation logic
-- Every failure has a fallback method
-- Every recommendation is tailored to SITE_TYPE
-
-**No guesswork. No placeholders. No N/A.**
+- **Framework detection is NON-NEGOTIABLE** — must run first, always
+- **No-JS crawl is authoritative** — this is what Google sees
+- **JS crawl is reference only** — this is what users see
+- **CSR sites get capped scores** — no exceptions, no matter how good on-page is
+- **Competitor analysis is valuable** — provides context and benchmarks
+- **Strategic insights must be specific** — no generic "start a blog" advice
+- **90-day plan must be phased** — not a flat list of issues

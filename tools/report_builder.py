@@ -6,10 +6,14 @@ Colors: Navy #1B3A6B, Orange #E8671A, White background
 Tables: Issue | Severity | Finding | Recommended Fix (blue italic)
 """
 
-import argparse, json, os
+import argparse, json, os, sys
 from pathlib import Path
 from datetime import datetime, date
 from glob import glob
+
+# Add tools/ directory to path for imports
+sys.path.insert(0, str(Path(__file__).parent))
+from utils import url_to_slug, validate_file_naming  # CRITICAL: Use centralized URL-to-slug conversion
 
 try:
     from docx import Document
@@ -152,13 +156,26 @@ def load_tmp(pattern):
     return json.load(open(files[0],encoding="utf-8")) if files else {}
 
 
-def _tech_score(summary):
+def _tech_score(summary, framework_data=None):
+    """
+    Calculate technical SEO score.
+    IMPORTANT: Respects framework detection score caps for CSR/SPA sites.
+    """
     s=100
     s-=min(int(summary.get("status_404",0) or 0)*4,30)
     s-=min(int(summary.get("noindex_pages",0) or 0)*2,20)
     s-=min(int(summary.get("missing_h1",0) or 0)*2,20)
     s-=min(int(summary.get("missing_meta_desc",0) or 0)*1,10)
-    return max(s,10)
+    calculated_score = max(s,10)
+
+    # CRITICAL: Apply framework detection score cap if CSR_SPA detected
+    if framework_data and framework_data.get("status") == "success":
+        score_cap_data = framework_data.get("score_cap", {})
+        if score_cap_data and "technical_seo" in score_cap_data:
+            max_score = score_cap_data["technical_seo"] * 10  # Convert 2/10 to 20/100
+            calculated_score = min(calculated_score, max_score)
+
+    return calculated_score
 
 # ── MAIN BUILDER ─────────────────────────────────────────────────────────────
 def build_audit_docx(client_slug, website_url, brand_kit, strategy_data={}):
@@ -175,6 +192,7 @@ def build_audit_docx(client_slug, website_url, brand_kit, strategy_data={}):
 
     crawl=load_tmp(f"*{client_slug}*crawl*.json"); onpage=load_tmp(f"*{client_slug}*onpage*.json")
     lighthouse=load_tmp(f"*{client_slug}*lighthouse*.json")
+    framework_data=load_tmp(f"*{client_slug}*framework*.json")  # CRITICAL: Load framework detection data
 
     summary=crawl.get("summary",{}); pages=crawl.get("pages",[])
     onpage_results=onpage.get("results",[]); avg_onpage=onpage.get("avg_score","N/A")
@@ -237,7 +255,15 @@ def build_audit_docx(client_slug, website_url, brand_kit, strategy_data={}):
     doc.add_paragraph()
     add_h2(doc,"Overall Health Snapshot")
 
-    tech_s=_tech_score(summary); onp_s=int(avg_onpage) if str(avg_onpage).isdigit() else 65
+    tech_s=_tech_score(summary, framework_data)
+    onp_s=int(avg_onpage) if str(avg_onpage).isdigit() else 65
+
+    # Apply on-page SEO score cap if framework has CSR_SPA issue
+    if framework_data and framework_data.get("status") == "success":
+        score_cap_data = framework_data.get("score_cap", {})
+        if score_cap_data and "on_page_seo" in score_cap_data:
+            max_onpage = score_cap_data["on_page_seo"] * 10  # Convert 3/10 to 30/100
+            onp_s = min(onp_s, max_onpage)
     perf_disp=f"Mobile: {perf}/100" if perf else "Not yet measured"
     schema_s=min(int(pages_with_schema/max(len(pages),1)*10) if pages else 2, 10)
 
@@ -263,7 +289,73 @@ def build_audit_docx(client_slug, website_url, brand_kit, strategy_data={}):
     add_h1(doc,"Technical SEO Audit")
     add_body(doc,f"Technical SEO forms the foundation of all organic rankings. Even the best content cannot rank if Google cannot efficiently crawl, index, and understand your website. Below is a comprehensive breakdown of all technical issues observed on {website_url}.")
 
-    if cms.lower() == "shopify":
+    # ── 1.0: FRAMEWORK DETECTION (NEW - CRITICAL) ───────────────────────────
+    framework_data = load_tmp(f"*{client_slug}*framework*.json")
+    if framework_data and framework_data.get("status") == "success":
+        add_h2(doc, "1.0  Framework & Rendering Analysis [CRITICAL]")
+        add_body(doc, "Modern websites often use JavaScript frameworks (React, Vue, Angular) to render content. While this creates smooth user experiences, it can make content invisible to Google if not implemented correctly. We analyzed what Google sees (no JavaScript) vs what users see (JavaScript enabled).")
+
+        framework = framework_data.get("framework", "Unknown")
+        render_mode = framework_data.get("render_mode", "UNKNOWN")
+        seo_verdict = framework_data.get("seo_verdict", "WARNING")
+        nojs_words = framework_data.get("nojs_word_count", 0)
+        js_words = framework_data.get("js_word_count", 0)
+        content_ratio = framework_data.get("content_ratio", 0)
+        recommendation = framework_data.get("recommendation", "")
+
+        # Add results callout
+        callout_style = "critical" if seo_verdict == "CRITICAL" else "warning" if seo_verdict == "WARNING" else "success"
+        callout_lines = [
+            f"Framework Detected: {framework}",
+            f"Render Mode: {render_mode}",
+            f"Content Visible to Google: {nojs_words} words (no-JS)",
+            f"Content Visible to Users: {js_words} words (with JS)",
+            f"Google Visibility Ratio: {content_ratio:.1%}",
+            ""
+        ]
+
+        if content_ratio < 0.1:
+            callout_lines.append(f"🔴 CRITICAL: Less than 10% of your content is visible to Google!")
+        elif content_ratio < 0.5:
+            callout_lines.append(f"⚠️ WARNING: Less than 50% of your content is visible to Google")
+        else:
+            callout_lines.append(f"✅ GOOD: Most content is visible to Google")
+
+        add_callout(doc, f"{seo_verdict}: Framework Rendering Issue", callout_lines, callout_style)
+
+        # Add framework-specific issues
+        framework_issues = []
+        if render_mode == "CSR_SPA":
+            framework_issues.append({
+                "issue": f"Client-Side Rendering ({framework})",
+                "severity": "Critical",
+                "finding": f"Your website uses {framework} with client-side rendering (CSR). Google sees only {nojs_words} words while users see {js_words} words. This means {100-int(content_ratio*100)}% of your content is invisible to search engines.",
+                "fix": recommendation
+            })
+            framework_issues.append({
+                "issue": "Technical SEO Score Capped",
+                "severity": "Critical",
+                "finding": "Due to CSR architecture, your maximum achievable technical SEO score is 2/10 regardless of other optimizations. This is the #1 priority to fix.",
+                "fix": "All other technical SEO fixes will have minimal impact until the framework migration is complete. Prioritize this above everything else."
+            })
+        elif render_mode in ["HYBRID", "UNKNOWN"] and content_ratio < 0.9:
+            framework_issues.append({
+                "issue": f"Partial Content Rendering ({framework})",
+                "severity": "High",
+                "finding": f"Some content is rendered client-side. Google can see {int(content_ratio*100)}% of your full content. The remaining {100-int(content_ratio*100)}% is at risk of not being indexed.",
+                "fix": "Audit which content sections are JS-dependent and move them to server-side rendering or static generation."
+            })
+
+        if framework_issues:
+            add_issues_table(doc, framework_issues)
+        else:
+            add_callout(doc, "✅ Framework Implementation: GOOD", [
+                f"Your site uses {framework} with proper server-side rendering or static generation.",
+                "Google can see all your content without executing JavaScript.",
+                "No critical framework-related issues detected."
+            ], "success")
+
+    if cms and cms.lower() == "shopify":
         add_h2(doc,"1.1  Shopify Infrastructure Audit")
         add_issues_table(doc,[
             {"issue":"Shopify Liquid Code Duplication","severity":"High","finding":"Potential repetitive 'ticker loops' or header bloat in Liquid templates, slowing down main thread rendering.","fix":"Refactor Liquid code to use caching ({% cache %}) or minimize DOM size in global headers."},
@@ -406,18 +498,109 @@ def build_audit_docx(client_slug, website_url, brand_kit, strategy_data={}):
     doc.add_page_break()
     add_section_banner(doc,5,"Automated Competitor Intelligence Module")
     add_h1(doc,"Competitor Intelligence & Gap Analysis")
-    
+    add_body(doc, "Understanding your competitive landscape is critical. We benchmarked your site against top competitors across 10 key dimensions to identify gaps and opportunities.")
+
+    # ── COMPETITOR SCORECARD TABLE (NEW - ENHANCED) ─────────────────────────
+    competitor_data = load_tmp(f"*{client_slug}*competitors*.json")
+    if competitor_data and competitor_data.get("competitors"):
+        add_h2(doc, "5.1  Competitive Scorecard — Side-by-Side Analysis")
+
+        # Create scorecard table
+        competitors_list = competitor_data.get("competitors", [])[:3]  # Max 3 competitors
+        num_cols = 2 + len(competitors_list)  # Client + competitors
+        comp_table = doc.add_table(rows=1, cols=num_cols)
+        comp_table.style = "Table Grid"
+
+        # Header row
+        _set_bg(comp_table.rows[0].cells[0], "1B3A6B")
+        r0 = comp_table.rows[0].cells[0].paragraphs[0].add_run("Dimension")
+        r0.bold = True; r0.font.color.rgb = WHITE; r0.font.size = Pt(10)
+
+        _set_bg(comp_table.rows[0].cells[1], "E8671A")  # Orange for client
+        r1 = comp_table.rows[0].cells[1].paragraphs[0].add_run(client_name)
+        r1.bold = True; r1.font.color.rgb = WHITE; r1.font.size = Pt(10)
+
+        for i, comp in enumerate(competitors_list):
+            _set_bg(comp_table.rows[0].cells[i+2], "1B3A6B")
+            rc = comp_table.rows[0].cells[i+2].paragraphs[0].add_run(comp.get("name", f"Competitor {i+1}"))
+            rc.bold = True; rc.font.color.rgb = WHITE; rc.font.size = Pt(9)
+
+        # Scoring dimensions
+        dimensions = [
+            ("Technical SEO", "technical_seo"),
+            ("On-Page SEO", "on_page_seo"),
+            ("Content Volume", "content_volume"),
+            ("Local SEO", "local_seo"),
+            ("Schema Markup", "schema_markup"),
+            ("Blog Activity", "blog_activity"),
+            ("Mobile Experience", "mobile_experience"),
+            ("E-E-A-T Signals", "eeat_signals"),
+            ("CTA Quality", "cta_quality"),
+            ("Overall Score", "overall")
+        ]
+
+        client_scores = competitor_data.get("client_scores", {})
+
+        for dim_label, dim_key in dimensions:
+            row = comp_table.add_row().cells
+            row[0].paragraphs[0].add_run(dim_label).font.size = Pt(9)
+
+            # Client score
+            client_score = client_scores.get(dim_key, tech_s//10 if dim_key == "technical_seo" else onp_s//10 if dim_key == "on_page_seo" else 5)
+            score_text = f"{client_score}/10" if dim_key != "overall" else f"{client_score:.1f}"
+            rs = row[1].paragraphs[0].add_run(score_text)
+            rs.font.size = Pt(9); rs.bold = True
+
+            # Color code
+            if isinstance(client_score, (int, float)):
+                if client_score >= 7:
+                    _set_bg(row[1], "C8E6C9")  # Green
+                elif client_score >= 5:
+                    _set_bg(row[1], "FFF9C4")  # Yellow
+                else:
+                    _set_bg(row[1], "FFCDD2")  # Red
+
+            # Competitor scores
+            for i, comp in enumerate(competitors_list):
+                comp_score = comp.get("scores", {}).get(dim_key, 6)
+                comp_score_text = f"{comp_score}/10" if dim_key != "overall" else f"{comp_score:.1f}"
+                rcs = row[i+2].paragraphs[0].add_run(comp_score_text)
+                rcs.font.size = Pt(9)
+
+                if isinstance(comp_score, (int, float)):
+                    if comp_score >= 7:
+                        _set_bg(row[i+2], "C8E6C9")
+                    elif comp_score >= 5:
+                        _set_bg(row[i+2], "FFF9C4")
+                    else:
+                        _set_bg(row[i+2], "FFCDD2")
+
+        doc.add_paragraph()
+
+        # Competitive insights
+        add_h2(doc, "5.2  Competitive Insights — What They Do Better")
+        for i, comp in enumerate(competitors_list):
+            comp_name = comp.get("name", f"Competitor {i+1}")
+            insights = comp.get("insights", [])
+            if insights:
+                add_body(doc, f"{comp_name}:", colour=NAVY)
+                for insight in insights[:3]:
+                    add_bullet(doc, insight)
+
+            gap = comp.get("exploitable_gap", "")
+            if gap:
+                add_body(doc, f"⚡ Quick Win: {gap}", colour=ORANGE, italic=True)
+            doc.add_paragraph()
+
+    # Original dynamic competitors section
     dyn_comps = strategy_data.get("competitors", [])
-    if dyn_comps:
+    if dyn_comps and not competitor_data:
         add_body(doc, "Side-by-side benchmarking against local rivals reveals market share gaps:")
         for c in dyn_comps:
             add_bullet(doc, f"{c.get('name')}: Possesses a '{c.get('asset')}' which is currently missing from your domain.")
         dyn_kws = strategy_data.get("keywords", [])
         if dyn_kws:
             add_body(doc, f"Immediate Keyword Opportunities (assign to new Collection Pages): {', '.join(dyn_kws)}", italic=True)
-    else:
-        comps_str = ", ".join(competitors) if competitors else "industry leaders"
-        add_body(doc,f"Side-by-side benchmarking against {comps_str} reveals market share gaps and content depth opportunities.")
 
     comp_iss=[
         {"issue":"Keyword Gap Analysis Required","severity":"High","finding":"A comprehensive overlap analysis against competitors is required to identify high-volume, high-intent keywords they rank for that you are missing.","fix":"Run automated keyword gap analysis. Filter for keywords where competitors rank on Page 1 but you do not rank in the top 50."},
@@ -471,6 +654,73 @@ def build_audit_docx(client_slug, website_url, brand_kit, strategy_data={}):
 
     add_h2(doc,"\U0001f7e1  Medium Priority — Ongoing (60-180 Days)")
     for item in ["Build Pillar + Cluster content architecture around top 5 keyword themes","Add WebSite schema with SearchAction to homepage","Restructure key pages to Q&A format for AI Overview eligibility","Monthly GSC review: track impressions, CTR, avg position, and index coverage","Connect Google Analytics 4 and Search Console to AIOS for automated monthly reports","Implement link building programme: 5 guest posts per month with keyword-rich anchor text"]: add_bullet(doc,item)
+
+    # ── 8.1: KEYWORD STRATEGY MAP (NEW) ──────────────────────────────────────
+    add_h2(doc, "8.1  Keyword Strategy Map — Target Pages & Priority")
+    add_body(doc, "Every keyword should be mapped to a specific page to avoid cannibalization. This table prioritizes keywords by: (Search Volume × Intent Match) / Difficulty.")
+
+    # Load keyword data
+    keyword_data = load_tmp(f"*{client_slug}*keywords*.json") or load_tmp(f"*{client_slug}*gap*.json")
+    primary_keywords = brand_kit.get("seo_settings", {}).get("primary_keywords", [])
+
+    if keyword_data and keyword_data.get("keywords"):
+        kw_table = doc.add_table(rows=1, cols=6)
+        kw_table.style = "Table Grid"
+
+        # Header
+        for i, (label, w) in enumerate(zip(
+            ["Keyword", "Search Intent", "Volume", "Difficulty", "Priority", "Target Page"],
+            [Inches(1.8), Inches(1.0), Inches(0.7), Inches(0.7), Inches(0.7), Inches(2.0)]
+        )):
+            c = kw_table.rows[0].cells[i]
+            _set_bg(c, "1B3A6B")
+            c.width = w
+            r = c.paragraphs[0].add_run(label)
+            r.bold = True; r.font.color.rgb = WHITE; r.font.size = Pt(9)
+
+        # Add keyword rows
+        keywords_list = keyword_data.get("keywords", [])[:20]  # Top 20
+        for kw in keywords_list:
+            row = kw_table.add_row().cells
+            row[0].paragraphs[0].add_run(kw.get("keyword", "")).font.size = Pt(9)
+            row[1].paragraphs[0].add_run(kw.get("intent", "Informational")).font.size = Pt(8)
+            row[2].paragraphs[0].add_run(str(kw.get("volume", "N/A"))).font.size = Pt(9)
+            row[3].paragraphs[0].add_run(str(kw.get("difficulty", "N/A"))).font.size = Pt(9)
+
+            # Priority color coding
+            priority = kw.get("priority", "MEDIUM")
+            rp = row[4].paragraphs[0].add_run(priority)
+            rp.font.size = Pt(8); rp.bold = True
+            if priority == "HIGH":
+                _set_bg(row[4], "FFCDD2")
+            elif priority == "MEDIUM":
+                _set_bg(row[4], "FFF9C4")
+            else:
+                _set_bg(row[4], "C8E6C9")
+
+            row[5].paragraphs[0].add_run(kw.get("target_page", "/")).font.size = Pt(8)
+
+    elif primary_keywords:
+        # Fallback: use brand_kit primary keywords
+        kw_table = doc.add_table(rows=1, cols=4)
+        kw_table.style = "Table Grid"
+
+        for i, label in enumerate(["Keyword", "Priority", "Target Page", "Status"]):
+            c = kw_table.rows[0].cells[i]
+            _set_bg(c, "1B3A6B")
+            r = c.paragraphs[0].add_run(label)
+            r.bold = True; r.font.color.rgb = WHITE; r.font.size = Pt(9)
+
+        for kw in primary_keywords[:10]:
+            row = kw_table.add_row().cells
+            row[0].paragraphs[0].add_run(kw).font.size = Pt(9)
+            row[1].paragraphs[0].add_run("HIGH").font.size = Pt(9)
+            row[2].paragraphs[0].add_run("TBD — Assign in GSC").font.size = Pt(8)
+            row[3].paragraphs[0].add_run("Needs Mapping").font.size = Pt(8)
+    else:
+        add_body(doc, "Keyword data unavailable. Run /keyword_research workflow to generate a comprehensive keyword strategy map.", italic=True, colour=MID)
+
+    doc.add_paragraph()
     doc.add_page_break()
 
     # ── SECTION 9: DARE NETWORK VALUE ────────────────────────────────────────
@@ -493,17 +743,78 @@ def build_audit_docx(client_slug, website_url, brand_kit, strategy_data={}):
         r1=row[1].paragraphs[0].add_run(right); r1.font.size=Pt(10)
     doc.add_paragraph()
     
-    # ── SECTION 10: BRAND INNOVATION ─────────────────────────────────────────
+    # ── SECTION 10: STRATEGIC INSIGHTS & INNOVATION ──────────────────────────
     doc.add_page_break()
-    add_section_banner(doc,10,"BRAND INNOVATION")
-    add_h1(doc,"Brand Innovation Ideas")
-    add_body(doc,"To break out of standard SEO patterns, we recommend two bespoke strategic initiatives to build topical authority and capture top-of-funnel traffic:")
-    
-    idea_1 = strategy_data.get("innovation_idea_1", "The 'Encyclopedia' Pillar: Develop a high-authority reference hub defining key industry terms, materials, or methodologies to capture early-stage informational intent. Create 'As Seen On' landing pages if celebrity entities exist.")
-    idea_2 = strategy_data.get("innovation_idea_2", "The 'Craft/Occasion Calendar': Map your content production to a 12-month calendar tied to cultural moments, seasonal buying cycles, or industry festivals.")
-    
-    add_callout(doc, "Idea 1: Education & Authority", [idea_1], "info")
-    doc.add_paragraph()
+    add_section_banner(doc,10,"STRATEGIC INSIGHTS & GROWTH INNOVATION")
+    add_h1(doc,"Strategic Growth Insights")
+    add_body(doc,f"To break out of standard SEO patterns, we've identified {industry}-specific growth opportunities based on competitive gaps, market trends, and content whitespace.")
+
+    # Load strategic insights data
+    insights_data = load_tmp(f"*{client_slug}*strategic*.json") or load_tmp(f"*{client_slug}*insights*.json")
+
+    if insights_data and insights_data.get("insights"):
+        # Dynamic industry-specific insights
+        insights_list = insights_data.get("insights", [])
+        for i, insight in enumerate(insights_list[:6]):
+            add_h2(doc, f"10.{i+1}  {insight.get('title', 'Growth Opportunity')}")
+            add_body(doc, insight.get("description", ""))
+
+            # Metrics if available
+            if insight.get("metrics"):
+                metrics = insight.get("metrics")
+                add_callout(doc, "Opportunity Metrics", [
+                    f"Search Volume: {metrics.get('volume', 'N/A')}/month",
+                    f"Effort Level: {metrics.get('effort', 'Medium')}",
+                    f"Time to Result: {metrics.get('time_to_result', '3-6 months')}",
+                    f"Expected Traffic Lift: {metrics.get('expected_lift', '20-40%')}"
+                ], "info")
+
+            if insight.get("action_steps"):
+                add_body(doc, "Action Steps:", colour=NAVY)
+                for step in insight.get("action_steps", []):
+                    add_bullet(doc, step)
+            doc.add_paragraph()
+
+    else:
+        # Fallback: Generic industry-based insights
+        if "e-commerce" in industry.lower() or "ecommerce" in industry.lower():
+            insights = [
+                ("Product Comparison Pages", "Create '[Product A] vs [Product B]' comparison pages for your top 10 products. These capture high-intent comparison queries with 3x higher conversion rates than category pages."),
+                ("User-Generated Content Strategy", "Launch a review collection campaign. Products with 50+ reviews rank 4.6x higher and convert 270% better. Incentivize reviews with discount codes or loyalty points."),
+                ("Seasonal Content Calendar", "Map content to buying cycles: Pre-festival guides (60 days before), Gift guides (30 days), Last-minute deals (7 days). Target 'best [product] for [occasion]' queries.")
+            ]
+        elif "saas" in industry.lower() or "software" in industry.lower():
+            insights = [
+                ("Comparison Landing Pages", "Create '[Your Tool] vs [Competitor]' pages for your top 5 competitors. These queries have 8x higher intent and 65% conversion rate."),
+                ("Free Tool / Calculator Strategy", "Build a simple ROI calculator or assessment tool. These rank for 'calculator' queries, generate backlinks naturally, and collect lead emails."),
+                ("Integration Hub", "Create individual integration pages for every tool you connect with (Zapier, Slack, etc.). These rank for '[Tool] + [Integration]' long-tail queries.")
+            ]
+        elif "local" in industry.lower() or "service" in industry.lower():
+            insights = [
+                ("Hyperlocal Content Strategy", "Create neighborhood-specific service pages. Instead of one '/services' page, create 10+ pages like '/services-[neighborhood]' with unique local content and reviews."),
+                ("Before/After Content", "Document every project with before/after photos and detailed case studies. These build trust and rank for '[service] near me before and after' queries."),
+                ("Local Partnership Content", "Partner with complementary local businesses for co-marketing content. Guest posts on local business blogs build high-relevance backlinks.")
+            ]
+        else:
+            # Generic B2B/Agency insights
+            insights = [
+                ("Encyclopedia Pillar Content", "Create a comprehensive glossary defining every industry term. Each term becomes a rankable page that captures early-stage awareness traffic."),
+                ("Founder Personal Brand", "Build the founder's LinkedIn presence and personal website. Google associates entity authority with individuals, not just companies. This strengthens E-E-A-T."),
+                ("Original Research / Industry Report", "Publish an annual '[Industry] State of the Market Report'. Original data generates backlinks from news sites, industry blogs, and Wikipedia citations.")
+            ]
+
+        for i, (title, desc) in enumerate(insights):
+            add_h2(doc, f"10.{i+1}  {title}")
+            add_body(doc, desc)
+            doc.add_paragraph()
+
+    # Additional strategic recommendations from strategy_data
+    idea_1 = strategy_data.get("innovation_idea_1", "")
+    idea_2 = strategy_data.get("innovation_idea_2", "")
+
+    if idea_1:
+        add_callout(doc, "Additional Strategy: Education & Authority", [idea_1], "info")
+        doc.add_paragraph()
     add_callout(doc, "Idea 2: Seasonal Activation", [idea_2], "info")
     doc.add_paragraph()
     add_h1(doc,"How Dare Network Adds Value")
@@ -568,16 +879,39 @@ def main():
         client_slug=args.client; brand_kit=load_brand_kit(client_slug)
         website_url=brand_kit.get("client_info",{}).get("website_url",f"{client_slug}.com")
     elif args.url:
-        url_slug=args.url.replace("https://","").replace("http://","").replace("/","").replace(".","_")
-        client_slug=url_slug; brand_kit={"client_info":{"client_name":args.url,"website_url":args.url}}; website_url=args.url
+        # CRITICAL: Use centralized url_to_slug() to ensure consistency across all tools
+        client_slug = url_to_slug(args.url)
+        brand_kit={"client_info":{"client_name":args.url,"website_url":args.url}}; website_url=args.url
     else:
         print("[Error] Provide --client or --url"); return
+
+    # VALIDATION: Check that required files exist (prevents 10/10 bug)
+    if args.type == "audit" and args.url:
+        required_files = ["framework", "crawl_nojs", "lighthouse"]
+        validation = validate_file_naming(args.url, required_files)
+
+        if not validation["valid"]:
+            print("\n[ERROR] Required audit files are missing!")
+            print(f"Expected slug: {validation['slug']}")
+            print("\nMissing files:")
+            for missing in validation["missing"]:
+                print(f"  - {missing}")
+            print("\nRun the complete audit workflow first:")
+            print(f"  1. python tools/framework_detector.py --url {args.url} --output .tmp/{validation['slug']}_framework.json")
+            print(f"  2. python tools/seo_crawler.py --url {args.url} --no-js --output .tmp/{validation['slug']}_crawl_nojs.json")
+            print(f"  3. python tools/lighthouse_audit.py --url {args.url} --strategy both --output .tmp/{validation['slug']}_lighthouse.json")
+            print()
+            return
 
     # Always save to .tmp/reports/ — never to audit_history
     output_dir=Path(".tmp/reports"); output_dir.mkdir(parents=True,exist_ok=True)
     today=date.today().strftime("%Y-%m-%d")
-    filename=f"{today}_{args.type}_report.docx"
-    if args.type=="monthly" and args.month: filename=f"{args.month}_{args.type}_report.docx"
+
+    # Use unique timestamp to avoid file locking issues
+    import time
+    timestamp = int(time.time())
+    filename=f"{today}_{args.type}_report_{timestamp}.docx"
+    if args.type=="monthly" and args.month: filename=f"{args.month}_{args.type}_report_{timestamp}.docx"
     output_path=output_dir/filename
 
     print(f"[Report Builder] Generating {args.type} report for: {website_url}")
