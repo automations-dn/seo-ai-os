@@ -601,6 +601,181 @@ You operate inside the **WAT framework** (Workflows → Agents → Tools):
 
 ---
 
+## 🔌 MCP SERVERS — Supercharged Tool Access
+
+**As of 2026-03-18, you have 3 active MCP servers configured for maximum power:**
+
+### 1. PageSpeed Insights MCP (`mcp__pagespeed_analyze`)
+**Status:** ✅ ACTIVE
+**Purpose:** Real-time Core Web Vitals analysis
+**Package:** `@ruslanlap/pagespeed-insights-mcp` v1.1.1
+
+**What it does:**
+- Streams PageSpeed Insights data directly from Google API
+- Analyzes mobile + desktop performance in parallel
+- Returns LCP, INP, CLS scores with pass/fail verdicts
+- Lighthouse scoring for Performance, Accessibility, SEO, Best Practices
+- No need to run Python scripts or wait for crawls
+
+**When to use:**
+- Any Core Web Vitals check
+- Performance audits (always run first)
+- Quick speed checks during client calls
+
+**Usage:**
+```
+"Analyze https://metalbarns.in with PageSpeed for mobile and desktop"
+```
+
+**Output:**
+- Real-time streaming (faster than Python lighthouse_audit.py)
+- Mobile scores, Desktop scores, Field data (CrUX)
+- Recommendations for LCP/INP/CLS improvements
+
+---
+
+### 2. Google Search Console MCP (`mcp__gsc`)
+**Status:** ✅ ACTIVE
+**Purpose:** Direct GSC API access for keyword & performance data
+**Location:** `tools/mcp-gsc/gsc_server.py`
+
+**What it does:**
+- Queries search analytics (impressions, clicks, CTR, position)
+- Fetches top keywords for any date range
+- URL inspection (index status, crawl errors)
+- Direct API access = fresh data, no CSV exports needed
+
+**When to use:**
+- Monthly reports (pull last 30 days of keyword data)
+- Keyword gap analysis (compare current vs. 3 months ago)
+- Index status checks
+- CTR optimization (find high-impression, low-CTR keywords)
+
+**Available Tools:**
+```python
+mcp__gsc.query_search_analytics(
+    site_url="https://metalbarns.in",
+    start_date="2026-02-18",
+    end_date="2026-03-18",
+    dimensions=["query", "page"]
+)
+
+mcp__gsc.get_top_keywords(
+    site_url="https://metalbarns.in",
+    limit=50
+)
+
+mcp__gsc.inspect_url(
+    site_url="https://metalbarns.in",
+    url="https://metalbarns.in/products"
+)
+```
+
+**Usage:**
+```
+"Get top 50 keywords from GSC for metalbarns.in for the last 30 days"
+"Check index status for https://metalbarns.in/new-page using GSC"
+```
+
+---
+
+### 3. AIOS Governance Server (`mcp__aios`)
+**Status:** ✅ ACTIVE
+**Purpose:** Type-safe wrapper for core AIOS Python tools
+**Location:** `tools/fastmcp_server.py`
+
+**What it does:**
+- Wraps Python tools with strict type validation
+- Prevents hallucinated arguments (e.g., can't pass `max_pages=999999`)
+- Enforces argument schemas to prevent destructive payloads
+- Currently wraps: `seo_crawler.py` (more tools can be added)
+
+**When to use:**
+- When you need guardrails against malformed tool calls
+- Running crawls with strict limits
+- Future: Will wrap all AIOS tools for extra safety
+
+**Available Tools:**
+```python
+mcp__aios.run_seo_crawler(
+    url="https://metalbarns.in",
+    max_pages=100  # Type-validated, can't be infinite
+)
+```
+
+**Usage:**
+```
+"Run SEO crawler on metalbarns.in with max 50 pages using governance server"
+```
+
+---
+
+### MCP Tool Selection Hierarchy (UPDATED)
+
+**Rule: ALWAYS prefer MCP tools over Python scripts when available.**
+
+#### Core Web Vitals / PageSpeed
+1. ✅ **MCP:** `mcp__pagespeed_analyze` (FASTEST - use by default)
+2. ⚠️ **Python:** `tools/lighthouse_audit.py` (fallback if MCP fails)
+3. ❌ **WebFetch:** PageSpeed web interface (slowest, last resort)
+
+#### Google Search Console Data
+1. ✅ **MCP:** `mcp__gsc.query_search_analytics()` (DIRECT API - use by default)
+2. ⚠️ **Manual:** Ask user to export CSV (fallback)
+3. ❌ **Estimate:** Industry benchmarks (only if no access)
+
+#### SEO Crawling
+1. ✅ **MCP:** `mcp__aios.run_seo_crawler()` (type-safe, recommended)
+2. ⚠️ **Python:** `tools/seo_crawler.py` (direct call, less safe)
+
+#### SERP / Keyword Research
+- **No MCP yet** → Use `tools/serp_scraper.py` as before
+
+---
+
+### MCP Configuration Location
+
+**File:** `C:\Users\HP\AppData\Roaming\Claude\claude_desktop_config.json`
+
+**Current Config:**
+```json
+{
+  "mcpServers": {
+    "pagespeed": {
+      "command": "node",
+      "args": ["c:/Users/HP/OneDrive/Desktop/SEO ai agency skills/tools/pagespeed-mcp/dist/index.js"],
+      "env": {"GOOGLE_API_KEY": "AIzaSyDwznCFpcMeqlpX8-z_CvrAQSEe2R0Pjx4"}
+    },
+    "gsc": {
+      "command": "python",
+      "args": ["c:/Users/HP/OneDrive/Desktop/SEO ai agency skills/tools/mcp-gsc/gsc_server.py"],
+      "env": {
+        "GSC_TOKEN_PATH": "c:/Users/HP/OneDrive/Desktop/SEO ai agency skills/tools/mcp-gsc/token.pickle",
+        "GSC_CREDENTIALS_PATH": "c:/Users/HP/OneDrive/Desktop/SEO ai agency skills/tools/mcp-gsc/gsc_credentials.json"
+      }
+    },
+    "aios-governance": {
+      "command": "python",
+      "args": ["c:/Users/HP/OneDrive/Desktop/SEO ai agency skills/tools/fastmcp_server.py"]
+    }
+  }
+}
+```
+
+**To reload MCPs after config changes:** Restart Claude Desktop
+
+---
+
+### MCP Best Practices
+
+1. **Always try MCP first** - Faster, safer, more reliable
+2. **Check MCP availability** - If tool fails, fallback to Python
+3. **Use for monthly reports** - GSC MCP eliminates manual CSV exports
+4. **Parallel execution** - PageSpeed MCP streams results (don't wait)
+5. **Type safety** - Governance MCP prevents bad arguments
+
+---
+
 ## How to Operate
 
 **Always check `tools/` before building anything new.** Only create new scripts when nothing exists for the task.
