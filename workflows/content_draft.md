@@ -6,12 +6,228 @@ description: /content_draft - Write a full SEO-optimized article from an approve
 
 ## Trigger
 ```
-/content_draft <client_name> [--brief <path_to_brief>] [--word-count <target>]
+/content_draft <client_name> [--brief <path_to_brief>] [--word-count <target>] [--aeo-mode chatgpt|perplexity|gemini]
 ```
-**Example:** `/content_draft acme_corp --brief clients/acme_corp/briefs/remote-teams.md --word-count 2000`
+**Examples:**
+- `/content_draft acme_corp --brief clients/acme_corp/briefs/remote-teams.md --word-count 2000`
+- `/content_draft acme_corp --brief clients/acme_corp/briefs/best-tools.md --aeo-mode chatgpt`
+- `/content_draft acme_corp --brief clients/acme_corp/briefs/comparison.md --aeo-mode perplexity`
 
 ## Objective
 Generate a fully SEO-optimized, AEO/GEO-ready article that ranks #1 and passes all AI detection tools. The output MUST bypass AI detectors (100% humanized) through high burstiness, varied sentence lengths, and the absolute elimination of standard AI jargon. Includes exact Titles, Metas, Schema markup, and CMS-ready formatting.
+
+---
+
+## 🚀 AI SEARCH OPTIMIZATION MODES (2026)
+
+**NEW:** If `--aeo-mode` flag is provided, apply platform-specific optimizations:
+
+### Mode 1: ChatGPT Optimization (70% AI Search Market Share)
+**When:** `--aeo-mode chatgpt`
+
+**Requirements:**
+- ✅ **Word count:** 2000+ words minimum (comprehensive depth)
+- ✅ **Citations:** Minimum 5 external authoritative sources with hyperlinks
+- ✅ **Author bio:** Place at TOP (above H1) AND bottom (after conclusion)
+- ✅ **Expertise signals:** Case studies, specific data points, "We tested 47 variations" (not "many")
+- ✅ **Structure:** Deep sections with 3-4 sub-levels (H2 → H3 → H4)
+- ✅ **Format:** How-to guides, comprehensive tutorials, comparison articles
+
+**Author Bio Format (Top):**
+```markdown
+**By [Author Name], [Title] at [Company]**
+*[2-sentence expertise summary with specific credentials]*
+```
+
+---
+
+### Mode 2: Perplexity Optimization (Citation-Heavy, Fresh Content)
+**When:** `--aeo-mode perplexity`
+
+**Requirements:**
+- ✅ **Freshness indicator:** "**Updated: March 2026**" at very top (above H1)
+- ✅ **Tone:** Reddit-style discussion (conversational, opinionated, direct)
+- ✅ **Citations:** Clear source citations with publication dates
+  - Format: "According to a March 2026 study by Stanford ([source](link))..."
+- ✅ **Comparison tables:** Side-by-side feature/pricing comparisons
+- ✅ **Numbered lists:** Use #1, #2, #3 format for rankings
+- ✅ **Recent data:** All statistics <12 months old
+- ✅ **Format:** "Best X" rankings, product comparisons, vs. articles
+
+**Freshness Format:**
+```markdown
+**Updated: March 20, 2026** | Reading time: 8 minutes
+
+# [Article Title]
+```
+
+---
+
+### Mode 3: Gemini Optimization (Google Knowledge Graph Integration)
+**When:** `--aeo-mode gemini`
+
+**Requirements:**
+- ✅ **Triple schema stacking:** Organization + Article + BreadcrumbList (already in Step 4)
+- ✅ **Entity linking:** Strong @id and sameAs properties in Organization schema
+  - Link to Wikidata/Wikipedia if brand has entry
+  - Format: `"sameAs": ["https://www.wikidata.org/wiki/Q12345"]`
+- ✅ **Structured data tables:** Pricing tables, feature matrices, comparison charts
+- ✅ **Clear hierarchy:** Proper breadcrumb implementation
+- ✅ **Internal linking:** Rich anchor text linking to related content
+- ✅ **Knowledge Graph entities:** Mention related entities (people, companies, concepts)
+- ✅ **Format:** Informational articles, guides, entity-rich content
+
+**Entity Schema Example:**
+```json
+{
+  "@type": "Organization",
+  "@id": "https://acmecorp.com/#organization",
+  "name": "Acme Corp",
+  "sameAs": [
+    "https://www.wikidata.org/wiki/Q12345",
+    "https://en.wikipedia.org/wiki/Acme_Corporation"
+  ]
+}
+```
+
+---
+
+### Mode 4: Default (No --aeo-mode flag)
+**When:** No flag provided
+
+**Use:** Generic best practices (current workflow behavior)
+- Answer blocks after H2s (50-75 words)
+- FAQ section
+- Standard schema
+- E-E-A-T phrasing
+
+---
+
+## 📊 ARTICLE TEMPLATES BY TYPE (2026 Best Practices)
+
+### Template 1: "Best X" / Numbered Ranking Articles
+
+**When to Use:**
+- Keywords containing: "best", "top", "alternatives", "vs", "comparison"
+- AI engines cite numbered rankings **3.2x more** than unstructured lists
+- ChatGPT and Perplexity heavily favor this format
+
+**MANDATORY FORMAT:**
+
+```markdown
+## The [Number] Best [Category] in 2026
+
+### #1. [Product/Service Name] — Best Overall
+**Quick Take:** [50-75 word summary of what it is, why it's #1, and who it's for]
+
+**Key Features:**
+- [Feature 1 with specific detail]
+- [Feature 2 with specific detail]
+- [Feature 3 with specific detail]
+
+**Pros:**
+- ✅ [Specific advantage]
+- ✅ [Specific advantage]
+- ✅ [Specific advantage]
+
+**Cons:**
+- ❌ [Specific limitation]
+- ❌ [Specific limitation]
+
+**Best For:** [Specific use case or user type]
+
+**Pricing:** [Exact price with plan details, e.g., "$49/month (Pro plan) or $99/month (Enterprise)"]
+
+**Our Experience:** [First-hand take with proof - "We tested this for 90 days with 15 clients and saw..." OR "Based on 50+ user reviews, the most common feedback is..."]
+
+---
+
+### #2. [Product/Service Name] — Best for [Specific Category]
+**Quick Take:** [50-75 word summary]
+
+[Repeat same structure as #1]
+
+---
+
+### #3. [Product/Service Name] — Best Budget Option
+**Quick Take:** [50-75 word summary]
+
+[Repeat same structure as #1]
+
+---
+
+[Continue for all rankings - typically 5-10 items maximum]
+```
+
+**CRITICAL RULES:**
+- ✅ **Use numbered format:** #1, #2, #3 (not "First", "Second", "Third")
+- ✅ **Category tags:** Each item gets a specific "Best for X" designation (never repeat categories)
+- ✅ **Specific pricing:** Exact numbers with plan names, not "affordable" or "expensive"
+- ✅ **Proof required:** Every "Our Experience" section needs either:
+  - Specific data ("increased conversions by 23%")
+  - Timeline ("used it for 6 months")
+  - Sample size ("tested with 47 clients")
+  - Screenshot/image showing actual results
+- ✅ **Balanced pros/cons:** Minimum 3 pros, minimum 2 cons (shows objectivity)
+- ✅ **Quick comparison table:** Add this AFTER all individual rankings:
+
+```markdown
+## Quick Comparison Table
+
+| Rank | Product | Best For | Pricing | Rating |
+|------|---------|----------|---------|--------|
+| #1 | [Name] | [Category] | $X/mo | ⭐⭐⭐⭐⭐ (4.8/5) |
+| #2 | [Name] | [Category] | $X/mo | ⭐⭐⭐⭐☆ (4.5/5) |
+| #3 | [Name] | [Category] | $X/mo | ⭐⭐⭐⭐☆ (4.6/5) |
+```
+
+**AI Search Optimization Notes:**
+- **ChatGPT:** Prefers comprehensive depth (500+ words per ranked item for top 3)
+- **Perplexity:** Prefers concise summaries (200-300 words per item) with clear citations
+- **Gemini:** Requires strong schema markup (ItemList + Product schema for each ranked item)
+
+---
+
+### Template 2: Comparison Articles ("X vs Y")
+
+**When to Use:**
+- Keywords: "[Product A] vs [Product B]", "[Solution] alternative", "better than [X]"
+
+**MANDATORY FORMAT:**
+
+```markdown
+## [Product A] vs [Product B]: Which is Better in 2026?
+
+**TL;DR:** [One-sentence verdict - e.g., "Product A wins for enterprises, Product B for startups"]
+
+### Side-by-Side Comparison
+
+| Feature | Product A | Product B | Winner |
+|---------|-----------|-----------|--------|
+| Pricing | $99/mo | $49/mo | 👑 Product B |
+| Ease of Use | 4.2/5 | 4.8/5 | 👑 Product B |
+| Integrations | 150+ | 50+ | 👑 Product A |
+| Support | Email only | 24/7 live chat | 👑 Product B |
+| Advanced Features | ✅ Yes | ❌ Limited | 👑 Product A |
+
+### When to Choose Product A
+- [Specific use case 1]
+- [Specific use case 2]
+- [Specific use case 3]
+
+### When to Choose Product B
+- [Specific use case 1]
+- [Specific use case 2]
+- [Specific use case 3]
+
+### Our Recommendation
+[Neutral, data-driven recommendation based on user type]
+```
+
+**CRITICAL RULES:**
+- ✅ **Winner column:** Declare clear winner per category (shows objectivity)
+- ✅ **No bias:** If sponsored/affiliate, disclose at top: "**Disclosure:** This article contains affiliate links."
+- ✅ **Use case clarity:** Each product gets specific scenarios where it wins
 
 ---
 
@@ -38,6 +254,53 @@ Do NOT use these words under any circumstances: *delve, moreover, furthermore, t
 - Include specific data points, real examples, and concrete numbers (not vague "many" or "several")
 - Reference authoritative sources with hyperlinks (minimum 3-5 external links)
 - Show expertise through nuanced takes, not just surface-level information
+
+**5. VISUAL PROOF REQUIREMENTS (2026 E-E-A-T):**
+**CRITICAL:** Content MUST include minimum 2 of these visual proof elements:
+
+✅ **Screenshots of actual results**
+  - Before/after comparisons
+  - Dashboard screenshots showing real metrics
+  - Analytics data (with sensitive info redacted)
+  - Example: "seo-audit-results-before-after-2026.png"
+
+✅ **Original data tables/charts**
+  - Survey results with sample size
+  - Case study metrics (conversion rates, traffic growth)
+  - A/B test results
+  - Benchmark data you collected
+
+✅ **Process screenshots/walkthroughs**
+  - Step-by-step tool usage with actual screenshots
+  - Configuration screenshots
+  - Example: "google-search-console-setup-step3.png"
+
+✅ **Team/author photos**
+  - Author headshot with bio
+  - Team working on project
+  - Behind-the-scenes of service delivery
+
+✅ **Client logos/testimonials**
+  - Recognizable brand logos (with permission)
+  - Screenshot of review/testimonial
+  - Video thumbnail of client interview
+
+**Image Format Rules:**
+- ❌ **NEVER:** Generic stock photos, image001.png, placeholder images
+- ✅ **ALWAYS:** Descriptive filenames with keywords
+  - Good: `remote-team-slack-integration-dashboard-2026.png`
+  - Bad: `image001.png`, `screen-shot-2026.png`
+- ✅ **Alt text:** Detailed description (50-125 chars) with primary keyword
+  - Example: `alt="Remote team management dashboard showing Slack integration metrics and productivity scores"`
+- ✅ **Caption:** Context below image explaining what's shown
+- ✅ **Frequency:** Minimum 1 image every 300 words (aim for 1 per 200 words)
+
+**Where Visual Proof Goes:**
+1. Right after H2 introducing new section (context-setting image)
+2. During process explanations (step-by-step screenshots)
+3. When citing data/results (chart, table, or screenshot)
+4. In case study sections (before/after, client results)
+5. Author bio section (headshot)
 
 ---
 

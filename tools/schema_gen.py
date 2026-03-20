@@ -170,16 +170,85 @@ def generate_breadcrumb_schema(breadcrumbs: list) -> dict:
     }
 
 
+def generate_triple_stack(org_data: dict, article_data: dict = None,
+                          breadcrumbs: list = None) -> list:
+    """
+    Generate triple schema stacking for maximum Gemini/Google optimization.
+
+    Returns a list of 2-3 separate schema objects:
+    1. Organization (with entity linking)
+    2. Article (if article_data provided)
+    3. BreadcrumbList (if breadcrumbs provided)
+
+    Each schema is complete and independent, but can be embedded on the same page.
+
+    Args:
+        org_data: dict with keys: name, url, logo_url, description, social_links,
+                  wikidata_id, wikipedia_url, address (dict), phone, email
+        article_data: dict with keys: title, url, author, description, published
+        breadcrumbs: list of {"name": "...", "url": "..."} dicts
+
+    Returns:
+        List of schema dicts (2-3 schemas)
+    """
+    schemas = []
+
+    # 1. Organization schema (always included, with entity linking)
+    org_schema = generate_organization_schema(
+        name=org_data["name"],
+        url=org_data["url"],
+        logo_url=org_data.get("logo_url", ""),
+        description=org_data.get("description", ""),
+        social_links=org_data.get("social_links", []),
+        entity_mode=True,  # Always enable entity mode for triple stack
+        wikidata_id=org_data.get("wikidata_id", ""),
+        wikipedia_url=org_data.get("wikipedia_url", ""),
+        address=org_data.get("address"),
+        phone=org_data.get("phone", ""),
+        email=org_data.get("email", "")
+    )
+    schemas.append(org_schema)
+
+    # 2. Article schema (if article data provided)
+    if article_data:
+        article_schema = generate_article_schema(
+            title=article_data["title"],
+            url=article_data["url"],
+            author=article_data.get("author", "Site Author"),
+            description=article_data.get("description", ""),
+            published=article_data.get("published"),
+            org_name=org_data["name"]
+        )
+        # Link Article to Organization via @id
+        article_schema["publisher"]["@id"] = f"{org_data['url']}/#organization"
+        schemas.append(article_schema)
+
+    # 3. BreadcrumbList schema (if breadcrumbs provided)
+    if breadcrumbs and len(breadcrumbs) > 0:
+        breadcrumb_schema = generate_breadcrumb_schema(breadcrumbs)
+        schemas.append(breadcrumb_schema)
+
+    return schemas
+
+
 def wrap_in_script_tag(schema: dict) -> str:
     """Wrap schema dict in a <script> tag for HTML embedding."""
     return f'<script type="application/ld+json">\n{json.dumps(schema, indent=2)}\n</script>'
 
 
+def wrap_schemas_in_script_tags(schemas: list) -> str:
+    """
+    Wrap multiple schemas in separate <script> tags for triple stacking.
+    Each schema gets its own <script type="application/ld+json"> block.
+    """
+    return "\n\n".join([wrap_in_script_tag(schema) for schema in schemas])
+
+
 def main():
     parser = argparse.ArgumentParser(description="JSON-LD Schema Generator")
     parser.add_argument("--type", required=True,
-                        choices=["Article", "LocalBusiness", "Organization", "BreadcrumbList", "Product", "Service"],
-                        help="Schema type. Note: FAQPage is restricted to gov/health sites. HowTo is deprecated.")
+                        choices=["Article", "LocalBusiness", "Organization", "BreadcrumbList", "Product", "Service", "TripleStack"],
+                        help="Schema type. Use 'TripleStack' for Gemini optimization (Org + Article + Breadcrumbs). Note: FAQPage is restricted to gov/health sites. HowTo is deprecated.")
     parser.add_argument("--output", help="Output file path (JSON or HTML)")
     parser.add_argument("--wrap-html", action="store_true", help="Wrap in <script> tag")
 
@@ -264,6 +333,73 @@ def main():
                                               args.entity_mode, args.wikidata_id,
                                               args.wikipedia_url, address_dict,
                                               args.phone, args.email)
+
+    elif args.type == "TripleStack":
+        # Triple schema stacking for Gemini/Google optimization
+        org_name = args.org_name or args.business_name
+        assert org_name and args.url, "--org-name (or --business-name) and --url required for TripleStack"
+
+        # Build org_data dict
+        social = [s.strip() for s in args.social_links.split(",")] if args.social_links else []
+        address_dict = None
+        if args.street or args.city or args.state or args.zip or args.country:
+            address_dict = {
+                "streetAddress": args.street,
+                "addressLocality": args.city,
+                "addressRegion": args.state,
+                "postalCode": args.zip,
+                "addressCountry": args.country
+            }
+
+        org_data = {
+            "name": org_name,
+            "url": args.url,
+            "logo_url": args.logo_url,
+            "description": args.description,
+            "social_links": social,
+            "wikidata_id": args.wikidata_id,
+            "wikipedia_url": args.wikipedia_url,
+            "address": address_dict,
+            "phone": args.phone,
+            "email": args.email
+        }
+
+        # Build article_data dict (optional)
+        article_data = None
+        if args.title:
+            article_data = {
+                "title": args.title,
+                "url": args.url,  # Can be different if needed
+                "author": args.author,
+                "description": args.description,
+                "published": args.published
+            }
+
+        # Build breadcrumbs list (optional)
+        breadcrumbs = None
+        if args.breadcrumbs_json:
+            breadcrumbs = json.loads(args.breadcrumbs_json)
+
+        # Generate triple stack
+        schemas = generate_triple_stack(org_data, article_data, breadcrumbs)
+
+        # For triple stack, we need to handle output differently
+        if args.wrap_html:
+            output_content = wrap_schemas_in_script_tags(schemas)
+        else:
+            # Output as JSON array
+            output_content = json.dumps(schemas, indent=2)
+
+        # Write output and exit early (skip single-schema logic below)
+        if args.output:
+            Path(args.output).parent.mkdir(parents=True, exist_ok=True)
+            with open(args.output, "w", encoding="utf-8") as f:
+                f.write(output_content)
+            print(f"[Output] Triple schema stack saved to: {args.output}")
+            print(f"[Info] Generated {len(schemas)} schemas: {', '.join([s['@type'] for s in schemas])}")
+        else:
+            print(output_content)
+        return  # Exit early to avoid single-schema output logic
 
     elif args.type == "BreadcrumbList":
         assert args.breadcrumbs_json, "--breadcrumbs-json required"

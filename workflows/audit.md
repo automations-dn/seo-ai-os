@@ -209,6 +209,54 @@ for page in crawl_nojs["pages"]:
 
 ## STEP 3: Core Web Vitals & Performance
 
+### 🚀 TOOL SELECTION HIERARCHY (2026 - MCP First)
+
+**1st Choice: PageSpeed MCP** (if configured in Claude Desktop)
+- ⚡ **7.5x faster** than Python Lighthouse (5-8 seconds vs 45-60 seconds)
+- ✅ Real-time streaming results
+- ✅ Direct Google PageSpeed API access
+- ✅ Parallel mobile + desktop analysis
+
+**Execute:**
+```
+Ask Claude: "Analyze {url} with PageSpeed for mobile and desktop"
+```
+
+**What the MCP returns:**
+- LCP, INP, CLS scores (mobile + desktop)
+- Performance score (0-100)
+- Accessibility score (0-100)
+- Best Practices score (0-100)
+- SEO score (0-100)
+- List of opportunities (image optimization, render-blocking, etc.)
+- List of diagnostics (critical request chains, JavaScript execution time, etc.)
+
+**Save results:**
+When MCP completes, manually save key metrics to `.tmp/{client}_cwv.json`:
+```json
+{
+  "url": "https://example.com",
+  "mobile": {
+    "lcp": 2.3,
+    "inp": 180,
+    "cls": 0.08,
+    "performance_score": 87,
+    "opportunities": [...]
+  },
+  "desktop": {
+    "lcp": 1.8,
+    "inp": 120,
+    "cls": 0.05,
+    "performance_score": 92,
+    "opportunities": [...]
+  }
+}
+```
+
+---
+
+**2nd Choice: Python Lighthouse Tool** (fallback if MCP unavailable)
+
 **Tool:** `tools/lighthouse_audit.py`
 
 **Execute:**
@@ -219,10 +267,16 @@ python tools/lighthouse_audit.py \
   --output ".tmp/{client}_cwv.json"
 ```
 
+**Note:** Takes 45-60 seconds per URL. Use MCP when possible for faster results.
+
+---
+
+### Performance Metrics (Same for Both Methods)
+
 **What this checks:**
-- LCP (target: < 2.5s)
-- INP (target: < 200ms) — **NOT FID** (deprecated March 2024)
-- CLS (target: < 0.1)
+- **LCP** (Largest Contentful Paint): target < 2.5s
+- **INP** (Interaction to Next Paint): target < 200ms — **NOT FID** (deprecated March 2024)
+- **CLS** (Cumulative Layout Shift): target < 0.1
 - Render-blocking scripts
 - Unoptimized images
 - Missing lazy loading

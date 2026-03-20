@@ -120,38 +120,59 @@ if brand_kit["gsc_connected"] == false:
 fi
 ```
 
-**Tool Option 1 (Preferred): MCP `mcp__gsc` (if configured)**
+---
+
+### 🚀 TOOL SELECTION HIERARCHY (2026 - MCP First)
+
+**1st Choice: GSC MCP Server** (if configured in Claude Desktop)
+- ✅ **Real-time API access** to Google Search Console
+- ✅ **No CSV exports needed** (fully automated)
+- ✅ **Fresh data** always (no stale cached files)
+- ✅ **Date range filtering** built-in
+- ✅ **OAuth 2.0 authenticated** (secure)
 
 **Execute:**
-```bash
-# Check if MCP GSC server is available
-# User will ask: "Get GSC data for {website_url} from {start_date} to {end_date}"
-# MCP server will return JSON with clicks, impressions, CTR, position data
+```
+Ask Claude: "Get top keywords from GSC for {website_url} from {start_date} to {end_date}"
 ```
 
-**MCP will return:**
+**Available MCP Commands:**
+1. **Get top keywords:**
+   - "Get top 50 keywords from GSC for metalbarns.in for last 30 days"
+   - Returns: query, clicks, impressions, CTR, position
+
+2. **Get top pages:**
+   - "Get top 20 pages from GSC for acmecorp.com for last month"
+   - Returns: URL, clicks, impressions, CTR
+
+3. **Query search analytics:**
+   - "Query GSC analytics for {site_url} from 2026-02-01 to 2026-02-28"
+   - Returns: total clicks, impressions, CTR, avg position
+
+4. **URL inspection:**
+   - "Check index status for {url} in GSC"
+   - Returns: indexed status, last crawl date, coverage issues
+
+**Save Results:**
+When MCP returns data, save to `.tmp/{client}_gsc_{month}.json`:
 ```json
 {
+  "period": "{start_date} to {end_date}",
   "total_clicks": 12450,
   "total_impressions": 345000,
   "avg_ctr": 3.6,
   "avg_position": 12.4,
-  "top_queries": [
-    {"query": "project management software", "clicks": 850, "impressions": 12000, "position": 5.2},
-    {"query": "team collaboration tools", "clicks": 720, "impressions": 9500, "position": 7.1}
-  ],
-  "top_pages": [
-    {"url": "https://acmecorp.com/features", "clicks": 1200, "impressions": 18000},
-    {"url": "https://acmecorp.com/pricing", "clicks": 980, "impressions": 15000}
-  ],
-  "new_keywords_top10": ["remote team management", "async collaboration"],
-  "dropped_keywords": ["project tracking software"]
+  "top_queries": [...],
+  "top_pages": [...],
+  "source": "mcp_gsc"
 }
 ```
 
-**Tool Option 2 (Fallback): Manual CSV Export**
+---
 
-If MCP not available:
+**2nd Choice: Manual CSV Export** (fallback if MCP unavailable)
+
+**If MCP not configured:**
 ```
 1. Inform user: "[WARNING] GSC MCP not configured. Please export CSV from Search Console:"
 2. Instructions:
@@ -161,6 +182,10 @@ If MCP not available:
    - Save to: `.tmp/{client_name}_gsc_{month}.csv`
 3. Read the CSV and parse manually
 ```
+
+---
+
+### Data Validation (Same for Both Methods)
 
 **Validate GSC output:**
 ```bash
