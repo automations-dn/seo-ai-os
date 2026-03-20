@@ -260,41 +260,140 @@ class AEOGrader:
 
     def _calculate_platform_scores(self, results: Dict) -> Dict:
         """
-        Calculate platform-specific scores.
+        Calculate platform-specific scores based on 2026 best practices.
         Different AI engines weight factors differently.
+
+        ChatGPT (70% market share): Comprehensive depth, citations, author credibility
+        Perplexity (citation-heavy): Fresh content (<90 days), numbered format, sources
+        Gemini (Knowledge Graph): Triple schema, entity linking, structured data
         """
         overall = results['overall_score']
         factors = results['factors']
 
-        # ChatGPT: Prefers recent content, structured data, citations
+        # === CHATGPT SCORING (70% AI Search Market Share) ===
+        # Base preferences: Comprehensive (2000+ words assumed from content), deep citations, author expertise
         chatgpt_score = overall
+
+        # Freshness signals (+10 max)
         if factors['freshness']:
+            chatgpt_score += 10  # Mentions 2024-2026
+
+        # Citation depth (+15 max)
+        if factors['data_citations'] >= 5:
+            chatgpt_score += 15  # 5+ sources = authoritative
+        elif factors['data_citations'] >= 3:
+            chatgpt_score += 10  # 3-4 sources = good
+        elif factors['data_citations'] >= 1:
+            chatgpt_score += 5   # 1-2 sources = minimal
+
+        # Structured content (+10 max)
+        if factors['concise_answers'] >= 5:
+            chatgpt_score += 10  # 5+ answer blocks = comprehensive
+        elif factors['concise_answers'] >= 3:
             chatgpt_score += 5
-        if factors['data_citations'] >= 3:
-            chatgpt_score += 5
+
+        # Headings structure (depth matters for ChatGPT)
+        if factors['clear_headings']:
+            chatgpt_score += 5  # Deep H2→H3→H4 structure
+
         chatgpt_score = min(chatgpt_score, 100)
 
-        # Perplexity: Values citations heavily, academic tone
+        # === PERPLEXITY SCORING (Citation-Heavy, Fresh Content) ===
+        # Base preferences: Freshness <90 days (46.7% citations), numbered format, clear sources
         perplexity_score = overall
+
+        # Freshness is CRITICAL for Perplexity (+20 max)
+        if factors['freshness']:
+            perplexity_score += 20  # 46.7% of citations from <90 day content
+
+        # Citations are mandatory (+20 max)
         if factors['data_citations'] >= 5:
+            perplexity_score += 20  # Heavy citation = Perplexity loves this
+        elif factors['data_citations'] >= 3:
             perplexity_score += 10
-        if factors['structured_tables'] >= 1:
+
+        # Numbered format (#1, #2, #3) (+10 max)
+        if factors['listicle_format']:
+            perplexity_score += 10  # Numbered rankings = 3.2x citability
+
+        # Comparison tables (+10 max)
+        if factors['structured_tables'] >= 2:
+            perplexity_score += 10  # Side-by-side comparisons
+        elif factors['structured_tables'] >= 1:
             perplexity_score += 5
+
         perplexity_score = min(perplexity_score, 100)
 
-        # Gemini: Integrates with Google Knowledge Graph, prefers schema
+        # === GEMINI SCORING (Google Knowledge Graph Integration) ===
+        # Base preferences: Triple schema stacking, entity linking, structured markup
         gemini_score = overall
+
+        # Schema markup is CRITICAL for Gemini (+20 max)
         if factors['faq_schema']:
-            gemini_score += 10
+            gemini_score += 20  # FAQ/Article/Organization schema
+
+        # Heading structure for Google indexing (+10 max)
         if factors['clear_headings']:
+            gemini_score += 10  # Clear H1/H2/H3 hierarchy
+
+        # Structured data tables (+10 max)
+        if factors['structured_tables'] >= 2:
+            gemini_score += 10  # Gemini parses tables well
+        elif factors['structured_tables'] >= 1:
             gemini_score += 5
+
+        # Multimedia signals (+5 max)
+        if factors['multimedia'] >= 3:
+            gemini_score += 5  # Images/videos help Google's multimodal understanding
+
+        # Citations (Google still values authority) (+10 max)
+        if factors['data_citations'] >= 5:
+            gemini_score += 10
+
         gemini_score = min(gemini_score, 100)
 
         return {
             'chatgpt': chatgpt_score,
             'perplexity': perplexity_score,
-            'gemini': gemini_score
+            'gemini': gemini_score,
+            'highest_potential': max(chatgpt_score, perplexity_score, gemini_score),
+            'optimization_priority': self._determine_optimization_priority(
+                chatgpt_score, perplexity_score, gemini_score
+            )
         }
+
+    def _determine_optimization_priority(self, chatgpt: int, perplexity: int, gemini: int) -> str:
+        """
+        Determine which platform to prioritize for optimization based on scores.
+        Recommend focusing on the platform where the content has the most potential.
+        """
+        scores = {
+            'ChatGPT (70% market share)': chatgpt,
+            'Perplexity (citation-focused)': perplexity,
+            'Gemini (Google Knowledge Graph)': gemini
+        }
+
+        # Find lowest score (biggest opportunity for improvement)
+        lowest_platform = min(scores, key=scores.get)
+        lowest_score = scores[lowest_platform]
+
+        # Find highest score (already strong)
+        highest_platform = max(scores, key=scores.get)
+        highest_score = scores[highest_platform]
+
+        # If all scores are similar (within 10 points), recommend ChatGPT (70% market share)
+        if highest_score - lowest_score <= 10:
+            return "All platforms: Content is balanced, prioritize ChatGPT (70% market share)"
+
+        # If Perplexity is lowest, prioritize it (biggest impact potential)
+        if lowest_score < 60:
+            return f"PRIORITY: {lowest_platform} (score: {lowest_score}/100) - Biggest improvement opportunity"
+
+        # If all scores >70, content is strong
+        if lowest_score >= 70:
+            return f"All platforms are strong (lowest: {lowest_score}/100). Focus on distribution."
+
+        return f"PRIORITY: {lowest_platform} (score: {lowest_score}/100)"
 
     def _generate_recommendations(self, results: Dict) -> List[str]:
         """Generate actionable recommendations"""
@@ -412,10 +511,12 @@ def main():
 
     print(f"\n[OK] AEO Analysis Complete")
     print(f"\nOverall Score: {results['overall_score']}/100")
-    print(f"\nPlatform Scores:")
-    print(f"  ChatGPT:    {results['platform_scores']['chatgpt']}/100")
-    print(f"  Perplexity: {results['platform_scores']['perplexity']}/100")
-    print(f"  Gemini:     {results['platform_scores']['gemini']}/100")
+    print(f"\nPlatform-Specific Scores (2026):")
+    print(f"  ChatGPT (70% market):    {results['platform_scores']['chatgpt']}/100")
+    print(f"  Perplexity (citations):  {results['platform_scores']['perplexity']}/100")
+    print(f"  Gemini (Knowledge Graph): {results['platform_scores']['gemini']}/100")
+    print(f"  Highest Potential:       {results['platform_scores']['highest_potential']}/100")
+    print(f"\n[RECOMMENDATION] {results['platform_scores']['optimization_priority']}")
 
     print(f"\nOptimization Factors:")
     for factor, value in results['factors'].items():
