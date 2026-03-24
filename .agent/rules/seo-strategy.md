@@ -67,9 +67,9 @@ Flag every image issue found with the page URL and the specific fix.
 
 ### 6. Off-Page & Authority Audit
 - Backlink profile: Domain Rating, referring domains, top linking pages
-  - If tools unavailable: estimate from site age + category, label ⚠️ Estimated
+  - If tools unavailable: State that data is currently unavailable via API/Tools.
 - Link building opportunities (always include all 4):
-  - 3 Digital PR media targets (real publication names + estimated DA)
+  - 3 Digital PR media targets (real publication names + DA)
   - 3 Guest post targets (real blogs in the industry)
   - 2 Free high-value directory listings (e.g., Clutch.co, GoodFirms)
   - 1 Resource link-building idea specific to this client's niche
@@ -107,7 +107,7 @@ Score each dimension and provide one specific improvement action:
 
 Per competitor block:
 - **Name (URL)**
-- Estimated Domain Authority
+- Domain Authority
 - Pages they have that the client doesn't
 - Their strongest target keyword
 - One thing they do better (be direct)
@@ -206,4 +206,4 @@ Close with:
 
 ## Fallback Rule (Applies to Every Field in This Template)
 
-If data is unavailable for any field: write the likely situation based on site type, write the fix as if confirmed, label it ⚠️ Estimated — verify with GSC/Ahrefs. Never leave a field blank. Never write N/A.
+If data is unavailable for any field: state that the data is unavailable. Never guess data or provide placeholder 'Estimated' values. If a section cannot be completed without data, omit the section and explain why.
