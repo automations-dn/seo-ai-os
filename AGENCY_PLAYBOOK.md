@@ -17,7 +17,7 @@ This is not another AI writing tool. This is the **complete operating system** t
 
 ## 📦 Complete System Inventory (Everything This System Can Do)
 
-### 🔧 All 25 Tools (Python Scripts)
+### 🔧 All 26 Tools (Python & JS Scripts)
 
 **Keyword Research & Analysis:**
 1. **competitor_gap.py** - Find keywords competitors rank for that you don't
@@ -59,6 +59,7 @@ This is not another AI writing tool. This is the **complete operating system** t
 23. **fetch_page.py** - Fetch and parse web pages
 24. **fetch_free_ai.py** - Access free AI search data
 25. **fastmcp_server.py** - MCP server for integrations
+26. **geo_monitor/** - Live AI query trackers (Perplexity, ChatGPT, Google AI) ⭐ NEW
 
 ---
 
@@ -500,6 +501,16 @@ python tools/schema_gen.py --type Organization --entity-mode --wikidata-id Q1234
 - **Purpose:** Connects external tools to Claude Code
 - **Integration:** Allows Claude to call external APIs
 - **Use case:** Custom integrations
+
+**26. geo_monitor/ (AI Citation Accuracy Trackers)** ⭐ NEW 2026
+- **What it does:** Real-time API monitoring scripts that simulate user queries against ChatGPT, Perplexity, and Google AI Overviews to check if your content is actually being cited.
+- **Includes:**
+  - `perplexity.js` (queries the sonar model and counts exact citations)
+  - `chatgpt_search.js` (tests ChatGPT's web search capabilities)
+  - `google_ai_overview.js` (checks SERPs for People Also Ask and AI overviews)
+- **How to use:** `node tools/geo_monitor/perplexity.js` 
+- **Output:** Live metrics including response time, cost, and explicit citations found.
+- **Use case:** Unlike `aeo_grader.py` which *predicts* performance before publishing, these scripts provide *very accurate, real data* after publishing to prove AEO/GEO ROI to clients.
 
 ---
 
