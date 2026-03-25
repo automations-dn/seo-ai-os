@@ -86,7 +86,7 @@ Best,
 Display prospects table in chat:
 
 ```
-🔗 Link Building Prospects Found: <N>
+Link Building Prospects Found: <N>
 
 Top 10 Qualified Prospects:
 ┌─────────────────────────┬──────────┬──────────────┬────────────────────┐

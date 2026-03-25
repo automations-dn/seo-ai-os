@@ -14,7 +14,7 @@ Type `/add_client <name>` to onboard your first client.
 
 ---
 
-## 🚨 GLOBAL RULES — Apply to Every Single Task
+## GLOBAL RULES — Apply to Every Single Task
 
 ### Rule 1: Never Auto-Create a Client Record
 Auditing a URL ≠ adding a client. Only create a `clients/` folder if the user explicitly says "add as client", "onboard", or "set up as new client". If they want both, collect all brand kit fields FIRST, then run the audit.
@@ -32,7 +32,7 @@ Before creating any client folder, collect all fields from `clients/_template/br
 ### Rule 3: Audit Output = Downloadable .docx
 All reports are generated via `tools/report_builder.py`. Always provide a clickable download link after generation:
 ```
-📄 Download: [ClientName_Audit_YYYY-MM-DD.docx](file:///full/path/to/report.docx)
+ Download: [ClientName_Audit_YYYY-MM-DD.docx](file:///full/path/to/report.docx)
 ```
 Format must match `templates/Example Audit template.docx`.
 
@@ -46,10 +46,10 @@ When generating reports, `report_builder.py` was converting URLs inconsistently:
 - Result: `framework_data` was always empty → score caps never applied → false 10/10 scores
 
 **The Solution:**
-1. ✅ Created `tools/utils.py` with centralized `url_to_slug()` function
-2. ✅ Updated `report_builder.py` to import and use `url_to_slug()`
-3. ✅ Added pre-flight validation that blocks report generation if required files missing
-4. ✅ All tools now use consistent slug format
+1. Created `tools/utils.py` with centralized `url_to_slug()` function
+2. Updated `report_builder.py` to import and use `url_to_slug()`
+3. Added pre-flight validation that blocks report generation if required files missing
+4. All tools now use consistent slug format
 
 **Standard Slug Format:**
 ```python
@@ -81,10 +81,10 @@ python tools/validate_audit_files.py --url https://metalbarns.in
 ```
 
 **CRITICAL RULES:**
-- ❌ NEVER manually convert URLs to slugs with `.replace()` chains
-- ✅ ALWAYS use `from utils import url_to_slug`
-- ✅ ALWAYS use pattern: `.tmp/{url_to_slug(url)}_{file_type}.json`
-- ✅ When calling audit tools, always use the same slug for all file outputs
+- NEVER manually convert URLs to slugs with `.replace()` chains
+- ALWAYS use `from utils import url_to_slug`
+- ALWAYS use pattern: `.tmp/{url_to_slug(url)}_{file_type}.json`
+- When calling audit tools, always use the same slug for all file outputs
 
 ### Rule 5: Standard Work Flow
 Ask → Confirm intent → Execute → Show summary → Provide file link → Ask what's next
@@ -179,7 +179,7 @@ The JS crawl result is the user experience score. They are different metrics.
 **RULE: Never report "Technical SEO: 10/10" for any React CRA, Vue SPA, or Angular CSR site.**
 
 **RULE: Issue #1 for any CSR_SPA site is ALWAYS the framework migration, not any on-page issue.**
-All other issues should note: "⚠️ Blocked by architecture — fix framework first before addressing this issue."
+All other issues should note: "Blocked by architecture — fix framework first before addressing this issue."
 
 **Examples:**
 - React CRA (CSR) → CRITICAL, cap scores, recommend Next.js migration
@@ -271,7 +271,7 @@ Never give generic growth ideas. Before writing this section, identify the clien
 
 Ready to [desired outcome]? [Action with urgency].
 
-👉 [CTA Button Text](conversion-page-link)
+[CTA Button Text](conversion-page-link)
 ```
 
 ### Rule 18: AEO/GEO Optimization (AI Search)
@@ -290,7 +290,7 @@ Monitor unlinked brand mentions on tier-1 domains (Reddit, Quora, News). AI engi
 
 ---
 
-## 🔧 TOOL EXECUTION PROTOCOL — Critical for Success
+## TOOL EXECUTION PROTOCOL — Critical for Success
 
 ### Tool Selection Hierarchy
 
@@ -473,9 +473,9 @@ def is_file_fresh(filepath: str, max_age_hours: int = 24) -> bool:
 
 # Usage:
 if is_file_fresh(f".tmp/{client}_serp.json"):
-    print("[OK] Using cached SERP data from", file.stat().st_mtime)
+    print("Using cached SERP data from", file.stat().st_mtime)
 else:
-    print("🔄 Data is stale, regenerating...")
+    print("Data is stale, regenerating...")
     # Run tool again
 ```
 
@@ -601,12 +601,12 @@ You operate inside the **WAT framework** (Workflows → Agents → Tools):
 
 ---
 
-## 🔌 MCP SERVERS — Supercharged Tool Access
+## MCP SERVERS — Supercharged Tool Access
 
 **As of 2026-03-18, you have 3 active MCP servers configured for maximum power:**
 
 ### 1. PageSpeed Insights MCP (`mcp__pagespeed_analyze`)
-**Status:** ✅ ACTIVE
+**Status:** ACTIVE
 **Purpose:** Real-time Core Web Vitals analysis
 **Package:** `@ruslanlap/pagespeed-insights-mcp` v1.1.1
 
@@ -635,7 +635,7 @@ You operate inside the **WAT framework** (Workflows → Agents → Tools):
 ---
 
 ### 2. Google Search Console MCP (`mcp__gsc`)
-**Status:** ✅ ACTIVE
+**Status:** ACTIVE
 **Purpose:** Direct GSC API access for keyword & performance data
 **Location:** `tools/mcp-gsc/gsc_server.py`
 
@@ -680,7 +680,7 @@ mcp__gsc.inspect_url(
 ---
 
 ### 3. AIOS Governance Server (`mcp__aios`)
-**Status:** ✅ ACTIVE
+**Status:** ACTIVE
 **Purpose:** Type-safe wrapper for core AIOS Python tools
 **Location:** `tools/fastmcp_server.py`
 
@@ -715,89 +715,89 @@ mcp__aios.run_seo_crawler(
 **Rule: Use the right tool for each specific task. MCP for performance, Python for SEO depth.**
 
 #### Core Web Vitals / Performance Analysis
-1. ✅ **MCP:** `mcp__pagespeed` tools (ALWAYS use - 7.5x faster)
+1. **MCP:** `mcp__pagespeed` tools (ALWAYS use - 7.5x faster)
    - `analyze_page_speed` - Full Lighthouse analysis
    - `get_performance_summary` - Quick CWV check
    - `crux_summary` - Real-world user data
    - `full_report` - Comprehensive performance + field data
-2. ⚠️ **Python:** `tools/lighthouse_audit.py` (ONLY if MCP fails)
-3. ❌ **WebFetch:** PageSpeed web interface (last resort)
+2. **Python:** `tools/lighthouse_audit.py` (ONLY if MCP fails)
+3. **WebFetch:** PageSpeed web interface (last resort)
 
 **PageSpeed MCP Coverage:** 100% for Performance, Accessibility, Best Practices
 
 ---
 
 #### SEO Analysis (On-Page, Meta, Headings)
-1. ✅ **Python:** `tools/on_page_analyzer.py` (REQUIRED - MCP doesn't do this)
+1. **Python:** `tools/on_page_analyzer.py` (REQUIRED - MCP doesn't do this)
    - Title tag quality (length, keywords)
    - Meta description quality
    - H1 presence and hierarchy
    - Keyword placement
    - Canonical tags
    - Robots meta
-2. 🟡 **MCP:** `mcp__pagespeed_analyze` (only gives SEO score 0-100, no details)
-3. ❌ **Never rely on PageSpeed MCP alone for SEO**
+2. **MCP:** `mcp__pagespeed_analyze` (only gives SEO score 0-100, no details)
+3. **Never rely on PageSpeed MCP alone for SEO**
 
 **PageSpeed MCP SEO Coverage:** 40% (score only, no analysis)
 
 ---
 
 #### Multi-Page Crawling (Site-Wide Analysis)
-1. ✅ **Python:** `tools/seo_crawler.py` (REQUIRED - MCP is single-page only)
+1. **Python:** `tools/seo_crawler.py` (REQUIRED - MCP is single-page only)
    - `--no-js` flag for Google's perspective
    - `--max-pages 50` for site-wide crawl
    - Detects: 404s, 301s, missing H1s, duplicate meta, internal links
-2. ✅ **MCP:** `mcp__aios.run_seo_crawler()` (type-safe wrapper, recommended)
-3. ❌ **PageSpeed MCP cannot crawl multiple pages**
+2. **MCP:** `mcp__aios.run_seo_crawler()` (type-safe wrapper, recommended)
+3. **PageSpeed MCP cannot crawl multiple pages**
 
 **PageSpeed MCP Crawling Coverage:** 0% (single-page tool)
 
 ---
 
 #### Framework Detection (React CSR vs Next.js SSR)
-1. ✅ **Python:** `tools/framework_detector.py` (REQUIRED - MCP always renders JS)
+1. **Python:** `tools/framework_detector.py` (REQUIRED - MCP always renders JS)
    - Dual-pass crawl (no-JS vs JS)
    - Detects React CSR, Next.js SSR, Gatsby SSG
    - Calculates content_ratio (Google's view vs User's view)
    - Applies score caps for CSR_SPA sites
-2. ❌ **PageSpeed MCP cannot detect framework issues** (always shows JS-rendered content)
+2. **PageSpeed MCP cannot detect framework issues** (always shows JS-rendered content)
 
 **Critical:** PageSpeed MCP would give metalbarns.in 10/10 (sees 343 words with JS). Google sees 2 words (CRITICAL issue). ALWAYS run framework_detector.py first.
 
 ---
 
 #### Schema / Structured Data Validation
-1. ✅ **Python:** `tools/schema_checker.py` (REQUIRED - MCP doesn't validate schema)
+1. **Python:** `tools/schema_checker.py` (REQUIRED - MCP doesn't validate schema)
    - Validates JSON-LD structure
    - Checks required fields
    - Entity schema (@id, sameAs)
    - Breadcrumb, Review, Product schemas
-2. 🟡 **MCP:** PageSpeed checks if schema is parseable (Yes/No only)
-3. ❌ **PageSpeed MCP doesn't validate schema quality**
+2. **MCP:** PageSpeed checks if schema is parseable (Yes/No only)
+3. **PageSpeed MCP doesn't validate schema quality**
 
 **PageSpeed MCP Schema Coverage:** 0% (parseability check only)
 
 ---
 
 #### Content Quality Analysis
-1. ✅ **Python:** `tools/nlp_analyzer.py` (REQUIRED - MCP doesn't analyze content)
+1. **Python:** `tools/nlp_analyzer.py` (REQUIRED - MCP doesn't analyze content)
    - Word count (thin content detection)
    - Readability score (Flesch-Kincaid)
    - Keyword density
    - Content-to-code ratio
    - E-E-A-T signals
-2. ❌ **PageSpeed MCP doesn't analyze content quality**
+2. **PageSpeed MCP doesn't analyze content quality**
 
 **PageSpeed MCP Content Coverage:** 0%
 
 ---
 
 #### Image SEO
-1. 🟡 **MCP:** `mcp__pagespeed.get_image_optimization_details` (optimization only)
+1. **MCP:** `mcp__pagespeed.get_image_optimization_details` (optimization only)
    - File size, format, compression
    - Lazy loading detection
    - Responsive images (srcset)
-2. ✅ **Python:** `tools/seo_crawler.py` (extracts all img tags with alt text)
+2. **Python:** `tools/seo_crawler.py` (extracts all img tags with alt text)
    - Alt text presence and quality
    - Image filename quality
    - Title attributes
@@ -808,44 +808,44 @@ mcp__aios.run_seo_crawler(
 ---
 
 #### Google Search Console Data
-1. ✅ **MCP:** `mcp__gsc` tools (DIRECT API - use by default)
+1. **MCP:** `mcp__gsc` tools (DIRECT API - use by default)
    - `query_search_analytics` - Keyword performance
    - `get_top_keywords` - Top N keywords
    - `inspect_url` - Index status
-2. ⚠️ **Manual:** Ask user to export CSV (fallback)
-3. ❌ **Estimate:** Industry benchmarks (only if no access)
+2. **Manual:** Ask user to export CSV (fallback)
+3. **Estimate:** Industry benchmarks (only if no access)
 
 **GSC MCP Coverage:** 100% (full API access)
 
 ---
 
 #### Competitor Analysis
-1. ✅ **Python:** `tools/serp_scraper.py --mode competitor_gap` (REQUIRED - no MCP)
+1. **Python:** `tools/serp_scraper.py --mode competitor_gap` (REQUIRED - no MCP)
    - Top 10 SERP analysis
    - Keyword gap identification
    - Feature comparison
-2. ❌ **No MCP available for competitor analysis**
+2. **No MCP available for competitor analysis**
 
 **PageSpeed MCP Competitor Coverage:** 0%
 
 ---
 
 #### AEO/GEO (AI Search Optimization)
-1. ✅ **Python:** `tools/aeo_grader.py` (REQUIRED - no MCP)
+1. **Python:** `tools/aeo_grader.py` (REQUIRED - no MCP)
    - Answer block detection
    - Citability scoring
    - Table/list usage for AI extraction
    - ChatGPT/Perplexity optimization
-2. ❌ **No MCP available for AEO/GEO**
+2. **No MCP available for AEO/GEO**
 
 **PageSpeed MCP AEO Coverage:** 0%
 
 ---
 
 #### Local SEO
-1. ✅ **Manual:** NAP consistency, GBP validation (no automated tool yet)
-2. ✅ **Python:** `tools/schema_checker.py` (validates LocalBusiness schema)
-3. ❌ **No MCP available for local SEO**
+1. **Manual:** NAP consistency, GBP validation (no automated tool yet)
+2. **Python:** `tools/schema_checker.py` (validates LocalBusiness schema)
+3. **No MCP available for local SEO**
 
 **PageSpeed MCP Local SEO Coverage:** 0%
 
@@ -855,21 +855,21 @@ mcp__aios.run_seo_crawler(
 
 | Task | 1st Choice | 2nd Choice | 3rd Choice | MCP Coverage |
 |------|------------|------------|------------|--------------|
-| **Core Web Vitals** | MCP pagespeed | Python lighthouse | WebFetch | 100% ✅ |
-| **Performance** | MCP pagespeed | Python lighthouse | Manual | 100% ✅ |
-| **Accessibility** | MCP pagespeed | Manual check | N/A | 100% ✅ |
-| **On-Page SEO** | Python on_page | Manual | MCP (score only) | 40% 🟡 |
-| **Multi-Page Crawl** | Python seo_crawler | Manual | N/A | 0% ❌ |
-| **Framework Detection** | Python framework_detector | Manual inspect | N/A | 0% ❌ |
-| **Schema Validation** | Python schema_checker | Manual Google test | MCP (parse only) | 0% ❌ |
-| **Content Quality** | Python nlp_analyzer | Manual read | N/A | 0% ❌ |
-| **Image SEO** | Python + MCP combined | Manual check | N/A | 50% 🟡 |
-| **GSC Data** | MCP gsc | Manual CSV | Estimate | 100% ✅ |
-| **Competitor Analysis** | Python serp_scraper | Manual SERP | N/A | 0% ❌ |
-| **AEO/GEO** | Python aeo_grader | Manual check | N/A | 0% ❌ |
-| **Local SEO** | Manual | Python schema | N/A | 0% ❌ |
+| **Core Web Vitals** | MCP pagespeed | Python lighthouse | WebFetch | 100% |
+| **Performance** | MCP pagespeed | Python lighthouse | Manual | 100% |
+| **Accessibility** | MCP pagespeed | Manual check | N/A | 100% |
+| **On-Page SEO** | Python on_page | Manual | MCP (score only) | 40% |
+| **Multi-Page Crawl** | Python seo_crawler | Manual | N/A | 0% |
+| **Framework Detection** | Python framework_detector | Manual inspect | N/A | 0% |
+| **Schema Validation** | Python schema_checker | Manual Google test | MCP (parse only) | 0% |
+| **Content Quality** | Python nlp_analyzer | Manual read | N/A | 0% |
+| **Image SEO** | Python + MCP combined | Manual check | N/A | 50% |
+| **GSC Data** | MCP gsc | Manual CSV | Estimate | 100% |
+| **Competitor Analysis** | Python serp_scraper | Manual SERP | N/A | 0% |
+| **AEO/GEO** | Python aeo_grader | Manual check | N/A | 0% |
+| **Local SEO** | Manual | Python schema | N/A | 0% |
 
-**Overall Coverage with Hybrid Approach:** 100% ✅
+**Overall Coverage with Hybrid Approach:** 100% 
 
 ---
 

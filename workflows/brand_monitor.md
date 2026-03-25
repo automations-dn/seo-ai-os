@@ -26,7 +26,7 @@ Monitor and aggregate high-quality brand mentions and reviews across the web. Br
 
 ---
 
-## 🚨 CRITICAL AWARENESS: BRAND PROMINENCE
+## CRITICAL AWARENESS: BRAND PROMINENCE
 In 2026, AI engines like Perplexity, ChatGPT, and Gemini use "Tier 1 Domain Mentions" (Reddit, Quora, News Media, GitHub) to determine if a brand is worth citing. If a client is not actively discussed on these platforms, they will not appear in LLM-generated answers.
 
 ---
@@ -100,7 +100,7 @@ Unlinked mentions are low-hanging fruit for link-building. Review the brand_ment
 - Indirect conversion (brand awareness boost)
 
 **Outreach Template (Save to `clients/<client_name>/templates/unlinked_mention_outreach.md`):**
-````markdown
+```markdown
 Subject: Quick link request for [Article Title]
 
 Hi [Author Name],
@@ -116,7 +116,7 @@ Appreciate your time!
 Best,
 [Your Name]
 [Client Brand] Marketing Team
-````
+```
 
 ### Step 5: Review Velocity & Sentiment Analysis
 Reviews directly impact:
@@ -156,7 +156,7 @@ Generate a comprehensive markdown report inside `clients/<client_name>/reports/b
 
 **Report Template Structure:**
 
-````markdown
+```markdown
 # Brand Health Report — [Client Name]
 **Report Date:** [YYYY-MM-DD]
 **Reporting Period:** [Last 30/90 days]
@@ -187,12 +187,12 @@ Generate a comprehensive markdown report inside `clients/<client_name>/reports/b
 ### Platform Breakdown:
 | Platform | Mentions | Tier-1? | Linked? |
 |----------|----------|---------|---------|
-| Reddit | [X] | ✅ | [X unlinked] |
-| Quora | [X] | ✅ | [X unlinked] |
-| News/Media | [X] | ✅ | [X unlinked] |
-| GitHub | [X] | ✅ | N/A |
-| LinkedIn | [X] | ❌ | [X unlinked] |
-| General Blogs | [X] | ❌ | [X unlinked] |
+| Reddit | [X] | Yes | [X unlinked] |
+| Quora | [X] | Yes | [X unlinked] |
+| News/Media | [X] | Yes | [X unlinked] |
+| GitHub | [X] | Yes | N/A |
+| LinkedIn | [X] | No | [X unlinked] |
+| General Blogs | [X] | No | [X unlinked] |
 
 ### Top 5 Most Authoritative Mentions:
 1. **[Platform]** - [Title](URL) - [Date] - [Linked/Unlinked]
@@ -247,7 +247,7 @@ Generate a comprehensive markdown report inside `clients/<client_name>/reports/b
 
 ## 4. Action Items for Next 30 Days
 
-### 🎯 High Priority (Complete Within 7 Days):
+### High Priority (Complete Within 7 Days):
 1. **Convert Unlinked Mentions:**
    - Reach out to [X] journalists/bloggers who mentioned the brand without linking
    - Use outreach template in `clients/[client]/templates/unlinked_mention_outreach.md`
@@ -262,7 +262,7 @@ Generate a comprehensive markdown report inside `clients/<client_name>/reports/b
    - [X% negative reviews] cite "[specific issue, e.g., slow support response]"
    - **Immediate Action:** [specific fix, e.g., hire support staff, update help docs, create video tutorials]
 
-### 📈 Medium Priority (Complete Within 30 Days):
+### Medium Priority (Complete Within 30 Days):
 4. **Launch Review Generation Campaign:**
    - Send review request emails to [X] recent customers
    - Target: Gain [X] new 5-star reviews this month
@@ -283,7 +283,7 @@ Generate a comprehensive markdown report inside `clients/<client_name>/reports/b
    - Add phrases: "[keyword 1]", "[keyword 2]", "[keyword 3]" from reviews
    - Update H2 headings and service descriptions to match customer language
 
-### 🔬 Low Priority (Ongoing Monitoring):
+### Low Priority (Ongoing Monitoring):
 7. **Set Up Brand Monitoring Alerts:**
    - Use Google Alerts for "[Brand Name]"
    - Set up Mention.com or Brand24 for real-time tracking
@@ -298,15 +298,15 @@ Generate a comprehensive markdown report inside `clients/<client_name>/reports/b
 
 ## 5. Risk Assessment
 
-### 🚨 Critical Risks:
+### Critical Risks:
 - [If applicable, e.g., "Negative sentiment spike (25% negative reviews in past 30 days) — immediate reputation management required"]
 - [If applicable, e.g., "Zero Tier-1 mentions — brand is invisible to AI search engines"]
 
-### ⚠️ Moderate Risks:
+### Moderate Risks:
 - [If applicable, e.g., "Review velocity declining (-20% vs last month) — need proactive review request campaign"]
 - [If applicable, e.g., "Competitors have 2x more Reddit presence — losing mindshare in target audience"]
 
-### ✅ Strengths:
+### Strengths:
 - [e.g., "Strong sentiment ratio (92% positive) — high customer satisfaction"]
 - [e.g., "Growing news coverage (+3 media mentions this month) — increasing authority"]
 
@@ -319,7 +319,7 @@ Generate a comprehensive markdown report inside `clients/<client_name>/reports/b
 - Brand mention tracking: Weekly
 - Review monitoring: Daily
 - Competitive analysis: Monthly
-````
+```
 
 ---
 

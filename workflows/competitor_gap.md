@@ -258,21 +258,21 @@ fi
 
 **Output in chat:**
 
-````markdown
+```markdown
 [OK] Competitor Gap Analysis Complete: {client_name}
 
-🔍 Analyzed:
+Analyzed:
   • Client: {client_url}
   • Competitors: {comp1}, {comp2}, {comp3}
 
-📊 Results:
+Results:
   • Total gap keywords found: {total}
   • Low-hanging fruit (Low/Medium difficulty): {count}
   • Grouped into {N} topical clusters
 
 ---
 
-🎯 TOP 3 TOPICAL CLUSTERS TO TARGET:
+TOP 3 TOPICAL CLUSTERS TO TARGET:
 
 **Cluster 1: {cluster_name}**
   • Keywords: {count}
@@ -303,19 +303,19 @@ fi
 
 ---
 
-📥 Full data saved to:
+Full data saved to:
   • .tmp/{client}_competitor_gap.json
   • .tmp/{client}_clusters.json
 
 ---
 
-🚀 Next Steps:
+Next Steps:
 
 Would you like me to:
 1. Generate a Content Brief for Cluster 1? (Recommended)
 2. Save this to a Google Sheet for the client?
 3. Create a 90-day content calendar based on these clusters?
-````
+```
 
 ---
 

@@ -14,7 +14,7 @@ Generate a fully SEO-optimized, AEO/GEO-ready article that ranks #1. The output 
 
 ---
 
-## 🚨 CRITICAL RULE: The "100% Human" Writing Guidelines
+##  CRITICAL RULE: The "100% Human" Writing Guidelines
 
 You must write like a Senior Subject Matter Expert, not an AI. 
 
@@ -96,7 +96,7 @@ Append this exact checklist to the very bottom of your response so the human tea
 
 ```markdown
 ---
-### 🛑 HUMAN QA REQUIRED BEFORE PUBLISHING:
+###  HUMAN QA REQUIRED BEFORE PUBLISHING:
 1. [ ] **Internal Links:** Did you manually test the internal links to ensure they make sense in context?
 2. [ ] **Brand Tone:** Did you verify the CTA matches the exact offer this month?
 3. [ ] **Media:** Did you insert the custom client images/videos into the CMS before hitting publish?

@@ -55,7 +55,7 @@ Build a complete keyword map with search intent labels, difficulty estimates (wi
 Display a structured summary in chat:
 
 ```
-📊 Keyword Research Complete for: <client_name>
+Keyword Research Complete for: <client_name>
 Seed: "<seed_keyword>"
 
 TOP OPPORTUNITIES:

@@ -347,8 +347,8 @@ Write: .tmp/{client}_brief_{slug}.json
 
 **Output in chat:**
 
-````markdown
-📋 CONTENT BRIEF: "{target_keyword}"
+```markdown
+CONTENT BRIEF: "{target_keyword}"
 Client: {client_name} | Est. Word Count: {X-Y} words
 
 PRIMARY KEYWORD: {target_keyword}
@@ -361,7 +361,7 @@ URL SLUG: /blog/{primary-keyword-format}
 
 ---
 
-📐 CONTENT STRUCTURE:
+CONTENT STRUCTURE:
 
 H1: {title}
 
@@ -404,29 +404,29 @@ H1: {title}
     • DO NOT summarize the article
     • DO NOT use "In conclusion" or "To summarize"
     • Example format:
-      ````
+      ```
       {Core insight}. {Why it matters}.
 
       Ready to {desired outcome}? {Action step with urgency}.
 
-      👉 [{CTA Button Text}]({conversion-page-link})
+       [{CTA Button Text}]({conversion-page-link})
       ```
 
 ---
 
-🔗 INTERNAL LINKS TO INCLUDE:
+INTERNAL LINKS TO INCLUDE:
   1. [{anchor_text}]({url}) — Relevance: {score}
   2. [{anchor_text}]({url}) — Relevance: {score}
   3. [{anchor_text}]({url}) — Relevance: {score}
 
-📚 EXTERNAL LINKS TO CITE:
+EXTERNAL LINKS TO CITE:
   1. {Authoritative source for statistic #1}
   2. {Industry report for data point}
   3. {Expert quote source}
 
 ---
 
-🎯 ELITE SEO COMPONENTS:
+ELITE SEO COMPONENTS:
 
   [OK] TL;DR / Key Takeaways Box (Required at top)
   [OK] Table of Contents (Required - anchor-linked)
@@ -436,7 +436,7 @@ H1: {title}
 
 ---
 
-📦 SCHEMA REQUIREMENTS:
+SCHEMA REQUIREMENTS:
 
 Article + FAQ schema as @graph JSON-LD
 **Note for writer:** Copy this block into CMS <head> section or dedicated Schema field:
@@ -466,7 +466,7 @@ Article + FAQ schema as @graph JSON-LD
 
 ---
 
-✍️ TONE NOTES:
+TONE NOTES:
 
 Write as "{persona from brand_kit}". Use {tone} voice.
 
@@ -484,7 +484,7 @@ delve, moreover, furthermore, tapestry, paramount, seamless, dynamic, robust, la
 
 ---
 
-📊 COMPETITOR BENCHMARKS:
+COMPETITOR BENCHMARKS:
 
 Average word count: {median} words
 Our target: {median + 10%} words (must be better, not just longer)
@@ -502,7 +502,7 @@ Our unique angle:
 **Then ask:**
 
 ```
-📋 Does this brief look good?
+Does this brief look good?
 
 Options:
 1. "Looks good, start writing" → I'll proceed to /content_draft

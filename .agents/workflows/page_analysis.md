@@ -103,10 +103,10 @@ Present as a clean table:
 
 | Priority | Item | Current State | Recommended Fix |
 |---|---|---|---|
-| 🔴 Critical | ... | ... | ... |
-| 🟡 High | ... | ... | ... |
-| 🔵 Medium | ... | ... | ... |
-| ⚪ Low | ... | ... | ... |
+| Critical | ... | ... | ... |
+| High | ... | ... | ... |
+| Medium | ... | ... | ... |
+| Low | ... | ... | ... |
 
 Then generate suggested replacement title, meta description, and H1 if any need changing.
 

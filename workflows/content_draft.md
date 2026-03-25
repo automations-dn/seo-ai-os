@@ -18,7 +18,7 @@ Generate a fully SEO-optimized, AEO/GEO-ready article that ranks #1 and passes a
 
 ---
 
-## 🚀 AI SEARCH OPTIMIZATION MODES (2026)
+## AI SEARCH OPTIMIZATION MODES (2026)
 
 **NEW:** If `--aeo-mode` flag is provided, apply platform-specific optimizations:
 
@@ -26,18 +26,18 @@ Generate a fully SEO-optimized, AEO/GEO-ready article that ranks #1 and passes a
 **When:** `--aeo-mode chatgpt`
 
 **Requirements:**
-- ✅ **Word count:** 2000+ words minimum (comprehensive depth)
-- ✅ **Citations:** Minimum 5 external authoritative sources with hyperlinks
-- ✅ **Author bio:** Place at TOP (above H1) AND bottom (after conclusion)
-- ✅ **Expertise signals:** Case studies, specific data points, "We tested 47 variations" (not "many")
-- ✅ **Structure:** Deep sections with 3-4 sub-levels (H2 → H3 → H4)
-- ✅ **Format:** How-to guides, comprehensive tutorials, comparison articles
+- **Word count:** 2000+ words minimum (comprehensive depth)
+- **Citations:** Minimum 5 external authoritative sources with hyperlinks
+- **Author bio:** Place at TOP (above H1) AND bottom (after conclusion)
+- **Expertise signals:** Case studies, specific data points, "We tested 47 variations" (not "many")
+- **Structure:** Deep sections with 3-4 sub-levels (H2 → H3 → H4)
+- **Format:** How-to guides, comprehensive tutorials, comparison articles
 
 **Author Bio Format (Top):**
-````markdown
+```markdown
 **By [Author Name], [Title] at [Company]**
 *[2-sentence expertise summary with specific credentials]*
-````
+```
 
 ---
 
@@ -45,21 +45,21 @@ Generate a fully SEO-optimized, AEO/GEO-ready article that ranks #1 and passes a
 **When:** `--aeo-mode perplexity`
 
 **Requirements:**
-- ✅ **Freshness indicator:** "**Updated: March 2026**" at very top (above H1)
-- ✅ **Tone:** Reddit-style discussion (conversational, opinionated, direct)
-- ✅ **Citations:** Clear source citations with publication dates
+- **Freshness indicator:** "**Updated: March 2026**" at very top (above H1)
+- **Tone:** Reddit-style discussion (conversational, opinionated, direct)
+- **Citations:** Clear source citations with publication dates
   - Format: "According to a March 2026 study by Stanford ([source](link))..."
-- ✅ **Comparison tables:** Side-by-side feature/pricing comparisons
-- ✅ **Numbered lists:** Use #1, #2, #3 format for rankings
-- ✅ **Recent data:** All statistics <12 months old
-- ✅ **Format:** "Best X" rankings, product comparisons, vs. articles
+- **Comparison tables:** Side-by-side feature/pricing comparisons
+- **Numbered lists:** Use #1, #2, #3 format for rankings
+- **Recent data:** All statistics <12 months old
+- **Format:** "Best X" rankings, product comparisons, vs. articles
 
 **Freshness Format:**
-````markdown
+```markdown
 **Updated: March 20, 2026** | Reading time: 8 minutes
 
 # [Article Title]
-````
+```
 
 ---
 
@@ -67,15 +67,15 @@ Generate a fully SEO-optimized, AEO/GEO-ready article that ranks #1 and passes a
 **When:** `--aeo-mode gemini`
 
 **Requirements:**
-- ✅ **Triple schema stacking:** Organization + Article + BreadcrumbList (already in Step 4)
-- ✅ **Entity linking:** Strong @id and sameAs properties in Organization schema
+- **Triple schema stacking:** Organization + Article + BreadcrumbList (already in Step 4)
+- **Entity linking:** Strong @id and sameAs properties in Organization schema
   - Link to Wikidata/Wikipedia if brand has entry
   - Format: `"sameAs": ["https://www.wikidata.org/wiki/Q12345"]`
-- ✅ **Structured data tables:** Pricing tables, feature matrices, comparison charts
-- ✅ **Clear hierarchy:** Proper breadcrumb implementation
-- ✅ **Internal linking:** Rich anchor text linking to related content
-- ✅ **Knowledge Graph entities:** Mention related entities (people, companies, concepts)
-- ✅ **Format:** Informational articles, guides, entity-rich content
+- **Structured data tables:** Pricing tables, feature matrices, comparison charts
+- **Clear hierarchy:** Proper breadcrumb implementation
+- **Internal linking:** Rich anchor text linking to related content
+- **Knowledge Graph entities:** Mention related entities (people, companies, concepts)
+- **Format:** Informational articles, guides, entity-rich content
 
 **Entity Schema Example:**
 ```json
@@ -103,7 +103,7 @@ Generate a fully SEO-optimized, AEO/GEO-ready article that ranks #1 and passes a
 
 ---
 
-## 📊 ARTICLE TEMPLATES BY TYPE (2026 Best Practices)
+## ARTICLE TEMPLATES BY TYPE (2026 Best Practices)
 
 ### Template 1: "Best X" / Numbered Ranking Articles
 
@@ -114,7 +114,7 @@ Generate a fully SEO-optimized, AEO/GEO-ready article that ranks #1 and passes a
 
 **MANDATORY FORMAT:**
 
-````markdown
+```markdown
 ## The [Number] Best [Category] in 2026
 
 ### #1. [Product/Service Name] — Best Overall
@@ -126,13 +126,13 @@ Generate a fully SEO-optimized, AEO/GEO-ready article that ranks #1 and passes a
 - [Feature 3 with specific detail]
 
 **Pros:**
-- ✅ [Specific advantage]
-- ✅ [Specific advantage]
-- ✅ [Specific advantage]
+- [Specific advantage]
+- [Specific advantage]
+- [Specific advantage]
 
 **Cons:**
-- ❌ [Specific limitation]
-- ❌ [Specific limitation]
+- [Specific limitation]
+- [Specific limitation]
 
 **Best For:** [Specific use case or user type]
 
@@ -157,29 +157,29 @@ Generate a fully SEO-optimized, AEO/GEO-ready article that ranks #1 and passes a
 ---
 
 [Continue for all rankings - typically 5-10 items maximum]
-````
+```
 
 **CRITICAL RULES:**
-- ✅ **Use numbered format:** #1, #2, #3 (not "First", "Second", "Third")
-- ✅ **Category tags:** Each item gets a specific "Best for X" designation (never repeat categories)
-- ✅ **Specific pricing:** Exact numbers with plan names, not "affordable" or "expensive"
-- ✅ **Proof required:** Every "Our Experience" section needs either:
+- **Use numbered format:** #1, #2, #3 (not "First", "Second", "Third")
+- **Category tags:** Each item gets a specific "Best for X" designation (never repeat categories)
+- **Specific pricing:** Exact numbers with plan names, not "affordable" or "expensive"
+- **Proof required:** Every "Our Experience" section needs either:
   - Specific data ("increased conversions by 23%")
   - Timeline ("used it for 6 months")
   - Sample size ("tested with 47 clients")
   - Screenshot/image showing actual results
-- ✅ **Balanced pros/cons:** Minimum 3 pros, minimum 2 cons (shows objectivity)
-- ✅ **Quick comparison table:** Add this AFTER all individual rankings:
+- **Balanced pros/cons:** Minimum 3 pros, minimum 2 cons (shows objectivity)
+- **Quick comparison table:** Add this AFTER all individual rankings:
 
-````markdown
+```markdown
 ## Quick Comparison Table
 
 | Rank | Product | Best For | Pricing | Rating |
 |------|---------|----------|---------|--------|
-| #1 | [Name] | [Category] | $X/mo | ⭐⭐⭐⭐⭐ (4.8/5) |
-| #2 | [Name] | [Category] | $X/mo | ⭐⭐⭐⭐☆ (4.5/5) |
-| #3 | [Name] | [Category] | $X/mo | ⭐⭐⭐⭐☆ (4.6/5) |
-````
+| #1 | [Name] | [Category] | $X/mo | (4.8/5) |
+| #2 | [Name] | [Category] | $X/mo | (4.5/5) |
+| #3 | [Name] | [Category] | $X/mo | (4.6/5) |
+```
 
 **AI Search Optimization Notes:**
 - **ChatGPT:** Prefers comprehensive depth (500+ words per ranked item for top 3)
@@ -195,7 +195,7 @@ Generate a fully SEO-optimized, AEO/GEO-ready article that ranks #1 and passes a
 
 **MANDATORY FORMAT:**
 
-````markdown
+```markdown
 ## [Product A] vs [Product B]: Which is Better in 2026?
 
 **TL;DR:** [One-sentence verdict - e.g., "Product A wins for enterprises, Product B for startups"]
@@ -204,11 +204,11 @@ Generate a fully SEO-optimized, AEO/GEO-ready article that ranks #1 and passes a
 
 | Feature | Product A | Product B | Winner |
 |---------|-----------|-----------|--------|
-| Pricing | $99/mo | $49/mo | 👑 Product B |
-| Ease of Use | 4.2/5 | 4.8/5 | 👑 Product B |
-| Integrations | 150+ | 50+ | 👑 Product A |
-| Support | Email only | 24/7 live chat | 👑 Product B |
-| Advanced Features | ✅ Yes | ❌ Limited | 👑 Product A |
+| Pricing | $99/mo | $49/mo |  Product B |
+| Ease of Use | 4.2/5 | 4.8/5 |  Product B |
+| Integrations | 150+ | 50+ |  Product A |
+| Support | Email only | 24/7 live chat |  Product B |
+| Advanced Features | Yes | Limited |  Product A |
 
 ### When to Choose Product A
 - [Specific use case 1]
@@ -222,16 +222,16 @@ Generate a fully SEO-optimized, AEO/GEO-ready article that ranks #1 and passes a
 
 ### Our Recommendation
 [Neutral, data-driven recommendation based on user type]
-````
+```
 
 **CRITICAL RULES:**
-- ✅ **Winner column:** Declare clear winner per category (shows objectivity)
-- ✅ **No bias:** If sponsored/affiliate, disclose at top: "**Disclosure:** This article contains affiliate links."
-- ✅ **Use case clarity:** Each product gets specific scenarios where it wins
+- **Winner column:** Declare clear winner per category (shows objectivity)
+- **No bias:** If sponsored/affiliate, disclose at top: "**Disclosure:** This article contains affiliate links."
+- **Use case clarity:** Each product gets specific scenarios where it wins
 
 ---
 
-## 🚨 CRITICAL RULE: The "100% Human" Writing Guidelines
+## CRITICAL RULE: The "100% Human" Writing Guidelines
 
 You must write like a Senior Subject Matter Expert, not an AI.
 
@@ -258,42 +258,42 @@ Do NOT use these words under any circumstances: *delve, moreover, furthermore, t
 **5. VISUAL PROOF REQUIREMENTS (2026 E-E-A-T):**
 **CRITICAL:** Content MUST include minimum 2 of these visual proof elements:
 
-✅ **Screenshots of actual results**
+**Screenshots of actual results**
   - Before/after comparisons
   - Dashboard screenshots showing real metrics
   - Analytics data (with sensitive info redacted)
   - Example: "seo-audit-results-before-after-2026.png"
 
-✅ **Original data tables/charts**
+**Original data tables/charts**
   - Survey results with sample size
   - Case study metrics (conversion rates, traffic growth)
   - A/B test results
   - Benchmark data you collected
 
-✅ **Process screenshots/walkthroughs**
+**Process screenshots/walkthroughs**
   - Step-by-step tool usage with actual screenshots
   - Configuration screenshots
   - Example: "google-search-console-setup-step3.png"
 
-✅ **Team/author photos**
+**Team/author photos**
   - Author headshot with bio
   - Team working on project
   - Behind-the-scenes of service delivery
 
-✅ **Client logos/testimonials**
+**Client logos/testimonials**
   - Recognizable brand logos (with permission)
   - Screenshot of review/testimonial
   - Video thumbnail of client interview
 
 **Image Format Rules:**
-- ❌ **NEVER:** Generic stock photos, image001.png, placeholder images
-- ✅ **ALWAYS:** Descriptive filenames with keywords
+- **NEVER:** Generic stock photos, image001.png, placeholder images
+- **ALWAYS:** Descriptive filenames with keywords
   - Good: `remote-team-slack-integration-dashboard-2026.png`
   - Bad: `image001.png`, `screen-shot-2026.png`
-- ✅ **Alt text:** Detailed description (50-125 chars) with primary keyword
+- **Alt text:** Detailed description (50-125 chars) with primary keyword
   - Example: `alt="Remote team management dashboard showing Slack integration metrics and productivity scores"`
-- ✅ **Caption:** Context below image explaining what's shown
-- ✅ **Frequency:** Minimum 1 image every 300 words (aim for 1 per 200 words)
+- **Caption:** Context below image explaining what's shown
+- **Frequency:** Minimum 1 image every 300 words (aim for 1 per 200 words)
 
 **Where Visual Proof Goes:**
 1. Right after H2 introducing new section (context-setting image)
@@ -374,7 +374,7 @@ Read: {brief_path}
 ```
 
 **Expected brief structure:**
-````markdown
+```markdown
 ---
 title: "How to Manage Remote Teams Effectively in 2025"
 primary_keyword: "remote team management"
@@ -417,7 +417,7 @@ target_audience: "HR managers, team leads"
 - /features (remote team features)
 - /case-studies/remote-teams
 - /blog/async-communication
-````
+```
 
 **Validate brief:**
 ```bash
@@ -669,7 +669,7 @@ required=("@type" "headline" "author" "publisher" "datePublished")
 
 **Instructions for user:**
 ```
-📋 **Schema Markup Instructions:**
+ **Schema Markup Instructions:**
 1. Copy the entire <script> block above
 2. Paste into your CMS:
    - WordPress: Yoast SEO → Schema tab OR custom HTML block in <head>
@@ -703,14 +703,14 @@ target_wc = round(target_wc / 100) * 100
 **Placement:** Immediately after the introduction (before H2 sections)
 
 **Format:**
-````markdown
-> **🔑 Key Takeaways:**
+```markdown
+> **Key Takeaways:**
 > - [Bullet 1: Main insight in 10-15 words]
 > - [Bullet 2: Specific benefit or strategy]
 > - [Bullet 3: Surprising statistic or fact]
 > - [Bullet 4: Actionable tip]
 > - [Bullet 5: Bottom-line recommendation]
-````
+```
 
 **Rules:**
 - Exactly 3-5 bullets (never more than 6)
@@ -719,21 +719,21 @@ target_wc = round(target_wc / 100) * 100
 - Scannable format (use blockquote > for visual distinction)
 
 **Example:**
-````markdown
-> **🔑 Key Takeaways:**
+```markdown
+> **Key Takeaways:**
 > - Remote teams are 13% more productive when using async communication tools.
 > - Time zone overlaps must have at least 3 hours for effective collaboration.
 > - Weekly 1-on-1s reduce remote employee turnover by 25%.
 > - Document everything—remote teams rely on written communication.
 > - Tools alone don't work; you need clear processes and accountability.
-````
+```
 
 ---
 
 #### **5.2: The Table of Contents**
 
 **Generate linked TOC from H2/H3 structure:**
-````markdown
+```markdown
 ## Table of Contents
 1. [What is Remote Team Management?](#what-is-remote-team-management)
 2. [7 Challenges of Managing Remote Teams](#challenges)
@@ -744,7 +744,7 @@ target_wc = round(target_wc / 100) * 100
 4. [Tools for Managing Remote Teams](#tools)
 5. [FAQ](#faq)
 6. [Conclusion](#conclusion)
-````
+```
 
 **Tool:** Anchor link generator
 
@@ -777,13 +777,13 @@ anchor = heading.lower().replace(" ", "-").replace("?", "")
 2. **Comparison tables** (if applicable):
    - Format as Markdown tables
    - Example: "Async vs Sync Communication"
-   ````markdown
+   ```markdown
    | Async Communication | Sync Communication |
    |---------------------|---------------------|
    | Emails, Slack messages | Video calls, meetings |
    | Flexible timing | Requires everyone online |
    | Better for deep work | Better for brainstorming |
-   ````
+   ```
 
 3. **Formatting best practices:**
    - Paragraph length: 2-4 sentences (50-100 words max)
@@ -849,7 +849,7 @@ python tools/nlp_analyzer.py \
 - **No redundancy:** If main content already covered it thoroughly, DO NOT repeat it in FAQs
 
 **FAQ structure:**
-````markdown
+```markdown
 ## FAQ
 
 ### What is remote team management?
@@ -862,7 +862,7 @@ Use output-based metrics (deliverables completed) rather than time-based metrics
 The top tools are: Slack (communication), Zoom (video meetings), Asana (project management), and Notion (documentation). Choose based on your team size and workflow needs.
 
 [... 2-5 more FAQs]
-````
+```
 
 **Tool:** FAQ generator validation
 
@@ -907,15 +907,15 @@ done
 4. **Sentence 4:** Strong CTA with specific action verb + hyperlink
 
 **Example format:**
-````markdown
+```markdown
 ## Conclusion
 
 Remote team management isn't about control—it's about trust, clarity, and the right systems. When you prioritize async communication, document everything, and invest in the right tools, your distributed team will outperform any in-office setup.
 
 Ready to transform your remote team's productivity? Start by implementing one strategy from this guide this week—we recommend beginning with weekly 1-on-1s.
 
-👉 **[Book a Free Remote Team Audit](https://acmecorp.com/demo)** — We'll analyze your current setup and show you exactly where to improve.
-````
+**[Book a Free Remote Team Audit](https://acmecorp.com/demo)** — We'll analyze your current setup and show you exactly where to improve.
+```
 
 **DO NOT:**
 - Write a summary of the article (reader already read it)
@@ -956,7 +956,7 @@ fi
 - Target audience may not know the terms (check brand_kit["target_audience"])
 
 **Format:**
-````markdown
+```markdown
 ## Glossary
 
 **Async Communication:** Communication that doesn't require real-time responses (e.g., email, Slack).
@@ -964,7 +964,7 @@ fi
 **Synchronous Communication:** Real-time communication requiring all participants to be online simultaneously (e.g., video calls).
 
 **OKRs (Objectives and Key Results):** A goal-setting framework used to define and track objectives and their outcomes.
-````
+```
 
 **Placement:** BEFORE the conclusion (not after)
 
@@ -1165,13 +1165,13 @@ for check, result in validation_results.items():
 **Format:** Clean Markdown ready for copy/paste into CMS
 
 **Structure the output:**
-````markdown
-# 📋 CMS PACKAGE — Copy & Paste Ready
+```markdown
+# CMS PACKAGE — Copy & Paste Ready
 
 ## Meta Data (Paste into CMS fields)
 
 **Title Tag:**
-````
+```
 Remote Team Management: 7 Proven Strategies for 2025
 ```
 
@@ -1216,7 +1216,7 @@ Master remote team management with 7 proven strategies. Boost productivity, impr
 
 ---
 
-# 📊 QUALITY METRICS
+# QUALITY METRICS
 
 - **Word Count:** 2,150 words (target: 2,000)
 - **Primary Keyword Density:** 1.6%
@@ -1235,9 +1235,9 @@ Master remote team management with 7 proven strategies. Boost productivity, impr
 Here is the 100% human-optimized draft and CMS package.
 
 Would you like me to:
-1. [OK] Save to client folder (clients/{client_name}/published/{date}_{slug}.md)
-2. 🔄 Refine the tone or adjust word count
-3. 📤 Export to Google Docs for client review
+1. Save to client folder (clients/{client_name}/published/{date}_{slug}.md)
+2. Refine the tone or adjust word count
+3. Export to Google Docs for client review
 
 Type 1, 2, or 3.
 ```
@@ -1387,7 +1387,7 @@ Before presenting the article to the user, verify:
 - Error: "[ERROR] No CTA link found in conclusion"
 - Automatically add CTA:
   - Use `brand_kit["cta_url"]` if exists
-  - Default: "👉 **[Get Started](https://domain.com/contact)**"
+  - Default: "**[Get Started](https://domain.com/contact)**"
 - Flag: "[INFO] CTA added automatically — verify link points to correct page"
 
 ---
