@@ -1240,7 +1240,7 @@ Would you like me to:
 3. Export to Google Docs for client review
 
 Type 1, 2, or 3.
-```
+
 
 ---
 
