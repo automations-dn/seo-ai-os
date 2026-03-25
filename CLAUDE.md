@@ -817,14 +817,11 @@ mcp__aios.run_seo_crawler(
 ---
 
 #### AEO/GEO (AI Search Optimization)
-1. **Python:** `tools/aeo_grader.py` (REQUIRED - no MCP)
-   - Answer block detection
-   - Citability scoring
-   - Table/list usage for AI extraction
-   - ChatGPT/Perplexity optimization
-2. **No MCP available for AEO/GEO**
-
-**PageSpeed MCP AEO Coverage:** 0%
+1. **Python:** `tools/aeo_grader.py` (Answer block detection, citability scoring)
+2. **Python:** `tools/geo_monitor/google_ai_overview.py` (Playwright Scraper — Checks Google AI Overviews/SGE visibility)
+3. **Python:** `tools/geo_monitor/perplexity.py` (Playwright Scraper — Checks Perplexity sonar visibility)
+4. **Python:** `tools/geo_monitor/chatgpt_search.py` (Playwright Scraper — Checks ChatGPT web search visibility)
+5. **No paid API keys needed for any GEO tracking tools.** All use headless browsers.
 
 ---
 
