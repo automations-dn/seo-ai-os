@@ -347,7 +347,7 @@ Write: .tmp/{client}_brief_{slug}.json
 
 **Output in chat:**
 
-```markdown
+````markdown
 📋 CONTENT BRIEF: "{target_keyword}"
 Client: {client_name} | Est. Word Count: {X-Y} words
 
@@ -404,7 +404,7 @@ H1: {title}
     • DO NOT summarize the article
     • DO NOT use "In conclusion" or "To summarize"
     • Example format:
-      ```
+      ````
       {Core insight}. {Why it matters}.
 
       Ready to {desired outcome}? {Action step with urgency}.

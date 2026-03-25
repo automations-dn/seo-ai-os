@@ -326,7 +326,7 @@ fi
 
 **Output in chat:**
 
-```markdown
+````markdown
 [OK] Keyword Research Complete: {client_name}
 
 🌱 Seed Keyword: "{seed_keyword}"
@@ -396,7 +396,7 @@ Would you like me to:
 1. Generate a Content Brief for Cluster 1? (Recommended)
 2. Export this to Google Sheets for the client?
 3. Make changes to the keyword list or clustering?
-```
+````
 
 ---
 

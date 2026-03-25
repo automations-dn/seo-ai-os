@@ -172,7 +172,7 @@ python tools/brand_mention_tracker.py \
    - Follow manual of style: https://en.wikipedia.org/wiki/Wikipedia:Manual_of_Style
 
 3. **Article structure template**:
-```markdown
+````markdown
 == [Company Name] ==
 
 [Company Name] is a [category] company based in [location], founded in [year].
@@ -191,7 +191,7 @@ python tools/brand_mention_tracker.py \
 
 == External links ==
 * [Official website]
-```
+````
 
 4. **Submit for review**
    - Move from sandbox to mainspace
@@ -522,7 +522,7 @@ curl "https://kgsearch.googleapis.com/v1/entities:search?query={brand_name}&key=
 
 **Create client-friendly report**:
 
-```markdown
+````markdown
 # Entity SEO Audit Report
 
 **Brand**: {brand_name}
@@ -714,7 +714,7 @@ recognize you as a distinct entity eligible for a Knowledge Panel.
 
 **Report Generated**: {timestamp}
 **Auditor**: SEO AIOS Entity Audit Workflow
-```
+````
 
 **Save as**: `reports/{client}_Entity_Audit_{date}.md`
 

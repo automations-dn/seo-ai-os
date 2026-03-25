@@ -168,7 +168,7 @@ User asks Gemini: "Is SEO worth it for small businesses?"
 ```
 
 **Generate FAQ section:**
-```markdown
+````markdown
 ## Frequently Asked Questions
 
 ### How long does SEO take to work?
@@ -191,7 +191,7 @@ within 3-6 months. Local SEO costs $500-$2,000/month vs $3,000-$10,000/month for
 with equivalent traffic, making SEO more cost-effective long-term.
 
 [Continue with 2-5 more FAQs...]
-```
+````
 
 **Then generate FAQ schema:**
 ```bash
@@ -213,7 +213,7 @@ python tools/schema_gen.py \
 **AI engines cite tables heavily**
 
 **Example: Tool comparison**
-```markdown
+````markdown
 ## Best Growth Marketing Tools Comparison
 
 | Tool | Best For | Pricing | Key Feature | Integration |
@@ -223,7 +223,7 @@ python tools/schema_gen.py \
 | Google Analytics | Traffic analysis | Free | User behavior | Universal |
 | Hotjar | UX optimization | $39/mo | Heatmaps + recordings | Tag Manager |
 | SEMrush | SEO + content | $119/mo | Keyword research | API |
-```
+````
 
 **Rule**: Include ≥2 structured tables per article
 
@@ -255,7 +255,7 @@ seeing 7.8x higher ROI than average performers [1].
 
 **Structure for AI parsing**
 
-```markdown
+````markdown
 # Main Title (H1) - One per page
 
 ## Main Sections (H2) - 5-8 per article
@@ -266,7 +266,7 @@ Use for supporting points
 
 #### Detailed Points (H4) - Sparingly
 Only when absolutely needed for clarity
-```
+````
 
 **Rule**: Minimum 5 H2 headings with logical flow
 
@@ -385,7 +385,7 @@ python tools/schema_gen.py \
 
 **Generate human-readable report for client:**
 
-```markdown
+````markdown
 # AEO Optimization Report
 
 **Content**: {title}
@@ -440,7 +440,7 @@ python tools/schema_gen.py \
 - Re-run AEO grader quarterly
 - Monitor citation rate monthly
 - Add new FAQs based on search queries
-```
+````
 
 **Save as**: `reports/{client}_AEO_Report_{date}.md`
 

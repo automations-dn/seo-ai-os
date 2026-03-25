@@ -146,7 +146,7 @@ Save a comprehensive markdown report to `clients/<client_name>/reports/topical_a
 
 **Report Template:**
 
-```markdown
+````markdown
 # Topical Authority Audit — [Core Topic]
 **Client:** [Client Name]
 **Domain:** [client.com]
@@ -401,7 +401,7 @@ Before finalizing this audit, verify:
 ---
 
 **End of Report**
-```
+````
 
 ---
 

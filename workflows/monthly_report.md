@@ -375,13 +375,13 @@ Glob: clients/{client_name}/published/{month}*.md
 ```
 
 **Parse each file:**
-```markdown
+````markdown
 # Extract from frontmatter:
 - title: "How to Manage Remote Teams"
 - published_date: 2025-02-15
 - target_keyword: "remote team management"
 - url: https://acmecorp.com/blog/remote-teams
-```
+````
 
 **Compile list:**
 ```python
@@ -703,7 +703,7 @@ fi
 
 **Display executive summary in chat:**
 
-```markdown
+````markdown
 # Monthly SEO Report — {Client Name} ({Month})
 
 ## Key Highlights
@@ -729,7 +729,7 @@ fi
 3. Optimize /features page to recover position for "project management software" (On-Page)
 
 📄 **Full Report:** [Download {month}_report.docx](file:///path/to/report.docx)
-```
+````
 
 **Ask for delivery preference:**
 ```

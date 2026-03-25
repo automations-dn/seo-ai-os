@@ -183,7 +183,7 @@ Save to: `research/cluster-strategy-[topic-slug]-[YYYY-MM-DD].md`
 
 ### Output Template
 
-```markdown
+````markdown
 # Topic Cluster Strategy: [Topic]
 
 **Date**: [YYYY-MM-DD]
@@ -265,7 +265,7 @@ Save to: `research/cluster-strategy-[topic-slug]-[YYYY-MM-DD].md`
 ## Internal Linking Map
 
 ### Visual Cluster Map
-```
+````
 [ASCII diagram showing all connections]
 ```
 

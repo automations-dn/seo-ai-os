@@ -203,7 +203,7 @@ For articles that are still accurate but need freshness signals:
 - ✅ Check all external links still work (replace dead links)
 
 **Template Output:**
-```markdown
+````markdown
 ## Quick Refresh Checklist for: [Article Title]
 
 **Original Publish Date:** 2025-10-15
@@ -215,7 +215,7 @@ For articles that are still accurate but need freshness signals:
 1. **Add Freshness Indicator (Top of Article):**
    ```markdown
    **Updated: March 20, 2026** — _Reviewed and updated with the latest 2026 data and best practices._
-   ```
+   ````
 
 2. **Update Schema `dateModified`:**
    ```json
@@ -256,7 +256,7 @@ For articles that need significant updates due to industry changes:
 - ✅ Add new internal links to recently published articles
 
 **Template Output:**
-```markdown
+````markdown
 ## Deep Refresh Checklist for: [Article Title]
 
 **Original Publish Date:** 2025-10-15
@@ -276,16 +276,16 @@ For articles that need significant updates due to industry changes:
    1. **AI Meeting Assistants:** Tools like [X] now auto-generate action items
    2. **Async Video Messaging:** Platforms like [Y] gained 200% adoption
    3. **Compliance Changes:** New EU regulations for remote work monitoring
-   ```
+   ````
 
 3. **Add Comparison Table:**
-   ```markdown
+   ````markdown
    | Best Practice | 2025 | 2026 |
    |---------------|------|------|
    | Daily standups | Zoom calls | Async Loom videos |
    | Project management | Trello/Asana | AI-powered [Tool] |
    | Time tracking | Manual logs | Automated activity tracking |
-   ```
+   ````
 
 4. **Update Rankings (if "Best X" article):**
    - Re-test all ranked products
@@ -397,7 +397,7 @@ python tools/content_age_scanner.py \
 - ≥10 articles are >180 days old
 
 **Monthly Report Section:**
-```markdown
+````markdown
 ## Content Freshness Report (March 2026)
 
 **Overall Freshness Score:** 68/100 (Target: ≥70)
@@ -415,7 +415,7 @@ python tools/content_age_scanner.py \
 - Articles <90 days: 22% Perplexity citation rate
 - Articles >90 days: 8% Perplexity citation rate
 - **Opportunity:** Update 14 stale articles → estimated +42 AI citations/month
-```
+````
 
 ---
 

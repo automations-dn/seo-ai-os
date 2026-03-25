@@ -724,7 +724,7 @@ if not page["schema"]["present"]:
 
 #### **Format 1: Checklist** (simple task list for quick implementation)
 
-```markdown
+````markdown
 # On-Page SEO Fixes — {Client Name}
 
 **Page:** {url}
@@ -760,7 +760,7 @@ if not page["schema"]["present"]:
 
 ---
 
-## 📋 MEDIUM (Fix This Month)
+##  MEDIUM (Fix This Month)
 
 - [ ] **Add schema markup** — Currently missing
   - Implement Article + FAQPage schema
@@ -774,7 +774,7 @@ if not page["schema"]["present"]:
 
 ---
 
-## [OK] LOW (Nice to Have)
+##  LOW (Nice to Have)
 
 - [ ] **Add FAQ section** — Competitors average 4 FAQs
   - Add 7-10 FAQ questions
@@ -784,13 +784,13 @@ if not page["schema"]["present"]:
 - [ ] **Improve anchor text diversity** — 2 out of 4 links use generic "click here"
   - Replace with descriptive anchors
   - Impact: Better SEO and user experience
-```
+````
 
 ---
 
 #### **Format 2: Detailed** (full analysis with examples and benchmarks)
 
-```markdown
+````markdown
 # On-Page SEO Analysis — {Client Name}
 
 **Page:** {url}
@@ -799,7 +799,7 @@ if not page["schema"]["present"]:
 
 ---
 
-## 📊 Page Performance Summary
+##  Page Performance Summary
 
 | Metric | Current | Competitor Avg | Gap | Status |
 |--------|---------|----------------|-----|--------|
@@ -885,7 +885,7 @@ if not page["schema"]["present"]:
 
 ---
 
-## 📋 MEDIUM PRIORITY ISSUES (4)
+##  MEDIUM PRIORITY ISSUES (4)
 
 ### 5. Missing Schema Markup
 **Current:** No schema present
@@ -948,12 +948,12 @@ if not page["schema"]["present"]:
 - /contact → Anchor: "click here" [ERROR] (generic)
 
 **Suggested Additions:**
-```markdown
+````markdown
 Add these internal links:
 1. Link to /case-studies/remote-teams → Anchor: "how we helped 50+ remote teams scale"
 2. Link to /features/time-tracking → Anchor: "time zone management features"
 3. Link to /blog/async-communication → Anchor: "asynchronous communication best practices"
-```
+````
 **Impact:** Improve internal PageRank flow, better crawlability
 
 ---
@@ -982,7 +982,7 @@ Add these internal links:
 
 ---
 
-## 📈 Expected Impact Summary
+##  Expected Impact Summary
 
 **If all CRITICAL + HIGH issues are fixed:**
 - **Estimated ranking improvement:** +3-7 positions
@@ -999,16 +999,16 @@ Add these internal links:
 
 ---
 
-## 🎯 Next Steps
+##  Next Steps
 
-1. [OK] Review this analysis
-2. 📋 Prioritize issues (start with CRITICAL)
-3. 🔧 Implement fixes in CMS
-4. [OK] Test changes:
+1.  Review this analysis
+2.  Prioritize issues (start with CRITICAL)
+3.  Implement fixes in CMS
+4.  Test changes:
    - Google Rich Results Test (schema)
    - SERP preview (title/meta)
    - Accessibility check (alt text)
-5. 📊 Monitor results in GSC after 2-4 weeks
+5.  Monitor results in GSC after 2-4 weeks
 
 **Need help implementing? I can:**
 - Generate complete schema markup code
@@ -1017,25 +1017,25 @@ Add these internal links:
 - Audit entire site (not just one page)
 
 Type "help" to continue or "done" to finish.
-```
+````
 
 ---
 
 ## Expected Outputs
 
 ### Files Created:
-1. [OK] **`.tmp/{client_name}_onpage_analysis.json`** — Raw on-page analysis data
-2. [OK] **`.tmp/{client_name}_serp_top3.json`** — Top 3 competitor URLs
-3. [OK] **`.tmp/{client_name}_benchmark.json`** — Competitor benchmark comparison
-4. [OK] **`clients/{client_name}/on_page_fixes_{date}.md`** — Prioritized fix list (saved if requested)
+1. **`.tmp/{client_name}_onpage_analysis.json`** — Raw on-page analysis data
+2. **`.tmp/{client_name}_serp_top3.json`** — Top 3 competitor URLs
+3. **`.tmp/{client_name}_benchmark.json`** — Competitor benchmark comparison
+4. **`clients/{client_name}/on_page_fixes_{date}.md`** — Prioritized fix list (saved if requested)
 
 ### User-Facing Deliverables:
-1. [OK] **Fix list** — Prioritized by severity (CRITICAL → HIGH → MEDIUM → LOW)
-2. [OK] **Before/after suggestions** — Updated title tags, meta descriptions, alt text
-3. [OK] **Content recommendations** — Word count targets, H2 additions, FAQ suggestions
-4. [OK] **Schema markup code** — Copy/paste ready JSON-LD
-5. [OK] **Impact estimates** — Expected ranking/CTR improvements per fix
-6. [OK] **Implementation timeline** — Effort estimates for each issue
+1. **Fix list** — Prioritized by severity (CRITICAL → HIGH → MEDIUM → LOW)
+2. **Before/after suggestions** — Updated title tags, meta descriptions, alt text
+3. **Content recommendations** — Word count targets, H2 additions, FAQ suggestions
+4. **Schema markup code** — Copy/paste ready JSON-LD
+5. **Impact estimates** — Expected ranking/CTR improvements per fix
+6. **Implementation timeline** — Effort estimates for each issue
 
 ---
 

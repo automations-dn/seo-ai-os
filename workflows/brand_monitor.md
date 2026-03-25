@@ -100,7 +100,7 @@ Unlinked mentions are low-hanging fruit for link-building. Review the brand_ment
 - Indirect conversion (brand awareness boost)
 
 **Outreach Template (Save to `clients/<client_name>/templates/unlinked_mention_outreach.md`):**
-```markdown
+````markdown
 Subject: Quick link request for [Article Title]
 
 Hi [Author Name],
@@ -116,7 +116,7 @@ Appreciate your time!
 Best,
 [Your Name]
 [Client Brand] Marketing Team
-```
+````
 
 ### Step 5: Review Velocity & Sentiment Analysis
 Reviews directly impact:
@@ -156,7 +156,7 @@ Generate a comprehensive markdown report inside `clients/<client_name>/reports/b
 
 **Report Template Structure:**
 
-```markdown
+````markdown
 # Brand Health Report — [Client Name]
 **Report Date:** [YYYY-MM-DD]
 **Reporting Period:** [Last 30/90 days]
@@ -319,7 +319,7 @@ Generate a comprehensive markdown report inside `clients/<client_name>/reports/b
 - Brand mention tracking: Weekly
 - Review monitoring: Daily
 - Competitive analysis: Monthly
-```
+````
 
 ---
 

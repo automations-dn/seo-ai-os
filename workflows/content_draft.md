@@ -34,10 +34,10 @@ Generate a fully SEO-optimized, AEO/GEO-ready article that ranks #1 and passes a
 - ✅ **Format:** How-to guides, comprehensive tutorials, comparison articles
 
 **Author Bio Format (Top):**
-```markdown
+````markdown
 **By [Author Name], [Title] at [Company]**
 *[2-sentence expertise summary with specific credentials]*
-```
+````
 
 ---
 
@@ -55,11 +55,11 @@ Generate a fully SEO-optimized, AEO/GEO-ready article that ranks #1 and passes a
 - ✅ **Format:** "Best X" rankings, product comparisons, vs. articles
 
 **Freshness Format:**
-```markdown
+````markdown
 **Updated: March 20, 2026** | Reading time: 8 minutes
 
 # [Article Title]
-```
+````
 
 ---
 
@@ -114,7 +114,7 @@ Generate a fully SEO-optimized, AEO/GEO-ready article that ranks #1 and passes a
 
 **MANDATORY FORMAT:**
 
-```markdown
+````markdown
 ## The [Number] Best [Category] in 2026
 
 ### #1. [Product/Service Name] — Best Overall
@@ -157,7 +157,7 @@ Generate a fully SEO-optimized, AEO/GEO-ready article that ranks #1 and passes a
 ---
 
 [Continue for all rankings - typically 5-10 items maximum]
-```
+````
 
 **CRITICAL RULES:**
 - ✅ **Use numbered format:** #1, #2, #3 (not "First", "Second", "Third")
@@ -171,7 +171,7 @@ Generate a fully SEO-optimized, AEO/GEO-ready article that ranks #1 and passes a
 - ✅ **Balanced pros/cons:** Minimum 3 pros, minimum 2 cons (shows objectivity)
 - ✅ **Quick comparison table:** Add this AFTER all individual rankings:
 
-```markdown
+````markdown
 ## Quick Comparison Table
 
 | Rank | Product | Best For | Pricing | Rating |
@@ -179,7 +179,7 @@ Generate a fully SEO-optimized, AEO/GEO-ready article that ranks #1 and passes a
 | #1 | [Name] | [Category] | $X/mo | ⭐⭐⭐⭐⭐ (4.8/5) |
 | #2 | [Name] | [Category] | $X/mo | ⭐⭐⭐⭐☆ (4.5/5) |
 | #3 | [Name] | [Category] | $X/mo | ⭐⭐⭐⭐☆ (4.6/5) |
-```
+````
 
 **AI Search Optimization Notes:**
 - **ChatGPT:** Prefers comprehensive depth (500+ words per ranked item for top 3)
@@ -195,7 +195,7 @@ Generate a fully SEO-optimized, AEO/GEO-ready article that ranks #1 and passes a
 
 **MANDATORY FORMAT:**
 
-```markdown
+````markdown
 ## [Product A] vs [Product B]: Which is Better in 2026?
 
 **TL;DR:** [One-sentence verdict - e.g., "Product A wins for enterprises, Product B for startups"]
@@ -222,7 +222,7 @@ Generate a fully SEO-optimized, AEO/GEO-ready article that ranks #1 and passes a
 
 ### Our Recommendation
 [Neutral, data-driven recommendation based on user type]
-```
+````
 
 **CRITICAL RULES:**
 - ✅ **Winner column:** Declare clear winner per category (shows objectivity)
@@ -374,7 +374,7 @@ Read: {brief_path}
 ```
 
 **Expected brief structure:**
-```markdown
+````markdown
 ---
 title: "How to Manage Remote Teams Effectively in 2025"
 primary_keyword: "remote team management"
@@ -417,7 +417,7 @@ target_audience: "HR managers, team leads"
 - /features (remote team features)
 - /case-studies/remote-teams
 - /blog/async-communication
-```
+````
 
 **Validate brief:**
 ```bash
@@ -703,14 +703,14 @@ target_wc = round(target_wc / 100) * 100
 **Placement:** Immediately after the introduction (before H2 sections)
 
 **Format:**
-```markdown
+````markdown
 > **🔑 Key Takeaways:**
 > - [Bullet 1: Main insight in 10-15 words]
 > - [Bullet 2: Specific benefit or strategy]
 > - [Bullet 3: Surprising statistic or fact]
 > - [Bullet 4: Actionable tip]
 > - [Bullet 5: Bottom-line recommendation]
-```
+````
 
 **Rules:**
 - Exactly 3-5 bullets (never more than 6)
@@ -719,21 +719,21 @@ target_wc = round(target_wc / 100) * 100
 - Scannable format (use blockquote > for visual distinction)
 
 **Example:**
-```markdown
+````markdown
 > **🔑 Key Takeaways:**
 > - Remote teams are 13% more productive when using async communication tools.
 > - Time zone overlaps must have at least 3 hours for effective collaboration.
 > - Weekly 1-on-1s reduce remote employee turnover by 25%.
 > - Document everything—remote teams rely on written communication.
 > - Tools alone don't work; you need clear processes and accountability.
-```
+````
 
 ---
 
 #### **5.2: The Table of Contents**
 
 **Generate linked TOC from H2/H3 structure:**
-```markdown
+````markdown
 ## Table of Contents
 1. [What is Remote Team Management?](#what-is-remote-team-management)
 2. [7 Challenges of Managing Remote Teams](#challenges)
@@ -744,7 +744,7 @@ target_wc = round(target_wc / 100) * 100
 4. [Tools for Managing Remote Teams](#tools)
 5. [FAQ](#faq)
 6. [Conclusion](#conclusion)
-```
+````
 
 **Tool:** Anchor link generator
 
@@ -777,13 +777,13 @@ anchor = heading.lower().replace(" ", "-").replace("?", "")
 2. **Comparison tables** (if applicable):
    - Format as Markdown tables
    - Example: "Async vs Sync Communication"
-   ```markdown
+   ````markdown
    | Async Communication | Sync Communication |
    |---------------------|---------------------|
    | Emails, Slack messages | Video calls, meetings |
    | Flexible timing | Requires everyone online |
    | Better for deep work | Better for brainstorming |
-   ```
+   ````
 
 3. **Formatting best practices:**
    - Paragraph length: 2-4 sentences (50-100 words max)
@@ -849,7 +849,7 @@ python tools/nlp_analyzer.py \
 - **No redundancy:** If main content already covered it thoroughly, DO NOT repeat it in FAQs
 
 **FAQ structure:**
-```markdown
+````markdown
 ## FAQ
 
 ### What is remote team management?
@@ -862,7 +862,7 @@ Use output-based metrics (deliverables completed) rather than time-based metrics
 The top tools are: Slack (communication), Zoom (video meetings), Asana (project management), and Notion (documentation). Choose based on your team size and workflow needs.
 
 [... 2-5 more FAQs]
-```
+````
 
 **Tool:** FAQ generator validation
 
@@ -907,7 +907,7 @@ done
 4. **Sentence 4:** Strong CTA with specific action verb + hyperlink
 
 **Example format:**
-```markdown
+````markdown
 ## Conclusion
 
 Remote team management isn't about control—it's about trust, clarity, and the right systems. When you prioritize async communication, document everything, and invest in the right tools, your distributed team will outperform any in-office setup.
@@ -915,7 +915,7 @@ Remote team management isn't about control—it's about trust, clarity, and the 
 Ready to transform your remote team's productivity? Start by implementing one strategy from this guide this week—we recommend beginning with weekly 1-on-1s.
 
 👉 **[Book a Free Remote Team Audit](https://acmecorp.com/demo)** — We'll analyze your current setup and show you exactly where to improve.
-```
+````
 
 **DO NOT:**
 - Write a summary of the article (reader already read it)
@@ -956,7 +956,7 @@ fi
 - Target audience may not know the terms (check brand_kit["target_audience"])
 
 **Format:**
-```markdown
+````markdown
 ## Glossary
 
 **Async Communication:** Communication that doesn't require real-time responses (e.g., email, Slack).
@@ -964,7 +964,7 @@ fi
 **Synchronous Communication:** Real-time communication requiring all participants to be online simultaneously (e.g., video calls).
 
 **OKRs (Objectives and Key Results):** A goal-setting framework used to define and track objectives and their outcomes.
-```
+````
 
 **Placement:** BEFORE the conclusion (not after)
 
@@ -1165,13 +1165,13 @@ for check, result in validation_results.items():
 **Format:** Clean Markdown ready for copy/paste into CMS
 
 **Structure the output:**
-```markdown
+````markdown
 # 📋 CMS PACKAGE — Copy & Paste Ready
 
 ## Meta Data (Paste into CMS fields)
 
 **Title Tag:**
-```
+````
 Remote Team Management: 7 Proven Strategies for 2025
 ```
 

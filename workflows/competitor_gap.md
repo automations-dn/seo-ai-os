@@ -258,7 +258,7 @@ fi
 
 **Output in chat:**
 
-```markdown
+````markdown
 [OK] Competitor Gap Analysis Complete: {client_name}
 
 🔍 Analyzed:
@@ -315,7 +315,7 @@ Would you like me to:
 1. Generate a Content Brief for Cluster 1? (Recommended)
 2. Save this to a Google Sheet for the client?
 3. Create a 90-day content calendar based on these clusters?
-```
+````
 
 ---
 
