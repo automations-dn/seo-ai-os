@@ -21,7 +21,7 @@ In 2026, Google aggressively penalizes "doorway pages" where only a single varia
 
 ---
 
-## 🚨 CRITICAL AWARENESS: RULE 10 (QUALITY GATES)
+## CRITICAL AWARENESS: RULE 10 (QUALITY GATES)
 You MUST enforce **Rule 10 (Quality Gates)** during this workflow. Your job is to ensure the architecture relies on **unique, database-driven value**.
 
 Never allow the user to create a programmatic structure that simply swaps `[City_Name]`. You must act as a strict gatekeeper against low-quality, thin programmatic content.
@@ -44,7 +44,7 @@ Common programmatic architectures:
 ### Step 2: Ensure the 60% Unique Rule (The "3-Variable Minimum")
 Once the target is known, design a **Database Schema** that ensures >60% of the page content will be entirely unique to that specific URL. 
 
-**🚨 NEW STRICT REGULATION:** You MUST demand the user provides a dataset with at least **3 distinct, real-world semantic variables** per page. If they cannot, you must REFUSE to generate the architecture.
+**NEW STRICT REGULATION:** You MUST demand the user provides a dataset with at least **3 distinct, real-world semantic variables** per page. If they cannot, you must REFUSE to generate the architecture.
 
 **BAD (Spam / Hard Refusal):**
 - Variables: `[City]` only.
@@ -93,7 +93,7 @@ Ask the user: **"How many of these pages are you planning to generate?"**
 
 - If **< 30**: "Looks safe. Proceed with building the database."
 - If **30 - 50**: "[WARNING] You are approaching the threshold for doorway page penalties. Ensure your database variables provide genuine unique value."
-- If **> 50**: "🛑 HARD STOP: Launching 50+ programmatic pages simultaneously without authority is highly risky. We must use a phased rollout."
+- If **> 50**: "HARD STOP: Launching 50+ programmatic pages simultaneously without authority is highly risky. We must use a phased rollout."
 
 **Phased Rollout Protocol:**
 1. Generate and publish Batch 1 (10 pages).

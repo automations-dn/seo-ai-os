@@ -31,7 +31,7 @@ Track content age and automate freshness updates. AI search engines (especially 
 
 ---
 
-## 🚨 CRITICAL AWARENESS: CONTENT FRESHNESS IN 2026
+## CRITICAL AWARENESS: CONTENT FRESHNESS IN 2026
 
 **Why This Matters:**
 - **Perplexity AI:** 46.7% of citations come from content <90 days old
@@ -194,16 +194,16 @@ python tools/freshness_updater.py \
 For articles that are still accurate but need freshness signals:
 
 **What to Update:**
-- ✅ Add "**Updated: March 2026**" at the top (above H1)
-- ✅ Update `dateModified` in Article schema to today
-- ✅ Add 1-2 new statistics from 2026 sources
-- ✅ Update any "in 2025" references to "in 2026"
-- ✅ Add 1-2 new screenshots if applicable
-- ✅ Refresh image alt text with current year
-- ✅ Check all external links still work (replace dead links)
+- Add "**Updated: March 2026**" at the top (above H1)
+- Update `dateModified` in Article schema to today
+- Add 1-2 new statistics from 2026 sources
+- Update any "in 2025" references to "in 2026"
+- Add 1-2 new screenshots if applicable
+- Refresh image alt text with current year
+- Check all external links still work (replace dead links)
 
 **Template Output:**
-````markdown
+```markdown
 ## Quick Refresh Checklist for: [Article Title]
 
 **Original Publish Date:** 2025-10-15
@@ -215,7 +215,7 @@ For articles that are still accurate but need freshness signals:
 1. **Add Freshness Indicator (Top of Article):**
    ```markdown
    **Updated: March 20, 2026** — _Reviewed and updated with the latest 2026 data and best practices._
-   ````
+   ```
 
 2. **Update Schema `dateModified`:**
    ```json
@@ -247,16 +247,16 @@ For articles that are still accurate but need freshness signals:
 For articles that need significant updates due to industry changes:
 
 **What to Update:**
-- ✅ All Quick Refresh items PLUS:
-- ✅ Add new H2 section: "What's New in 2026?"
-- ✅ Add comparison table: "2025 vs 2026 Best Practices"
-- ✅ Update entire "Best X" rankings (if applicable)
-- ✅ Add new case study or example from last 90 days
-- ✅ Refresh FAQ section with current questions
-- ✅ Add new internal links to recently published articles
+- All Quick Refresh items PLUS:
+- Add new H2 section: "What's New in 2026?"
+- Add comparison table: "2025 vs 2026 Best Practices"
+- Update entire "Best X" rankings (if applicable)
+- Add new case study or example from last 90 days
+- Refresh FAQ section with current questions
+- Add new internal links to recently published articles
 
 **Template Output:**
-````markdown
+```markdown
 ## Deep Refresh Checklist for: [Article Title]
 
 **Original Publish Date:** 2025-10-15
@@ -276,16 +276,16 @@ For articles that need significant updates due to industry changes:
    1. **AI Meeting Assistants:** Tools like [X] now auto-generate action items
    2. **Async Video Messaging:** Platforms like [Y] gained 200% adoption
    3. **Compliance Changes:** New EU regulations for remote work monitoring
-   ````
+   ```
 
 3. **Add Comparison Table:**
-   ````markdown
+   ```markdown
    | Best Practice | 2025 | 2026 |
    |---------------|------|------|
    | Daily standups | Zoom calls | Async Loom videos |
    | Project management | Trello/Asana | AI-powered [Tool] |
    | Time tracking | Manual logs | Automated activity tracking |
-   ````
+   ```
 
 4. **Update Rankings (if "Best X" article):**
    - Re-test all ranked products
@@ -397,15 +397,15 @@ python tools/content_age_scanner.py \
 - ≥10 articles are >180 days old
 
 **Monthly Report Section:**
-````markdown
+```markdown
 ## Content Freshness Report (March 2026)
 
 **Overall Freshness Score:** 68/100 (Target: ≥70)
 
 **Age Breakdown:**
-- 🟢 0-90 days: 45 articles (52%)
-- 🟡 91-180 days: 28 articles (32%)
-- 🔴 180+ days: 14 articles (16%)
+-  0-90 days: 45 articles (52%)
+-  91-180 days: 28 articles (32%)
+-  180+ days: 14 articles (16%)
 
 **Action Required:**
 - Update 8 high-priority articles this month
@@ -415,7 +415,7 @@ python tools/content_age_scanner.py \
 - Articles <90 days: 22% Perplexity citation rate
 - Articles >90 days: 8% Perplexity citation rate
 - **Opportunity:** Update 14 stale articles → estimated +42 AI citations/month
-````
+```
 
 ---
 

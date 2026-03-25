@@ -84,7 +84,7 @@ python tools/framework_detector.py \
   - Set `on_page_seo_max = 3/10`
   - Flag Issue #1 as: "CRITICAL — Client-Side React SPA: Site content is invisible to Google. Migrate to Next.js with SSR or SSG."
   - **Continue audit anyway** — document ALL issues so client knows full scope
-  - Note in every section: "⚠️ Blocked by architecture — fix framework first"
+  - Note in every section: "Blocked by architecture — fix framework first"
 
 - **If `render_mode == "SSR" or "SSG" or "STATIC"`:**
   - Proceed normally
@@ -212,10 +212,10 @@ for page in crawl_nojs["pages"]:
 ### 🚀 TOOL SELECTION HIERARCHY (2026 - MCP First)
 
 **1st Choice: PageSpeed MCP** (if configured in Claude Desktop)
-- ⚡ **7.5x faster** than Python Lighthouse (5-8 seconds vs 45-60 seconds)
-- ✅ Real-time streaming results
-- ✅ Direct Google PageSpeed API access
-- ✅ Parallel mobile + desktop analysis
+- **7.5x faster** than Python Lighthouse (5-8 seconds vs 45-60 seconds)
+- Real-time streaming results
+- Direct Google PageSpeed API access
+- Parallel mobile + desktop analysis
 
 **Execute:**
 ```
@@ -571,16 +571,16 @@ CRITICAL ISSUES (Fix immediately)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 Issue #1: Client-Side React SPA Architecture
-📊 Impact: 95% of content invisible to Google
-🔧 Fix: Migrate to Next.js with SSR or SSG
-⏱️ Effort: 40 hours (2-3 weeks with developer)
-💰 Business Impact: Unlocks ranking for 50+ keywords
+ Impact: 95% of content invisible to Google
+ Fix: Migrate to Next.js with SSR or SSG
+ Effort: 40 hours (2-3 weeks with developer)
+ Business Impact: Unlocks ranking for 50+ keywords
 
 Issue #2: Missing H1 Tags on 12/50 Pages
-📊 Impact: Confuses Google about page topic
-🔧 Fix: Add exactly one H1 per page with target keyword
-⏱️ Effort: 2 hours
-💰 Business Impact: Improves ranking signals for affected pages
+ Impact: Confuses Google about page topic
+ Fix: Add exactly one H1 per page with target keyword
+ Effort: 2 hours
+ Business Impact: Improves ranking signals for affected pages
 
 HIGH ISSUES (Fix within 30 days)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

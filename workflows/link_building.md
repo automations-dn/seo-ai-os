@@ -17,7 +17,7 @@ Discover relevant, high-quality backlink opportunities using free tools and draf
 1. `<client_name>` — loads brand_kit for niche/industry
 2. `--mode` — defaults to `guest_post` if not specified
 
-## 🚨 CRITICAL AWARENESS: 2026 Link Building Changes
+## CRITICAL AWARENESS: 2026 Link Building Changes
 
 **What Changed:**
 - **AI Citations > Traditional Backlinks:** Being cited by ChatGPT/Perplexity/Gemini is now more valuable than a backlink from a DA50 blog

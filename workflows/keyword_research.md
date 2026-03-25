@@ -326,16 +326,16 @@ fi
 
 **Output in chat:**
 
-````markdown
+```markdown
 [OK] Keyword Research Complete: {client_name}
 
-🌱 Seed Keyword: "{seed_keyword}"
-📍 Target Location: {location}
-🔍 Depth: {broad|deep}
+ Seed Keyword: "{seed_keyword}"
+ Target Location: {location}
+ Depth: {broad|deep}
 
 ---
 
-📊 RESULTS SUMMARY:
+ RESULTS SUMMARY:
 
   • Total keywords discovered: {total}
   • Filtered out (negatives): {filtered_count}
@@ -344,7 +344,7 @@ fi
 
 ---
 
-🎯 TOP 5 TOPICAL CLUSTERS:
+TOP 5 TOPICAL CLUSTERS:
 
 **Cluster 1: {cluster_name}**
   • Keywords: {count}
@@ -375,7 +375,7 @@ fi
 
 ---
 
-💡 RECOMMENDED CONTENT STRATEGY:
+ RECOMMENDED CONTENT STRATEGY:
 
 Priority 1: {Cluster with most low-difficulty commercial keywords}
 Priority 2: {Cluster with highest volume informational keywords}
@@ -383,20 +383,20 @@ Priority 3: {Cluster with rising trend keywords}
 
 ---
 
-📥 Full data saved to:
+ Full data saved to:
   • .tmp/{client}_autosuggest.json
   • .tmp/{client}_trends.json
   • .tmp/{client}_keyword_clusters.json
 
 ---
 
-🚀 Next Steps:
+ Next Steps:
 
 Would you like me to:
 1. Generate a Content Brief for Cluster 1? (Recommended)
 2. Export this to Google Sheets for the client?
 3. Make changes to the keyword list or clustering?
-````
+```
 
 ---
 

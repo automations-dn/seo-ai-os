@@ -122,14 +122,14 @@ fi
 
 ---
 
-### 🚀 TOOL SELECTION HIERARCHY (2026 - MCP First)
+### TOOL SELECTION HIERARCHY (2026 - MCP First)
 
 **1st Choice: GSC MCP Server** (if configured in Claude Desktop)
-- ✅ **Real-time API access** to Google Search Console
-- ✅ **No CSV exports needed** (fully automated)
-- ✅ **Fresh data** always (no stale cached files)
-- ✅ **Date range filtering** built-in
-- ✅ **OAuth 2.0 authenticated** (secure)
+- **Real-time API access** to Google Search Console
+- **No CSV exports needed** (fully automated)
+- **Fresh data** always (no stale cached files)
+- **Date range filtering** built-in
+- **OAuth 2.0 authenticated** (secure)
 
 **Execute:**
 ```
@@ -375,13 +375,13 @@ Glob: clients/{client_name}/published/{month}*.md
 ```
 
 **Parse each file:**
-````markdown
+```markdown
 # Extract from frontmatter:
 - title: "How to Manage Remote Teams"
 - published_date: 2025-02-15
 - target_keyword: "remote team management"
 - url: https://acmecorp.com/blog/remote-teams
-````
+```
 
 **Compile list:**
 ```python
@@ -674,14 +674,14 @@ fi
 ```bash
 # Report is already generated as .docx
 # Provide download link
-echo "📄 Download: [clients/{client_name}/reports/{month}_report.docx](file:///full/path/to/report.docx)"
+echo " Download: [clients/{client_name}/reports/{month}_report.docx](file:///full/path/to/report.docx)"
 ```
 
 **If `--format markdown`:**
 ```bash
 # Report is generated as .md
 # Display in chat or provide link
-echo "📄 Report saved: clients/{client_name}/reports/{month}_report.md"
+echo " Report saved: clients/{client_name}/reports/{month}_report.md"
 ```
 
 **If `--format pdf`:**
@@ -703,7 +703,7 @@ fi
 
 **Display executive summary in chat:**
 
-````markdown
+```markdown
 # Monthly SEO Report — {Client Name} ({Month})
 
 ## Key Highlights
@@ -728,17 +728,17 @@ fi
 2. Publish 2 articles targeting "remote team management" and "async collaboration" (Content)
 3. Optimize /features page to recover position for "project management software" (On-Page)
 
-📄 **Full Report:** [Download {month}_report.docx](file:///path/to/report.docx)
-````
+ **Full Report:** [Download {month}_report.docx](file:///path/to/report.docx)
+```
 
 **Ask for delivery preference:**
 ```
 Monthly report is ready!
 
 Would you like me to:
-1. [OK] Keep it local (already saved to clients/{client_name}/reports/)
-2. 📤 Upload to Google Drive (if configured in brand_kit)
-3. 📧 Email to client (requires email config)
+1. Keep it local (already saved to clients/{client_name}/reports/)
+2. Upload to Google Drive (if configured in brand_kit)
+3. Email to client (requires email config)
 
 Type 1, 2, or 3, or just say "done" to finish.
 ```
@@ -748,16 +748,16 @@ Type 1, 2, or 3, or just say "done" to finish.
 ## Expected Outputs
 
 ### Files Created:
-1. [OK] **`.tmp/{client_name}_gsc_{month}.json`** — GSC data cache
-2. [OK] **`.tmp/{client_name}_ga4_{month}.json`** — GA4 data cache
-3. [OK] **`.tmp/{client_name}_crawl_{month}.json`** — Technical crawl snapshot
-4. [OK] **`clients/{client_name}/reports/{month}_report.{format}`** — Final report (docx/pdf/md)
-5. [OK] **`clients/{client_name}/audit_history/{month}_crawl.json`** — Archived for next month comparison
+1. **`.tmp/{client_name}_gsc_{month}.json`** — GSC data cache
+2. **`.tmp/{client_name}_ga4_{month}.json`** — GA4 data cache
+3. **`.tmp/{client_name}_crawl_{month}.json`** — Technical crawl snapshot
+4. **`clients/{client_name}/reports/{month}_report.{format}`** — Final report (docx/pdf/md)
+5. **`clients/{client_name}/audit_history/{month}_crawl.json`** — Archived for next month comparison
 
 ### User-Facing Deliverables:
-1. [OK] **Executive summary in chat** — Key highlights, metrics, priorities
-2. [OK] **Downloadable report** — Professionally formatted .docx or .pdf
-3. [OK] **Actionable next steps** — 3-5 specific recommendations
+1. **Executive summary in chat** — Key highlights, metrics, priorities
+2. **Downloadable report** — Professionally formatted .docx or .pdf
+3. **Actionable next steps** — 3-5 specific recommendations
 
 ---
 

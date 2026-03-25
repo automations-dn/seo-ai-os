@@ -178,19 +178,19 @@ Save a comprehensive markdown report to `clients/<client_name>/reports/topical_a
 ### Sub-Pillars (Level 1 Entities):
 | Entity | Status | Client Coverage | Priority |
 |--------|--------|-----------------|----------|
-| [Sub-topic 1] | ✅ Covered | [URL] | - |
-| [Sub-topic 2] | ❌ Missing | None | HIGH |
-| [Sub-topic 3] | ⚠️ Shallow | [URL] (450 words) | MEDIUM |
-| [Sub-topic 4] | ✅ Covered | [URL] | - |
-| [Sub-topic 5] | ❌ Missing | None | HIGH |
+| [Sub-topic 1] | Covered | [URL] | - |
+| [Sub-topic 2] | Missing | None | HIGH |
+| [Sub-topic 3] | Shallow | [URL] (450 words) | MEDIUM |
+| [Sub-topic 4] | Covered | [URL] | - |
+| [Sub-topic 5] | Missing | None | HIGH |
 
 ### Supporting Content (Level 2 Entities):
 | Parent Pillar | Supporting Entity | Status |
 |---------------|-------------------|--------|
-| [Sub-topic 1] | [Supporting topic 1a] | ✅ Covered |
-| [Sub-topic 1] | [Supporting topic 1b] | ❌ Missing |
-| [Sub-topic 2] | [Supporting topic 2a] | ❌ Missing (Parent Missing) |
-| [Sub-topic 3] | [Supporting topic 3a] | ✅ Covered |
+| [Sub-topic 1] | [Supporting topic 1a] | Covered |
+| [Sub-topic 1] | [Supporting topic 1b] | Missing |
+| [Sub-topic 2] | [Supporting topic 2a] | Missing (Parent Missing) |
+| [Sub-topic 3] | [Supporting topic 3a] | Covered |
 
 ---
 
@@ -198,9 +198,9 @@ Save a comprehensive markdown report to `clients/<client_name>/reports/topical_a
 
 ### What's Working (Covered Entities):
 1. **[Entity 1]** - [URL] ([X] words, published [date])
-   - Content depth: ✅ Good ([X] words)
-   - Internal links: ✅ [X] contextual links
-   - Schema: ✅ Article schema present
+   - Content depth: Good ([X] words)
+   - Internal links: [X] contextual links
+   - Schema: Article schema present
    - Performance: [X] monthly visitors
 
 2. **[Entity 2]** - [URL]
@@ -265,9 +265,9 @@ Save a comprehensive markdown report to `clients/<client_name>/reports/topical_a
 
 | Content Piece | Word Count | Target Keyword | Assigned To | Due Date | Status |
 |---------------|------------|----------------|-------------|----------|--------|
-| [Pillar 1] | 1,800 | "[keyword]" | [Writer] | Week 2 | 🟡 Pending |
-| [Pillar 2] | 1,600 | "[keyword]" | [Writer] | Week 3 | 🟡 Pending |
-| [Pillar 3] | 1,500 | "[keyword]" | [Writer] | Week 4 | 🟡 Pending |
+| [Pillar 1] | 1,800 | "[keyword]" | [Writer] | Week 2 | Pending |
+| [Pillar 2] | 1,600 | "[keyword]" | [Writer] | Week 3 | Pending |
+| [Pillar 3] | 1,500 | "[keyword]" | [Writer] | Week 4 | Pending |
 
 **Deliverables:** 3 new pillar pages, each with:
 - 1,500-2,000 words
