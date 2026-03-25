@@ -571,20 +571,6 @@ When any data point is unavailable (tool failure, access denied, crawl error), a
 
 **NEVER write N/A. NEVER leave a field blank. NEVER write "Could not fetch" without an explanation and a recommendation.**
 
-### Rule 18: AEO/GEO Optimization (AI Search)
-LLMs (ChatGPT, Perplexity, Gemini) use distinct citability metrics compared to standard Google SEO. ALWAYS run `tools/aeo_grader.py` or use `/aeo_optimize` for content checks. Content must include:
-- A clear 50-75 word "answer block" at the start of H2s.
-- Structured data tables with unique data.
-- Absolute data citations (e.g., "A 2025 study by X..." not "A recent study...").
-
-### Rule 19: Entity SEO & Knowledge Graph
-Brands are no longer strings; they are entities. Before recommending link-building, trigger `/entity_audit` to check Wikipedia, Wikidata, and Knowledge Panel presence.
-- A weak entity cannot rank for competitive terms in 2026.
-- Always generate Entity Schema connecting the brand via `sameAs`.
-
-### Rule 20: Brand Signals Over Backlinks
-Monitor unlinked brand mentions on tier-1 domains (Reddit, Quora, News). AI engines use context/sentiment spread across the web to evaluate E-E-A-T. Trigger `/brand_monitor` to assess velocity.
-
 ---
 
 ## WAT Architecture — How This System Works

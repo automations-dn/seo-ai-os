@@ -1,3 +1,17 @@
+---
+name: entity-building
+description: >
+  When the user wants to build brand entity recognition in Google's Knowledge Graph,
+  establish Wikipedia or Wikidata presence, fix NAP consistency, or implement entity
+  schema markup. Also use when the user mentions "entity audit", "Knowledge Panel",
+  "Knowledge Graph", "Wikipedia presence", "Wikidata", "branded search", "entity SEO",
+  "sameAs schema", "brand not showing in Google", or "Knowledge Graph entry." Use when
+  a client has weak brand recognition despite strong content, is not appearing for
+  branded queries, or competitors have Knowledge Panels and they don't.
+  Invoked by: /entity_audit command, /audit workflow, Rule 19 in CLAUDE.md.
+allowed-tools: Read, Bash, Grep, Glob, WebFetch, Write
+---
+
 # Entity Building & Knowledge Graph Optimization Skill
 
 ## Core Capability
