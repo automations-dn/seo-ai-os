@@ -502,15 +502,91 @@ python tools/schema_gen.py --type Organization --entity-mode --wikidata-id Q1234
 - **Integration:** Allows Claude to call external APIs
 - **Use case:** Custom integrations
 
-**26. geo_monitor/ (AI Citation Accuracy Trackers)** ⭐ NEW 2026
-- **What it does:** Real-time API monitoring scripts that simulate user queries against ChatGPT, Perplexity, and Google AI Overviews to check if your content is actually being cited.
+**26. geo_monitor/ (AI Citation Accuracy Trackers)** ⭐ NEW 2026 Free Tier
+- **What it does:** Real-time Python scripts that use **Playwright headless browsers** to simulate user queries against ChatGPT, Perplexity, and Google AI Overviews to check if your content is actually being cited.
 - **Includes:**
-  - `perplexity.js` (queries the sonar model and counts exact citations)
-  - `chatgpt_search.js` (tests ChatGPT's web search capabilities)
-  - `google_ai_overview.js` (checks SERPs for People Also Ask and AI overviews)
-- **How to use:** `node tools/geo_monitor/perplexity.js` 
-- **Output:** Live metrics including response time, cost, and explicit citations found.
+  - `perplexity.py` (searches Perplexity and counts explicit brand citations)
+  - `chatgpt_search.py` (searches ChatGPT web interface without needing paid APIs)
+  - `google_ai_overview.py` (checks real Google SERPs for AI Overviews, Knowledge Panels, and PAAs)
+- **Zero Cost Architecture:** Completely bypasses paid API keys. Scrapes the live web exactly like a human user.
+- **How to use:** `python tools/geo_monitor/chatgpt_search.py --brand "Your Brand" --queries "best CRM"` 
+- **Output:** Live visibility score (0-100) and exact citation position.
 - **Use case:** Unlike `aeo_grader.py` which *predicts* performance before publishing, these scripts provide *very accurate, real data* after publishing to prove AEO/GEO ROI to clients.
+
+---
+
+## 🏗️ Optimal Folder Structure (Best Practices for Speed & Sharing)
+
+If you are scaling this system, adding new tools, or sharing this repository with another laptop, **adhere strictly to this folder structure**. This prevents "context bloat" (the AI getting confused or slowing down because it reads too many useless files).
+
+```text
+/ (Root Directory)
+├── CLAUDE.md             # The MASTER Brain. Only rules, tool matrices, and agent paths go here.
+├── .env                  # API Keys (Google, OpenAI). NEVER push this to GitHub.
+├── .gitignore            # CRITICAL: Excludes .tmp/ and node_modules/ from GitHub.
+├── tools/                # ONLY Python/JS execution scripts. No data files here.
+│   └── geo_monitor/      # Specific sub-suites belong in subfolders.
+├── .agents/              # AI Cognitive Modules.
+│   ├── skills/           # Actionable AI tasks (e.g., SEO Auditing).
+│   └── workflows/        # Step-by-step SOPs (e.g., How to do Link Building).
+├── clients/              # ONLY client data (brand_kit.json, llms.txt, output reports).
+└── .tmp/                 # Disposable data holding area. ALL output JSON/HTML goes here. Is frequently wiped.
+```
+
+**Golden Rules for System Health:**
+1. **Never store outputs in the root folder.** Always dump raw json/html into `.tmp/`.
+2. **Never commit `.tmp/` or `node_modules/` to Git.** If the AI tries to index 1,000 `.tmp` logs, it will crash.
+3. **If you build a new Python tool, document it in `CLAUDE.md`.** If it isn't in `CLAUDE.md`, the AI doesn't know it exists.
+
+---
+
+## 💻 How To Install SEO AI OS On Another Laptop
+
+Want to share this exact agency operating system with an employee, partner, or secondary computer? Follow these exact steps to deploy it flawlessly in under 10 minutes.
+
+### Step 1: Install Prerequisites (On the New Laptop)
+1. Install **Git**: (https://git-scm.com/)
+2. Install **Python 3.10+**: (https://www.python.org/) - *Check "Add Python to PATH" during install!*
+3. Install **Node.js**: (https://nodejs.org/)
+4. Install **Claude Desktop**: (The primary AI agent interface)
+
+### Step 2: Clone the Repository
+Open a terminal (Powershell or Command Prompt) on the new laptop and download the system:
+```bash
+# Navigate to where you want the system (e.g., Desktop)
+cd Desktop
+git clone https://github.com/automations-dn/seo-ai-os.git
+# Or clone your private repository using your specific Git URL
+cd seo-ai-os
+```
+
+### Step 3: Set Up the Python Environment
+Install all required libraries so the 26 tools actually work:
+```bash
+# Install core Python libraries
+pip install requests beautifulsoup4 pandas nltk scikit-learn sentence-transformers playwright python-dotenv reportlab
+
+# Install Playwright browsers (Required for GEO tracking and Crawling)
+playwright install chromium
+```
+
+### Step 4: Add Your Secret Keys
+The system needs your API credentials to talk to Google and other services.
+1. Copy the `.env.example` file and rename the copy to `.env`
+2. Open `.env` and paste your actual API keys (OpenAI, Google PageSpeed, etc.)
+   *(Note: The `geo_monitor` tools no longer require paid AI keys!)*
+
+### Step 5: Test the Core Engine
+Run a quick test to make sure everything connected correctly:
+```bash
+python tools/fetch_page.py --url https://google.com --output .tmp/test.html
+```
+*If a `test.html` file appears in the `.tmp/` folder, the installation was a success!*
+
+### Step 6: Link to Claude Desktop
+1. Open Claude Desktop.
+2. Select the `seo-ai-os` folder as your active workspace.
+3. Claude will automatically read the `CLAUDE.md` file and possess the skills of a Senior SEO Architect. Type `/audit` or `/geo report` to begin working.
 
 ---
 
