@@ -1,18 +1,9 @@
 {
   "permissions": {
     "allow": [
-      "Bash(python tools/keyword_clusterer.py --input .tmp/thedarenetwork_all_keywords.txt --threshold 0.5 --output .tmp/thedarenetwork_clusters.json)",
-      "Bash(python tools/entity_auditor.py --brand \"Dare Network\" --url \"https://thedarenetwork.com\" --output \".tmp/thedarenetwork_entity_audit.json\")",
-      "Bash(python tools/entity_auditor.py --brand \"Dare Network\" --website \"https://thedarenetwork.com\" --output \".tmp/thedarenetwork_entity_audit.json\")",
-      "Bash(python tools/schema_checker.py --url \"https://thedarenetwork.com\" --output \".tmp/thedarenetwork_schema.json\")",
-      "Bash(python tools/llmstxt_generator.py --help)",
-      "Bash(python tools/llmstxt_generator.py \"https://thedarenetwork.com\" generate)",
-      "Bash(mkdir -p \"clients/thedarenetwork/governance\")",
-      "Bash(cat \"clients/thedarenetwork/governance/llms.txt\")",
-      "Bash(dir \"c:\\Users\\HP\\OneDrive\\Desktop\\SEO ai agency skills\\tools\\getcito\")",
-      "Bash(git ls-tree -r 542b653 --name-only)",
-      "Bash(git submodule status)",
-      "Bash(git config --file .gitmodules --get-regexp path)"
+      "Bash(python dataforseo_client.py --test)",
+      "Bash(python serp_scraper.py --mode serp_top10 --keyword \"SEO agency India\" --output \".tmp/test_serp.json\")",
+      "Bash(python competitor_gap.py --client-url thedarenetwork.com --competitor-urls semrush.com --location-code 2840 --output \".tmp/test_gap.json\")"
     ],
     "deny": [],
     "ask": []

@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
 """
-SERP & Data Scraper Tool
+SERP & Data Scraper Tool — ENTERPRISE EDITION
+Powered by DataForSEO API (primary) with Playwright fallback.
+
 Handles multiple scraping modes:
   - autosuggest: Google Autocomplete suggestions
   - trends: Google Trends data via pytrends
-  - serp_top10: Top 10 organic results for a keyword
+  - serp_top10: Top 10 organic results for a keyword [DATAFORSEO POWERED]
   - competitor_gap: Keyword gap vs competitor pages
   - link_prospects: Find guest post / resource page opportunities
   - unlinked_mentions: Find unlinked brand mentions
@@ -13,7 +15,8 @@ Handles multiple scraping modes:
 Usage:
     python serp_scraper.py --mode autosuggest --keyword "project management software"
     python serp_scraper.py --mode trends --keywords "keyword1,keyword2,keyword3"
-    python serp_scraper.py --mode serp_top10 --keyword "best CRM software"
+    python serp_scraper.py --mode serp_top10 --keyword "best CRM software" [USES DATAFORSEO]
+    python serp_scraper.py --mode serp_top10 --keyword "best CRM software" --fallback [USES PLAYWRIGHT]
     python serp_scraper.py --mode link_prospects --industry "marketing" --type guest_post
 """
 
@@ -25,6 +28,7 @@ import string
 from pathlib import Path
 from datetime import datetime
 from urllib.parse import urlparse, quote_plus
+import os
 
 try:
     import requests
@@ -34,6 +38,14 @@ except ImportError:
     subprocess.run(["pip", "install", "requests", "beautifulsoup4", "lxml"], check=True)
     import requests
     from bs4 import BeautifulSoup
+
+# Import DataForSEO client
+try:
+    from dataforseo_client import DataForSEOClient
+    DATAFORSEO_AVAILABLE = True
+except ImportError:
+    DATAFORSEO_AVAILABLE = False
+    print("[Warning] DataForSEO client not available. Using Playwright fallback only.")
 
 
 HEADERS = {
@@ -142,10 +154,49 @@ def fetch_trends(keywords: list) -> dict:
 
 
 # ===========================
-# SERP TOP 10
+# SERP TOP 10 — DATAFORSEO EDITION
 # ===========================
-def scrape_serp_top10(keyword: str) -> dict:
-    """Scrape the top 10 organic Google results for a keyword using Playwright for better reliability."""
+def scrape_serp_top10(keyword: str, use_fallback: bool = False, location_code: int = 2840) -> dict:
+    """
+    Scrape the top 10 organic Google results for a keyword.
+
+    Priority:
+      1. DataForSEO API (100% reliable, CAPTCHA-free, $0.001/query)
+      2. Playwright (if DataForSEO unavailable or --fallback flag used)
+      3. Requests (last resort)
+
+    Args:
+        keyword: Search query
+        use_fallback: Force use of Playwright instead of DataForSEO
+        location_code: DataForSEO location code (2840 = USA, 2356 = India)
+
+    Returns:
+        Dictionary with keyword and results array
+    """
+
+    # Try DataForSEO first (unless fallback is forced)
+    if DATAFORSEO_AVAILABLE and not use_fallback:
+        try:
+            print(f"  [SERP] Using DataForSEO API (enterprise-grade, CAPTCHA-free)")
+            client = DataForSEOClient()
+            results = client.get_serp_results(keyword, location_code=location_code, depth=10)
+
+            if results:
+                return {
+                    "keyword": keyword,
+                    "results": results,
+                    "source": "dataforseo_api",
+                    "cost_usd": 0.001,
+                    "scraped_at": datetime.now().isoformat()
+                }
+            else:
+                print(f"  [SERP] DataForSEO returned no results, trying Playwright fallback...")
+
+        except Exception as e:
+            print(f"  [SERP] DataForSEO error: {e}")
+            print(f"  [SERP] Falling back to Playwright...")
+
+    # Fallback to Playwright
     results = []
 
     try:
@@ -224,6 +275,8 @@ def scrape_serp_top10(keyword: str) -> dict:
     return {
         "keyword": keyword,
         "results": results,
+        "source": "playwright_scraper",
+        "cost_usd": 0,
         "scraped_at": datetime.now().isoformat()
     }
 
@@ -265,6 +318,8 @@ def scrape_serp_top10_fallback(keyword: str) -> dict:
     return {
         "keyword": keyword,
         "results": results,
+        "source": "requests_fallback",
+        "cost_usd": 0,
         "scraped_at": datetime.now().isoformat()
     }
 
@@ -377,7 +432,7 @@ def find_contact_email(url: str) -> dict:
 # MAIN
 # ===========================
 def main():
-    parser = argparse.ArgumentParser(description="SEO SERP and Data Scraper")
+    parser = argparse.ArgumentParser(description="SEO SERP and Data Scraper — DataForSEO Edition")
     parser.add_argument("--mode", required=True, choices=["autosuggest", "trends", "serp_top10", "link_prospects", "find_email"])
     parser.add_argument("--keyword", help="Primary keyword")
     parser.add_argument("--keywords", help="Comma-separated list of keywords (for trends)")
@@ -385,6 +440,8 @@ def main():
     parser.add_argument("--type", default="guest_post", choices=["guest_post", "resource_links"], help="Prospect type")
     parser.add_argument("--url", help="URL to check (for find_email)")
     parser.add_argument("--location", default="us", help="Country code for autosuggest")
+    parser.add_argument("--location-code", type=int, default=2840, help="DataForSEO location code (2840=USA, 2356=India)")
+    parser.add_argument("--fallback", action="store_true", help="Force Playwright instead of DataForSEO")
     parser.add_argument("--output", help="Output JSON file path")
     args = parser.parse_args()
 
@@ -405,7 +462,7 @@ def main():
     elif args.mode == "serp_top10":
         assert args.keyword, "--keyword is required for serp_top10 mode"
         print(f"[SERP] Scraping top 10 results for: {args.keyword}")
-        data = scrape_serp_top10(args.keyword)
+        data = scrape_serp_top10(args.keyword, use_fallback=args.fallback, location_code=args.location_code)
 
     elif args.mode == "link_prospects":
         assert args.industry, "--industry is required for link_prospects mode"
