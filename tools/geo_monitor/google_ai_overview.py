@@ -65,10 +65,26 @@ def check_google_serp(page, query: str, brand: str, domain: str = None) -> dict:
         # Navigate and wait for content to load
         page.goto(url, wait_until="domcontentloaded", timeout=30000)
         
-        # Wait a moment for JS to render AI Overviews and dynamic content
-        page.wait_for_timeout(random.randint(2000, 4000))
+        # Handle Google Cookie Consent popup if it appears
+        try:
+            # Often the 'Accept all' button is the second one, or has specific text
+            accept_btn = page.locator("button:has-text('Accept all')").first
+            if accept_btn.is_visible(timeout=2000):
+                accept_btn.click()
+                page.wait_for_timeout(1000)
+        except:
+            pass
+            
+        # Give generation time to finish and AJAX to load
+        page.wait_for_timeout(random.randint(3000, 5000))
         
         html = page.content()
+        
+        # DEBUG: Save the HTML and Screenshot to inspect what Google actually returned
+        with open(".tmp/google_debug.html", "w", encoding="utf-8") as f:
+            f.write(html)
+        page.screenshot(path=".tmp/google_debug.png")
+            
         soup = BeautifulSoup(html, "html.parser")
         
         brand_lower = brand.lower()
