@@ -515,6 +515,131 @@ python tools/schema_gen.py --type Organization --entity-mode --wikidata-id Q1234
 
 ---
 
+## 🤖 The Elite Squad: 5 Mastermind Agents (NEW — 2026)
+
+### Understanding the Architecture: Skills vs Workflows vs Agents
+
+The SEO AI OS operates on three layers of intelligence:
+
+| Layer | What It Is | Analogy |
+|-------|-----------|---------|
+| **Skills** (33 total, in `.agents/skills/`) | Training manuals. They teach the AI *what* good SEO is — E-E-A-T standards, citability criteria, schema best practices. | The textbook you give a new employee on Day 1. |
+| **Workflows** (24 total, in `workflows/`) | SOPs (Standard Operating Procedures). Step-by-step checklists: "Step 1: Run crawler. Step 2: Analyze data. Step 3: Write brief." | The process checklist on the wall. |
+| **Agents** (5 Elite Squad, in `.agents/agents/`) | The employees. They READ the skills, FOLLOW the workflows, USE the tools, and DELIVER the finished work autonomously. | The senior specialist who does everything without hand-holding. |
+
+**Why Agents Matter:** Without agents, *you* have to manually follow every workflow step, trigger each tool, and compile the results yourself. With agents, you say "Audit this site" and the agent does everything — from crawling to scoring to writing the executive summary.
+
+### The "Chat-First" Reporting Workflow
+
+**The Old Way (Broken):**
+1. Agent runs audit → data saved as JSON in `.tmp/`.
+2. `report_builder.py` reads JSON → recalculates scores with its own hardcoded math.
+3. Report contains wrong/mismatched data because the script's logic doesn't match the AI's analysis.
+
+**The New Way (Fixed):**
+1. Agent runs audit → presents the FULL report in the IDE chat with perfect scores and insights.
+2. You read it, verify it, approve it.
+3. The Report Architect agent takes that EXACT approved text and styles it into a Word Document.
+4. **Zero recalculation. Zero dropped data. What you see is what you get.**
+
+### Agent 1: The Strategy Director (`seo-director.md`)
+
+**Role:** The orchestrator and single point of contact for all client engagements.
+
+| Capability | Description |
+|------------|-------------|
+| Delegation | Assigns the right sub-agent for each task |
+| Quality Control | Reviews all sub-agent outputs for hallucinations and bad data |
+| Synthesis | Combines all findings into a unified executive narrative |
+| Client Communication | Translates technical jargon into business impact language |
+| Proposals | Runs rapid mini-audits on cold leads and drafts sales proposals |
+
+**When to use:** Any time you start a new client engagement, need a full audit, or want a monthly check-in synthesized.
+
+**Delegation Matrix:**
+- "Audit my site" → Sends to `audit-architect`
+- "Create content strategy" → Sends to `content-architect`
+- "Optimize for AI search" → Sends to `geo-mastermind`
+- "Generate a report" → Sends to `report-architect`
+
+---
+
+### Agent 2: The Audit Architect (`audit-architect.md`)
+
+**Role:** The comprehensive technical deep-diver. Consolidates Technical SEO, On-Page SEO, CRO & UX, Schema Markup, and Core Web Vitals analysis into one agent.
+
+| Capability | Tools Used |
+|------------|-----------|
+| Full site crawl & indexation analysis | `seo_crawler.py` |
+| Page-level on-page scoring | `on_page_analyzer.py` |
+| Core Web Vitals measurement | `lighthouse_audit.py` |
+| JS framework & rendering detection | `framework_detector.py` |
+| Schema validation & generation | `schema_checker.py`, `schema_gen.py` |
+| CRO & trust signal analysis | Page content analysis |
+
+**When to use:** Any technical audit, on-page review, schema implementation, or performance optimization task.
+
+**Key feature:** Provides exact, copy-paste JSON-LD schema code — not just "add schema."
+
+---
+
+### Agent 3: The Content Architect (`content-architect.md`)
+
+**Role:** The content strategist, writer, and editor combined. Plans what to write, writes it, and QAs it.
+
+| Capability | Tools Used |
+|------------|-----------|
+| Topic cluster mapping (entity graph) | `topic_graph_mapper.py` |
+| Keyword clustering & gap analysis | `keyword_clusterer.py`, `competitor_gap.py` |
+| NLP content analysis | `nlp_analyzer.py` |
+| AI citability scoring | `aeo_grader.py` |
+| Content brief creation | Workflow: `content_brief.md` |
+| Full article drafting (E-E-A-T + GEO) | Workflow: `content_draft.md` |
+| Content refresh & updates | Workflow: `content_refresh.md` |
+
+**When to use:** Any content planning, writing, updating, or competitor content analysis task.
+
+**Key feature:** Built-in QA checklist — all content must pass 11 checks before delivery. No shortcuts.
+
+---
+
+### Agent 4: The GEO Mastermind (`geo-mastermind.md`)
+
+**Role:** The unified AI Search Specialist. Replaces the previous 5 separate GEO sub-agents.
+
+| Capability | Tools Used |
+|------------|-----------|
+| AI citability scoring | `aeo_grader.py`, `citability_scorer.py` |
+| AI crawler access audit | Robots.txt analysis |
+| llms.txt generation & validation | `llmstxt_generator.py` |
+| Brand mention scanning (Wikipedia, Reddit, YouTube) | `brand_mention_tracker.py`, Wikipedia API |
+| Entity recognition strength | `entity_auditor.py` |
+| Live AI citation tracking | `geo_monitor/` scripts |
+| Platform-specific scores (ChatGPT, Perplexity, Gemini) | Multi-platform analysis |
+
+**When to use:** Any AI search visibility audit, GEO optimization, or brand entity building task.
+
+**Key feature:** Provides a composite AI Visibility Score (0-100) with platform-specific breakdowns and exact action items.
+
+---
+
+### Agent 5: The Report Architect (`report-architect.md`)
+
+**Role:** The final step in every client deliverable. Pure formatting — takes approved chat output and styles it into professional Word Documents.
+
+| Capability | Description |
+|------------|-------------|
+| Markdown → DOCX conversion | Applies Dare Network brand template |
+| Zero recalculation | NEVER changes scores or findings |
+| Professional styling | Navy/Orange color scheme, section banners, severity badges |
+| Multiple document types | Full Audit, GEO Report, Content Strategy, Monthly Report, Proposal |
+
+**When to use:** After ANY agent has presented findings in chat and the user has approved them.
+
+**Critical rule:** What appears in chat is EXACTLY what goes into the document. No exceptions.
+
+---
+
 ## 🏗️ Optimal Folder Structure (Best Practices for Speed & Sharing)
 
 If you are scaling this system, adding new tools, or sharing this repository with another laptop, **adhere strictly to this folder structure**. This prevents "context bloat" (the AI getting confused or slowing down because it reads too many useless files).
@@ -527,8 +652,10 @@ If you are scaling this system, adding new tools, or sharing this repository wit
 ├── tools/                # ONLY Python/JS execution scripts. No data files here.
 │   └── geo_monitor/      # Specific sub-suites belong in subfolders.
 ├── .agents/              # AI Cognitive Modules.
-│   ├── skills/           # Actionable AI tasks (e.g., SEO Auditing).
-│   └── workflows/        # Step-by-step SOPs (e.g., How to do Link Building).
+│   ├── agents/           # 🆕 Mastermind Agents (the "employees" that execute autonomously).
+│   ├── skills/           # Training manuals (what good SEO looks like).
+│   └── schema/           # Schema references and templates.
+├── workflows/            # Step-by-step SOPs (how to do each task).
 ├── clients/              # ONLY client data (brand_kit.json, llms.txt, output reports).
 └── .tmp/                 # Disposable data holding area. ALL output JSON/HTML goes here. Is frequently wiped.
 ```
@@ -537,6 +664,7 @@ If you are scaling this system, adding new tools, or sharing this repository wit
 1. **Never store outputs in the root folder.** Always dump raw json/html into `.tmp/`.
 2. **Never commit `.tmp/` or `node_modules/` to Git.** If the AI tries to index 1,000 `.tmp` logs, it will crash.
 3. **If you build a new Python tool, document it in `CLAUDE.md`.** If it isn't in `CLAUDE.md`, the AI doesn't know it exists.
+4. **If you build a new Agent, document it here AND in `CLAUDE.md`.** Agents need to be registered to be activated.
 
 ---
 

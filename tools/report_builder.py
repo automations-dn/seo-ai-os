@@ -185,7 +185,7 @@ def build_audit_docx(client_slug, website_url, brand_kit, strategy_data={}):
         sec.left_margin=Cm(2.5); sec.right_margin=Cm(2.5)
 
     info=brand_kit.get("client_info",{}); client_name=info.get("client_name",client_slug)
-    industry=info.get("industry",""); 
+    industry=info.get("industry","");
     cms=strategy_data.get("cms", brand_kit.get("technical_settings",{}).get("cms",""))
     is_ecommerce=strategy_data.get("is_ecommerce", False)
     audit_date=datetime.now().strftime("%B %Y")
@@ -195,6 +195,48 @@ def build_audit_docx(client_slug, website_url, brand_kit, strategy_data={}):
     framework_data=load_tmp(f"*{client_slug}*framework*.json")  # CRITICAL: Load framework detection data
 
     summary=crawl.get("summary",{}); pages=crawl.get("pages",[])
+
+    # ── FIX: Extract real client name from crawl data when using --url mode ──
+    # When called with --url, client_name defaults to the full URL which looks bad in the report.
+    # Try to extract a cleaner name from the homepage title in the crawl data.
+    if client_name == website_url or client_name.startswith("http"):
+        homepage_pages = [p for p in pages if p.get("url","").rstrip("/") == website_url.rstrip("/")]
+        if homepage_pages:
+            raw_title = homepage_pages[0].get("title","") or ""
+            # Extract brand name: take part after the last "|" or "-" separator
+            import re as _re
+            parts = _re.split(r'\s*[|\-–]\s*', raw_title)
+            client_name = parts[-1].strip() if len(parts) > 1 else (parts[0].strip() if parts else client_slug)
+        if not client_name or client_name.startswith("http"):
+            # Fallback: capitalise the slug
+            client_name = client_slug.replace("-"," ").replace("_"," ").title()
+
+    # ── FIX: Auto-detect industry from crawl page content when not set ────────
+    # This ensures the strategic growth section uses industry-specific insights.
+    if not industry and pages:
+        all_text = " ".join(
+            " ".join([p.get("title",""), p.get("meta_description","") or ""])
+            for p in pages
+        ).lower()
+        all_schema_flat = [s for p in pages for s in p.get("schema_types",[])]
+        if any(t in all_schema_flat for t in ["Dentist","MedicalBusiness","MedicalClinic","Hospital","Physician"]):
+            industry = "local dental clinic"
+        elif any(kw in all_text for kw in ["dental","dentist","orthodontic","clinic","implant","braces"]):
+            industry = "local dental clinic"
+        elif any(kw in all_text for kw in ["restaurant","food","menu","delivery","cuisine"]):
+            industry = "local restaurant"
+        elif any(kw in all_text for kw in ["salon","spa","beauty","hair","nail"]):
+            industry = "local beauty & wellness"
+        elif any(kw in all_text for kw in ["real estate","property","buy home","rent","apartment"]):
+            industry = "real estate"
+        elif any(kw in all_text for kw in ["saas","software","platform","free trial","pricing","integration"]):
+            industry = "saas"
+        elif any(kw in all_text for kw in ["product","shop","cart","buy","add to bag","collection"]):
+            industry = "e-commerce"
+        elif any(kw in all_text for kw in ["agency","marketing","seo","design","branding","case study"]):
+            industry = "agency"
+        else:
+            industry = "local service"
     onpage_results=onpage.get("results",[]); avg_onpage=onpage.get("avg_score","N/A")
     total_pages=summary.get("total_pages",len(pages) or "N/A")
     broken=int(summary.get("status_404",0) or 0); redirects=int(summary.get("status_301",0) or 0)
@@ -363,18 +405,36 @@ def build_audit_docx(client_slug, website_url, brand_kit, strategy_data={}):
             {"issue":"Shopify App Bloat","severity":"Medium","finding":"Third-party Shopify apps often inject render-blocking JavaScript in the <head>.","fix":"Consolidate apps, defer non-critical scripts, and leverage Shopify's built-in CDN-level image optimization."}
         ])
     
-    add_h2(doc, "1.2  Crawlability & Indexation")
-
     add_h2(doc,"1.1  Crawlability & Indexation")
     add_body(doc,"Crawlability determines how efficiently Googlebot can discover and process pages. Indexation determines which of those pages appear in search results.")
     crawl_issues=[]
     if broken>0: crawl_issues.append({"issue":f"Broken Pages — {broken} URLs returning 404","severity":"Critical","finding":f"{broken} pages return 404 Not Found. These waste crawl budget, destroy link equity, and create terrible user experiences.","fix":"Set up 301 redirects for every broken URL to the most relevant live page. Check Google Search Console > Coverage report weekly."})
     if miss_h1>0: crawl_issues.append({"issue":f"Missing H1 Tags — {miss_h1} pages","severity":"High","finding":f"{miss_h1} pages ({round(miss_h1/max(int(str(total_pages) if str(total_pages).isdigit() else 1),1)*100)}% of site) have no H1 tag. Google uses H1 as the primary topic signal for a page.","fix":"Add a unique, keyword-rich H1 to every page. The H1 should match user search intent, not just the brand name."})
-    crawl_issues.append({"issue":"No Canonical Tags Site-Wide","severity":"High","finding":"Canonical tags are missing across the site. Without them Google may index duplicate or near-duplicate URLs, splitting ranking signals between them.","fix":"Add self-referencing canonical tags to every page. For paginated pages, canonical to page 1. Implement via CMS template."})
-    crawl_issues.append({"issue":"XML Sitemap Not Confirmed","severity":"High","finding":"No verified sitemap submission detected in crawl data. An unsubmitted sitemap means Google may miss new pages for weeks.","fix":f"Submit {website_url}/sitemap.xml in Google Search Console. Monitor the Coverage report for indexation errors weekly."})
+    # ── FIX: Only flag canonical issue if canonicals are actually missing ──────
+    pages_with_canonical = sum(1 for p in pages if p.get("canonical"))
+    if pages and pages_with_canonical < len(pages) * 0.5:
+        crawl_issues.append({"issue":"Missing Canonical Tags","severity":"High","finding":f"Only {pages_with_canonical}/{len(pages)} pages have canonical tags. Without them Google may index duplicate or near-duplicate URLs, splitting ranking signals.","fix":"Add self-referencing canonical tags to every page via your CMS template (Rank Math / Yoast)."})
+    elif pages and pages_with_canonical < len(pages):
+        crawl_issues.append({"issue":"Incomplete Canonical Implementation","severity":"Medium","finding":f"{len(pages)-pages_with_canonical} pages are missing canonical tags. {pages_with_canonical}/{len(pages)} pages have them set correctly.","fix":"Ensure all pages have self-referencing canonical tags. Check paginated pages and filter URLs especially."})
+    # ── FIX: Only flag duplicate URL issue if non-trailing-slash variants exist ─
+    canonical_urls = set(p.get("canonical","").rstrip("/") for p in pages if p.get("canonical"))
+    raw_urls = set(p.get("url","").rstrip("/") for p in pages)
+    if len(raw_urls) > len(canonical_urls) and pages:
+        crawl_issues.append({"issue":"Duplicate URL Variants (Trailing Slash)","severity":"Medium","finding":f"Both trailing-slash and non-trailing-slash versions of pages are being crawled (e.g. /about/ and /about both resolve). This wastes crawl budget even when canonicals are set.","fix":"Implement a 301 redirect at the server/CDN level to enforce a single canonical URL format. Prefer trailing-slash versions."})
+    # ── FIX: Only flag sitemap as unsubmitted if no sitemap reference in robots.txt ──
+    robots_data = load_tmp(f"*{client_slug}*robots*.json")
+    has_sitemap_reference = bool(robots_data) or any("sitemap" in str(p.get("url","")).lower() for p in pages)
+    if not has_sitemap_reference:
+        crawl_issues.append({"issue":"XML Sitemap Not Confirmed","severity":"High","finding":"No verified sitemap submission detected in crawl data. An unsubmitted sitemap means Google may miss new pages for weeks.","fix":f"Submit {website_url}sitemap_index.xml in Google Search Console. Monitor the Coverage report for indexation errors weekly."})
+    else:
+        crawl_issues.append({"issue":"Verify Sitemap Submission in GSC","severity":"Low","finding":f"Sitemap is present ({website_url}sitemap_index.xml) but GSC submission status is unverified. Unverified sitemaps may not be processed.","fix":"In Google Search Console → Sitemaps, confirm the sitemap shows 'Success' status and all pages are being indexed."})
     if noindex>0: crawl_issues.append({"issue":f"Pages with Noindex — {noindex} URLs","severity":"Medium","finding":f"{noindex} pages carry noindex tags preventing them from appearing in search results.","fix":"Review each noindex page. Remove the tag from any page that should rank. Keep noindex only on admin, thank-you, and test pages."})
     if redirects>0: crawl_issues.append({"issue":f"Redirect Chains — {redirects} detected","severity":"Medium","finding":f"{redirects} redirect chains found. Each hop wastes crawl budget and dilutes PageRank.","fix":"Update all internal links to point directly to final destination URLs. Eliminate multi-hop redirect chains."})
     if miss_meta>0: crawl_issues.append({"issue":f"Missing Meta Descriptions — {miss_meta} pages","severity":"Medium","finding":f"{miss_meta} pages have no meta description. Google auto-generates snippets, often using irrelevant navigation or footer text.","fix":"Write compelling meta descriptions (120-160 chars) for all pages. Include the primary keyword and a clear value proposition."})
+    # ── FIX: Detect links-not-crawlable from Lighthouse SEO audits ───────────
+    lh_seo_audits = lighthouse.get("mobile",{}).get("seo_audits",{})
+    if lh_seo_audits.get("crawlable-anchors",{}).get("score",1) == 0:
+        crawl_issues.append({"issue":"Links Are Not Crawlable (Lighthouse)","severity":"Critical","finding":"Lighthouse detected anchor elements using non-standard href attributes (JavaScript handlers, #, or void). Google cannot follow these links to discover and crawl linked pages.","fix":"Replace all JS-based link handlers with proper href='/page/' attributes. Run in DevTools console: document.querySelectorAll('a:not([href]), a[href=\"#\"], a[href*=\"javascript\"]') to identify offenders."})
     if not crawl_issues: crawl_issues.append({"issue":"No Critical Crawl Issues","severity":"Low","finding":"No major crawl or indexation issues detected.","fix":"Run a monthly deep crawl with Screaming Frog or Sitebulb for ongoing monitoring."})
     add_issues_table(doc,crawl_issues)
 
@@ -385,12 +445,30 @@ def build_audit_docx(client_slug, website_url, brand_kit, strategy_data={}):
         add_callout(doc,"Measured Performance (Google PageSpeed Insights)",[f"LCP: {lcp_s} — {'POOR' if lcp_ms and lcp_ms>4000 else 'NEEDS IMPROVEMENT' if lcp_ms and lcp_ms>2500 else 'GOOD'} (target <2.5s)",f"INP: {inp_l} (target <200ms)",f"CLS: {cls_l} (target <0.1)",f"Mobile Performance Score: {perf}/100"],"warning" if perf<50 else "info")
     else:
         add_callout(doc,"Estimated Performance (Based on Visual Analysis)",["LCP: Likely POOR — large images loading without preloading detected","INP: Likely HIGH — render-blocking scripts detected","CLS: Likely HIGH — images without explicit dimensions detected","Add GOOGLE_API_KEY to .env to get exact measured PageSpeed scores"],"warning")
-    cwv_issues=[
-        {"issue":"Large Unoptimised Images","severity":"Critical","finding":"Hero and product images are served in full resolution without WebP conversion, making mobile users download desktop-sized files.","fix":"Convert all images to WebP. Add explicit width/height on every img tag. Use srcset for responsive image delivery."},
-        {"issue":"Render-Blocking JavaScript","severity":"High","finding":"Third-party scripts load synchronously in <head>, blocking page rendering and significantly increasing Time to Interactive.","fix":"Add defer or async to all non-critical scripts. Lazy-load third-party embeds (maps, chats, videos) using Intersection Observer API."},
-        {"issue":"Images Not Lazy-Loaded","severity":"High","finding":"Below-fold images load on initial page load, increasing page weight and slowing LCP — the most heavily weighted Core Web Vital.","fix":"Add loading='lazy' to all below-fold images. Preload the hero/LCP image in <head> with loading='eager'."},
-        {"issue":"No Image Compression Pipeline","severity":"Medium","finding":"Images uploaded without compression. Files over 100KB for content images and 200KB for heroes are serious performance red flags.","fix":"Implement compression before upload. Use CDN-level optimisation. Target: WebP at quality 75-80 for product images."},
-    ]
+    # ── FIX: CWV issues now reference ACTUAL measured values from Lighthouse ────
+    cwv_issues=[]
+    if lcp_ms:
+        lcp_secs = lcp_ms / 1000
+        lcp_rating = "POOR" if lcp_ms > 4000 else "NEEDS IMPROVEMENT" if lcp_ms > 2500 else "GOOD"
+        lcp_sev = "Critical" if lcp_ms > 4000 else "High" if lcp_ms > 2500 else "Medium"
+        cwv_issues.append({"issue":f"LCP: {lcp_secs:.1f}s ({lcp_rating})","severity":lcp_sev,"finding":f"Largest Contentful Paint is {lcp_secs:.1f} seconds on mobile — target is under 2.5s. This is {round(lcp_secs/2.5,1)}x over the acceptable limit. Every extra second of LCP reduces conversions by an estimated 7%. Primary causes: uncompressed hero images, render-blocking scripts in <head>, no preloading of above-fold images.","fix":"1) Convert all images to WebP (25-35% smaller). 2) Move GTM/GA4/analytics scripts to async/defer. 3) Add <link rel='preload'> for the hero image in <head>. 4) Enable a caching plugin (WP Rocket / LiteSpeed Cache)."})
+    else:
+        cwv_issues.append({"issue":"LCP: Not Yet Measured","severity":"High","finding":"LCP (Largest Contentful Paint) could not be measured. This is a primary Core Web Vitals ranking signal. Without measuring it, you cannot identify the specific asset causing slowness.","fix":"Run Google PageSpeed Insights on the live site. The 'Opportunities' section will name the specific image or script causing the bottleneck."})
+
+    lh_mob_cwv = lighthouse.get("mobile",{}).get("core_web_vitals",{})
+    tbt_ms = lh_mob_cwv.get("tbt")
+    fcp_ms = lh_mob_cwv.get("fcp")
+    tti_ms_val = lh_mob_cwv.get("tti")
+    si_ms = lh_mob_cwv.get("speed_index")
+
+    if tbt_ms and tbt_ms > 200:
+        tbt_sev = "Critical" if tbt_ms > 600 else "High"
+        cwv_issues.append({"issue":f"Total Blocking Time: {tbt_ms:.0f}ms","severity":tbt_sev,"finding":f"TBT is {tbt_ms:.0f}ms (target: under 200ms). High TBT means heavy JavaScript is blocking the browser main thread, preventing users from interacting with the page. This directly causes poor INP scores and failed Core Web Vitals.","fix":"Defer all non-critical third-party scripts (GTM, analytics, chat widgets, WhatsApp buttons). Use Chrome DevTools > Performance tab to identify which scripts contribute most to the blocking time."})
+    if fcp_ms and fcp_ms > 1800:
+        cwv_issues.append({"issue":f"First Contentful Paint: {fcp_ms/1000:.1f}s","severity":"High","finding":f"FCP is {fcp_ms/1000:.1f}s — users see a blank page for this long before any content appears. Poor FCP increases bounce rate before the page even loads.","fix":"Prioritize above-fold HTML delivery. Eliminate render-blocking CSS/JS. Enable server-side compression (gzip/brotli). Use a CDN for static assets."})
+    cwv_issues.append({"issue":"Images Not in WebP / AVIF Format","severity":"High","finding":"Images served as JPEG/PNG instead of modern formats. WebP is 25-35% smaller at equivalent quality, directly improving LCP. Given the measured LCP is primarily image-driven, this is a direct fix.","fix":"Convert all images to WebP before uploading. Use tools like Squoosh.app, Cloudflare Images, or a WordPress plugin (Imagify, ShortPixel). Implement <picture> element with JPEG fallback for older browsers."})
+    cwv_issues.append({"issue":"No Lazy Loading on Below-Fold Images","severity":"Medium","finding":f"Below-fold images load on initial page load, wasting bandwidth and inflating LCP. On a page with {miss_alt + sum(p.get('images_missing_alt',0)>0 and 1 or 0 for p in pages)} total images, this is a significant weight problem.","fix":"Add loading='lazy' to all below-fold images. The hero/LCP image must use loading='eager' and be preloaded in <head> with <link rel='preload' as='image'>."})
+    cwv_issues.append({"issue":"No Image Compression Pipeline","severity":"Medium","finding":"Images uploaded without compression. Files over 100KB for content images and 200KB for heroes are serious performance red flags.","fix":"Implement compression before upload. Target: WebP at quality 75-80. For WordPress: use WP Rocket + Imagify together for both caching and image optimisation in one step."})
     if cms and "shopify" in cms.lower(): cwv_issues.append({"issue":"Shopify App Script Bloat","severity":"Medium","finding":"Each installed Shopify app typically injects 1-3 scripts. 5+ apps create significant render-blocking weight.","fix":"Audit all installed apps. Remove unused ones. Consolidate duplicate function apps. Use native Shopify features where possible."})
     add_issues_table(doc,cwv_issues)
 
@@ -406,11 +484,38 @@ def build_audit_docx(client_slug, website_url, brand_kit, strategy_data={}):
     if not all_schema or not pages:
         add_callout(doc,"Critical Gap: Minimal Schema Implementation",[f"The site currently lacks most structured data types that unlock rich snippets.","Competitors with Product and Review schema display star ratings and prices directly in Google results — getting far more clicks even at the same ranking position."],"critical")
     schema_iss=[]
-    if not any("Organization" in s for s in all_schema): schema_iss.append({"issue":"Organization Schema","severity":"High","finding":"No Organization schema on homepage. This is the most fundamental schema — it gives Google your brand name, logo, social profiles, and contact info.","fix":"Add Organization JSON-LD to homepage <head> with: name, logo, url, sameAs (all social profiles), contactPoint."})
-    if not any("Article" in s or "BlogPosting" in s for s in all_schema): schema_iss.append({"issue":"Article / BlogPosting Schema","severity":"High","finding":"Blog posts lack Article schema. Without it Google cannot display article-rich results: author, publish date, and article carousels.","fix":"Add Article or BlogPosting JSON-LD to all blog posts with headline, author, datePublished, dateModified, and image."})
-    if not any("BreadcrumbList" in s for s in all_schema): schema_iss.append({"issue":"BreadcrumbList Schema","severity":"Medium","finding":"No BreadcrumbList schema detected. Breadcrumbs display the page path in Google results, improving CTR by clearly showing site structure.","fix":"Add BreadcrumbList JSON-LD to all non-homepage pages. Especially impactful for category and product pages."})
-    if not any("Person" in s for s in all_schema): schema_iss.append({"issue":"Person / Author Schema","severity":"Medium","finding":"No author entity markup detected. Person schema builds E-E-A-T signals by connecting content to credentialed human authors.","fix":"Add Person JSON-LD to all author pages: name, url, sameAs (LinkedIn, Twitter/X), jobTitle, and knowsAbout."})
-    if not schema_iss: schema_iss.append({"issue":"Enhance Existing Schema","severity":"Low","finding":"Basic schema is present. Opportunity exists to add WebSite (Sitelinks Search Box) and SiteNavigationElement schema.","fix":"Add WebSite schema with SearchAction. Add SiteNavigationElement linking to main navigation destinations."})
+    # ── FIX: Check for missing schema types with real data + deeper coverage ──
+    if not any("Organization" in s for s in all_schema):
+        schema_iss.append({"issue":"Organization Schema Missing","severity":"High","finding":"No Organization schema on homepage. This is the most fundamental schema — it gives Google your brand name, logo, social profiles, and contact info. Without it, Google cannot build a Knowledge Panel for the brand.","fix":"Add Organization JSON-LD to homepage <head> with: name, logo, url, sameAs (all social profiles), contactPoint, @id (unique entity URL)."})
+    if not any("Article" in s or "BlogPosting" in s for s in all_schema):
+        schema_iss.append({"issue":"Article / BlogPosting Schema Missing","severity":"High","finding":"Blog posts lack Article schema. Without it Google cannot display article-rich results: author, publish date, and article carousels.","fix":"Add Article or BlogPosting JSON-LD to all blog posts with headline, author, datePublished, dateModified, and image."})
+    if not any("BreadcrumbList" in s for s in all_schema):
+        schema_iss.append({"issue":"BreadcrumbList Schema Missing","severity":"Medium","finding":"No BreadcrumbList schema detected. Breadcrumbs display the page path in Google results, improving CTR by clearly showing site structure.","fix":"Add BreadcrumbList JSON-LD to all non-homepage pages. Especially impactful for category and product pages."})
+    if not any("Person" in s for s in all_schema):
+        schema_iss.append({"issue":"Person / Author Schema Missing","severity":"Medium","finding":"No author entity markup detected. Person schema builds E-E-A-T signals by connecting content to credentialed human authors.","fix":"Add Person JSON-LD to all author pages: name, url, sameAs (LinkedIn, Twitter/X), jobTitle, and knowsAbout."})
+    # ── Critical: Check for FAQPage schema (AEO/AI search requirement) ────────
+    if not any("FAQPage" in s or "FAQ" in s for s in all_schema):
+        schema_iss.append({"issue":"FAQPage Schema Missing","severity":"High","finding":"No FAQPage schema detected anywhere on the site. FAQ schema is the primary driver of Google AI Overview citations and voice search answers. Competitors with FAQ schema get featured snippets and AI Overview placements for the same queries.","fix":"Add FAQPage JSON-LD with 5-8 Q&A pairs to the homepage and service pages. Questions should match real user search queries (use Google Autosuggest + People Also Ask)."})
+    # ── Critical: Check for AggregateRating / Review schema ──────────────────
+    if not any("AggregateRating" in s or "Review" in s for s in all_schema):
+        schema_iss.append({"issue":"AggregateRating (Star Ratings) Schema Missing","severity":"High","finding":"No star rating schema found. Competitors with AggregateRating schema display gold star ratings in Google results, getting 15-30% higher CTR at the same ranking position. This is especially critical for local businesses where reviews drive conversion.","fix":"Add AggregateRating to the Organization/LocalBusiness schema: ratingValue, reviewCount, bestRating: 5. Pull values from Google Business Profile rating."})
+    # ── Check for LocalBusiness/Dentist specific schema ───────────────────────
+    has_local = any(s in all_schema for s in ["LocalBusiness","Dentist","MedicalBusiness","MedicalClinic","Store","Restaurant"])
+    if not has_local and ("local" in industry.lower() or "dental" in industry.lower() or "service" in industry.lower()):
+        schema_iss.append({"issue":"LocalBusiness / Dentist Schema Missing","severity":"High","finding":"No LocalBusiness or Dentist schema found. For local businesses, this schema type tells Google your precise NAP (name, address, phone), hours, service area, and price range — all critical for Local Pack rankings.","fix":"Add Dentist (or LocalBusiness) JSON-LD with: name, address, telephone, openingHours, priceRange, areaServed, hasMap (Google Maps URL)."})
+    # ── Check for sameAs entity links ────────────────────────────────────────
+    schema_has_same_as = any(p.get("schema_same_as") for p in onpage_results)
+    if not schema_has_same_as:
+        schema_iss.append({"issue":"Entity sameAs Links Missing","severity":"Medium","finding":"Organization schema lacks sameAs property linking to third-party entity validators (Google Business Profile, LinkedIn, Wikidata, Practo, Justdial). Google uses sameAs to cross-verify your brand entity and build your Knowledge Graph presence.","fix":"Add sameAs array to Organization JSON-LD listing all brand profiles: Google Maps URL, LinkedIn, Facebook, Instagram, any directory listings (Practo, Justdial), and Wikipedia if available."})
+    # ── Check for Service schema on service pages ─────────────────────────────
+    service_pages = [p for p in pages if "/service" in p.get("url","").lower() or "/treatment" in p.get("url","").lower()]
+    if service_pages and not any("Service" in s for s in all_schema):
+        schema_iss.append({"issue":"Service Schema Missing on Service Pages","severity":"Medium","finding":f"The services page lists multiple treatment offerings but has no Service or MedicalProcedure schema. Each service is a rankable entity — without schema, Google treats them as plain text.","fix":"Add individual Service JSON-LD blocks for each treatment (Dental Implants, Root Canal, Orthodontics etc.) with name, description, provider, and areaServed."})
+    # ── WebSite schema check ──────────────────────────────────────────────────
+    if not any("WebSite" in s or "SearchAction" in s for s in all_schema):
+        schema_iss.append({"issue":"WebSite Schema / Sitelinks Search Box Missing","severity":"Low","finding":"No WebSite schema with SearchAction found. This schema enables the Sitelinks Search Box in Google results and signals site authority to the Knowledge Graph.","fix":"Add WebSite JSON-LD to homepage with SearchAction pointing to your internal search results URL."})
+    if not schema_iss:
+        schema_iss.append({"issue":"Enhance Existing Schema","severity":"Low","finding":"Core schema types are present. Opportunity exists to add WebSite (Sitelinks Search Box) and SiteNavigationElement schema.","fix":"Add WebSite schema with SearchAction. Add SiteNavigationElement linking to main navigation destinations."})
     add_issues_table(doc,schema_iss)
     doc.add_page_break()
 
@@ -435,16 +540,43 @@ def build_audit_docx(client_slug, website_url, brand_kit, strategy_data={}):
             _set_bg(row[1],"C8E6C9" if sc>=75 else "FFF9C4" if sc>=50 else "FFCDD2")
             ri=row[2].paragraphs[0].add_run("; ".join(res.get("issues",[])[:2]) or "OK"); ri.font.size=Pt(9)
         doc.add_paragraph()
-    add_issues_table(doc,[
-        {"issue":"Short or Missing Title Tags","severity":"High","finding":"Several titles are under 40 characters, leaving SERP real estate unused. Others are missing primary keywords entirely.","fix":"Expand titles to 50-60 chars. Lead with the primary keyword. Format: 'Buy [Product] Online | [Brand Name]'."},
-        {"issue":"Generic Meta Descriptions","severity":"High","finding":"Many pages have auto-generated or generic meta descriptions that don't include target keywords or a clear CTA.","fix":"Write unique, compelling meta descriptions (120-160 chars) for all pages. Include primary keyword and value proposition."},
-        {"issue":"Keyword Cannibalisation Risk","severity":"Medium","finding":"Multiple pages may be targeting the same keyword, splitting ranking signals and competing with each other.","fix":"Audit all pages for keyword overlap. Assign one unique primary keyword per page. Consolidate or redirect cannibalising pages."},
-    ])
+    # ── FIX: Title/meta issues now reflect ACTUAL on-page data ─────────────────
+    title_meta_issues = []
+    titles_too_long   = [r for r in onpage_results if r.get("title",{}).get("length",0) > 60]
+    titles_too_short  = [r for r in onpage_results if 0 < r.get("title",{}).get("length",0) < 40]
+    titles_missing    = [r for r in onpage_results if not r.get("title",{}).get("text","")]
+    metas_too_long    = [r for r in onpage_results if r.get("meta",{}).get("length",0) > 160]
+    metas_missing     = [r for r in onpage_results if not r.get("meta",{}).get("text","")]
+
+    if titles_missing:
+        title_meta_issues.append({"issue":f"Missing Title Tags — {len(titles_missing)} pages","severity":"Critical","finding":f"{len(titles_missing)} pages have no title tag. This is the most important on-page ranking factor. Google will auto-generate titles which are usually suboptimal.","fix":"Add a unique, keyword-rich title (50-60 chars) to every page. Lead with the primary keyword. Format: 'Primary Keyword | Brand Name'."})
+    if titles_too_long:
+        title_meta_issues.append({"issue":f"Title Tags Too Long — {len(titles_too_long)} pages","severity":"High","finding":f"{len(titles_too_long)} pages have titles over 60 characters. Google truncates these in search results with '...', cutting off the brand name or key differentiator. Affected: {'; '.join(r.get('url','')[-40:] for r in titles_too_long[:3])}.","fix":"Shorten titles to 50-60 characters. Keep the primary keyword at the start. Remove filler words like 'Welcome to', 'The Best', 'Official Site'."})
+    if titles_too_short:
+        title_meta_issues.append({"issue":f"Title Tags Too Short — {len(titles_too_short)} pages","severity":"Medium","finding":f"{len(titles_too_short)} pages have titles under 40 characters, leaving unused SERP real estate. Affected: {'; '.join(r.get('url','')[-40:] for r in titles_too_short[:3])}.","fix":"Expand titles to 50-60 chars. Include the primary keyword and location/brand qualifier."})
+    if metas_missing:
+        title_meta_issues.append({"issue":f"Missing Meta Descriptions — {len(metas_missing)} pages","severity":"High","finding":f"{len(metas_missing)} pages have no meta description. Google auto-generates snippets using random page text, often pulling navigation or footer content — reducing CTR significantly.","fix":"Write unique, compelling meta descriptions (120-160 chars) for all pages. Include the primary keyword in the first half and end with a clear CTA ('Book now', 'Learn more')."})
+    if metas_too_long:
+        title_meta_issues.append({"issue":f"Meta Descriptions Too Long — {len(metas_too_long)} pages","severity":"Medium","finding":f"{len(metas_too_long)} meta descriptions exceed 160 characters and will be truncated in SERPs. Affected: {'; '.join(r.get('url','')[-40:] for r in metas_too_long[:3])}.","fix":"Trim meta descriptions to 120-160 characters. Put the most important information and CTA in the first 120 characters."})
+    title_meta_issues.append({"issue":"Keyword Cannibalisation Risk","severity":"Medium","finding":"Multiple pages appear to target the same primary keyword variations, splitting ranking signals. Google will pick one page to rank and may suppress others entirely.","fix":"Audit all pages for keyword overlap. Assign one unique primary keyword per page. Consolidate near-duplicate pages or differentiate content angles clearly."})
+    if not title_meta_issues:
+        title_meta_issues.append({"issue":"Title & Meta Optimisation","severity":"Low","finding":"Titles and meta descriptions are within acceptable length ranges. Opportunity exists to improve keyword placement and conversion-oriented language.","fix":"A/B test meta descriptions using GSC CTR data. Pages with <2% CTR despite good rankings should be rewritten."})
+    add_issues_table(doc, title_meta_issues)
 
     add_h2(doc,"2.2  Heading Structure (H1–H3)")
     add_body(doc,"Every page must have exactly one H1. H2s and H3s structure content for both users and search engines, signalling topical depth and semantic relevance.")
     if miss_h1>0:
         add_callout(doc,f"Critical: {miss_h1} pages missing H1",["Pages without H1 send no clear topic signal to Google.","The H1 is the strongest on-page heading SEO signal.","Fix immediately: add a unique, keyword-rich H1 to every affected page."],"critical")
+    # ── FIX: Detect pages with multiple H1 tags ───────────────────────────────
+    multi_h1_pages = [r for r in onpage_results if len(r.get("headings",{}).get("h1",[]))>1]
+    if multi_h1_pages:
+        affected = ', '.join(r.get('url','')[-50:] for r in multi_h1_pages[:3])
+        add_callout(doc,f"Critical: {len(multi_h1_pages)} pages have multiple H1 tags",[
+            f"Affected: {affected}",
+            "Multiple H1s split Google's topic signal — it cannot determine which heading defines the page primary subject.",
+            "Common cause: sliders, team sections, or testimonial blocks coded as H1 by mistake.",
+            "Fix: Keep exactly one H1 per page. Change all extra H1s to H2 or H3 as appropriate."
+        ],"critical")
 
     add_h2(doc,"2.3  Image SEO")
     add_body(doc,"Image SEO drives Google Image Search traffic and provides critical accessibility and ranking signals. It is consistently the fastest-win category in any audit.")
@@ -776,24 +908,45 @@ def build_audit_docx(client_slug, website_url, brand_kit, strategy_data={}):
             doc.add_paragraph()
 
     else:
-        # Fallback: Generic industry-based insights
-        if "e-commerce" in industry.lower() or "ecommerce" in industry.lower():
+        # ── FIX: Industry-matched insights using auto-detected industry ───────
+        ind_lower = industry.lower()
+        if "dental" in ind_lower or "dentist" in ind_lower:
             insights = [
-                ("Product Comparison Pages", "Create '[Product A] vs [Product B]' comparison pages for your top 10 products. These capture high-intent comparison queries with 3x higher conversion rates than category pages."),
+                ("Individual Service Landing Pages", f"Create dedicated pages for each treatment: /dental-implants/, /invisalign/, /root-canal-treatment/, /wisdom-tooth-removal/. Each page targets high-intent queries like 'dental implants HSR Layout cost'. Competitors with dedicated service pages consistently outrank general /services/ pages for procedure-specific searches."),
+                ("Treatment Cost / Pricing Transparency Pages", "Patients research costs before booking. Create a 'Dental Treatment Costs in [City]' page that ranks for 'dental implant cost [city]' queries — one of the highest-volume dental keywords. Transparent pricing builds trust and reduces phone-shopping friction."),
+                ("Before/After Patient Case Studies", "Document 5-10 real patient transformations (with consent): problem, treatment chosen, timeline, and result photos. These pages rank for '[treatment] results [city]', generate natural backlinks from dental forums, and build the E-E-A-T signals Google requires for YMYL health sites."),
+                ("Doctor Credentials & Authority Pages", "Build individual profile pages for each dentist with: BDS/MDS qualifications, years of experience, specialisation areas, IDA membership, and case count. Google's Quality Rater Guidelines give extra weight to identifiable experts on health/medical sites. Link these from all blog posts as author pages."),
+                ("Local Neighbourhood SEO Pages", f"Create location-specific pages targeting neighbouring areas: '/dentist-in-[nearby-area]/', '/dental-clinic-whitefield/', '/orthodontist-koramangala/'. These capture patients searching from adjacent neighbourhoods who may not find the clinic via HSR Layout-specific queries.")
+            ]
+        elif "restaurant" in ind_lower or "food" in ind_lower:
+            insights = [
+                ("Menu SEO Pages", "Create individual SEO-optimised pages for signature dishes, cuisine types, and dietary options. Rank for 'best [cuisine] in [city]' queries."),
+                ("Occasion & Booking Landing Pages", "Pages for: anniversary dinners, corporate lunches, birthday parties. These capture high-intent 'restaurant for [occasion] near me' queries."),
+                ("Chef Story & Sourcing Content", "Publish content about sourcing, cooking philosophy, and chef credentials. These build E-E-A-T for food/hospitality YMYL content.")
+            ]
+        elif "e-commerce" in ind_lower or "ecommerce" in ind_lower or "shop" in ind_lower:
+            insights = [
+                ("Product Comparison Pages", "Create '[Product A] vs [Product B]' comparison pages for top products. These capture high-intent comparison queries with 3x higher conversion rates than category pages."),
                 ("User-Generated Content Strategy", "Launch a review collection campaign. Products with 50+ reviews rank 4.6x higher and convert 270% better. Incentivize reviews with discount codes or loyalty points."),
                 ("Seasonal Content Calendar", "Map content to buying cycles: Pre-festival guides (60 days before), Gift guides (30 days), Last-minute deals (7 days). Target 'best [product] for [occasion]' queries.")
             ]
-        elif "saas" in industry.lower() or "software" in industry.lower():
+        elif "saas" in ind_lower or "software" in ind_lower:
             insights = [
-                ("Comparison Landing Pages", "Create '[Your Tool] vs [Competitor]' pages for your top 5 competitors. These queries have 8x higher intent and 65% conversion rate."),
+                ("Comparison Landing Pages", "Create '[Your Tool] vs [Competitor]' pages for top 5 competitors. These queries have 8x higher intent and 65% conversion rate."),
                 ("Free Tool / Calculator Strategy", "Build a simple ROI calculator or assessment tool. These rank for 'calculator' queries, generate backlinks naturally, and collect lead emails."),
-                ("Integration Hub", "Create individual integration pages for every tool you connect with (Zapier, Slack, etc.). These rank for '[Tool] + [Integration]' long-tail queries.")
+                ("Integration Hub", "Create individual integration pages for every connected tool. These rank for '[Tool] + [Integration]' long-tail queries.")
             ]
-        elif "local" in industry.lower() or "service" in industry.lower():
+        elif "local" in ind_lower or "service" in ind_lower:
             insights = [
-                ("Hyperlocal Content Strategy", "Create neighborhood-specific service pages. Instead of one '/services' page, create 10+ pages like '/services-[neighborhood]' with unique local content and reviews."),
+                ("Hyperlocal Content Strategy", "Create neighbourhood-specific service pages. Instead of one '/services' page, create 10+ pages like '/services-[neighbourhood]' with unique local content and reviews."),
                 ("Before/After Content", "Document every project with before/after photos and detailed case studies. These build trust and rank for '[service] near me before and after' queries."),
                 ("Local Partnership Content", "Partner with complementary local businesses for co-marketing content. Guest posts on local business blogs build high-relevance backlinks.")
+            ]
+        elif "agency" in ind_lower or "marketing" in ind_lower:
+            insights = [
+                ("Case Study Library", "Publish 5+ detailed case studies with specific metrics: 'How we grew organic traffic 312% for [industry client] in 6 months'. These rank for '[service] results' queries and build E-E-A-T authority."),
+                ("Tools & Calculators", "Build free SEO/marketing calculators (ROI calculator, keyword difficulty estimator). These generate passive backlinks and email captures."),
+                ("Competitor Analysis Content", "Publish '[Competitor Tool] alternatives' pages. High-intent, easy-to-rank bottom-funnel content.")
             ]
         else:
             # Generic B2B/Agency insights
