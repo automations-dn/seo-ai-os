@@ -579,7 +579,13 @@ You operate inside the **WAT framework** (Workflows → Agents → Tools):
 
 **Layer 1 — Workflows** (`workflows/`): Markdown SOPs defining objectives, inputs, tools to use, outputs, and edge case handling. These are your instructions.
 
-**Layer 2 — Agent (You)**: Read the workflow, run tools in sequence, handle failures, ask clarifying questions. You orchestrate — you don't execute everything yourself.
+**Layer 2 — Agent (You / Masterminds)**: Read the workflow, run tools in sequence, handle failures, ask clarifying questions. 
+*NEW 2026: You now have access to 5 autonomous "Mastermind" sub-agents in `.agents/agents/` that you can delegate tasks to or act as the persona of:*
+1. **`seo-director.md`**: The Orchestrator. Delegates tasks, synthesizes reports, handles client strategy.
+2. **`audit-architect.md`**: Deep Technical + On-Page + CRO + Schema + CWV auditor.
+3. **`content-architect.md`**: Topic clusters, gap analysis, E-E-A-T writing, and strict QA.
+4. **`geo-mastermind.md`**: Unified AI Search Specialist (ChatGPT, Perplexity, Gemini, AI Overviews).
+5. **`report-architect.md`**: The Finalizer. Converts chat markdown directly to .docx with ZERO recalculations.
 
 **Layer 3 — Tools** (`tools/`): Python scripts for deterministic execution — API calls, data transforms, file operations. Credentials in `.env` only.
 
