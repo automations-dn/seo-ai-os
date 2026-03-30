@@ -125,30 +125,6 @@ def find_outreach_emails(domain: str) -> str:
     except Exception as e:
         return f"Hunter.io retrieval failed. Error: {str(e)}"
 
-@mcp.tool()
-def get_free_ai_answer(query: str) -> str:
-    """
-    Synthesizes an AI answer for a query using DuckDuckGo AI (Completely Free AEO/GEO Analysis).
-    """
-    try:
-        import tools.fetch_free_ai as fetch_free_ai
-        data = fetch_free_ai.get_free_ai_answer(query)
-        return f"Free AI Answer:\n{data}"
-    except Exception as e:
-        return f"Free AI retrieval failed. Error: {str(e)}"
-
-
-@mcp.tool()
-def get_citability_score(url: str) -> str:
-    """
-    Scores a web page (0-100) on how likely AI models are to cite its content.
-    """
-    try:
-        import tools.citability_scorer as citability_scorer
-        res = citability_scorer.analyze_page_citability(url)
-        return f"AI Citability Score:\n{json.dumps(res, indent=2)}"
-    except Exception as e:
-        return f"Failed to score citability. Error: {str(e)}"
 
 @mcp.tool()
 def generate_llms_txt(url: str, mode: str = "validate") -> str:

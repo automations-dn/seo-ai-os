@@ -72,7 +72,7 @@ The system states it can pull real traffic data via `tools/mcp-gsc/`, but it cur
 To make the AI (Claude) seamlessly orchestrate these new APIs without having to write clunky `.tmp/` JSON files everywhere, we must install the following MCP Servers directly into Claude's configuration:
 
 1.  **DataForSEO MCP:** (Required) A custom MCP server (`tools/mcp-dataforseo/`) that allows the AI to say, *"Get me the backlink profile for Dare Network"* and natively queries the API.
-2.  **Google Search Console MCP:** (Required) Ensures the AI has live access to the client's actual click data to embed in the `report_builder.py`.
+2.  **Google Search Console MCP:** (Required) Ensures the AI has live access to the client's actual click data to embed in the `chat_to_report.py` workflow.
 3.  **Local File System MCP:** (Required) To safely read/write to the `.agents/` and `clients/` folders systematically.
 4.  **GitHub MCP:** (Highly Recommended) Allows the AI to push the finished SEO articles and `llms.txt` directly to the client's live website repository (e.g., Vercel/Next.js).
 

@@ -1,6 +1,6 @@
 # SEO Audit Report Template — Dare Network Standard
 
-Use this structure for every audit report generated via report_builder.py.
+Use this structure for every audit report generated via chat_to_report.py.
 All behavior rules are in CLAUDE.md. This file defines sections and format only.
 
 ---

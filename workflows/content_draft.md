@@ -1097,20 +1097,13 @@ ai_score = (
 
 #### **6.4: LLM Citability / AEO Check**
 
-**Tool:** `citability_scorer.py` (or `aeo_grader.py`)
+**Agent Persona:** `content-architect.md`
 
-**Execute:**
-```bash
-python tools/citability_scorer.py \
-  --text article.md \
-  --output ".tmp/{client}_aeo_score.json"
-```
-
-**Validate:**
+**Validate Natively (No External Tool Required):**
 - Ensure all major H2s have a 50-75 word direct answer block underneath them.
 - Ensure the article includes at least one structured markdown table.
 - Verify strict data attribution ("According to a 2026 study by...") instead of loose claims.
-- **Fail condition:** If the AEO Score is < 70, rewrite the failing sections.
+- **Fail condition:** If the article lacks these elements, the Content Architect must rewrite the failing sections before presenting to the user.
 
 ---
 

@@ -50,22 +50,14 @@ Pull all available data sources and generate a comprehensive, beautifully format
   - Links built / outreach sent this month
 
 ### Step 6: Compile Report
-- Run: `tools/report_builder.py --client <client_name> --type monthly --month <YYYY-MM>`
-- Fills in the template with all collected data
-- Report Sections:
-  1. **Executive Summary** — 3-5 bullet highlights (biggest wins, concerns)
-  2. **Traffic Overview** — GA4 organic traffic chart data
-  3. **Rankings & Visibility** — GSC position tracking, new wins, drops
-  4. **Technical Health** — crawl health summary
-  5. **Content Published** — list of new articles with performance
-  6. **Links Built** — new backlinks acquired this month
-  7. **AEO/GEO Status** — any new featured snippets or AI overview appearances
-  8. **Next Month Priorities** — 3-5 recommended actions
+- The SEO Director agent uses all collected data to write a detailed markdown report in the chat.
+- It covers Executive Summary, Traffic Overview, Rankings & Visibility, Technical Health, Content Published, Links Built, AEO/GEO Status, and Next Month Priorities.
+- The user reviews and approves the report.
 
 ### Step 7: Format Output
-- If `--format markdown`: Save to `clients/<client_name>/reports/<month>_report.md`
-- If `--format pdf`: Run `tools/report_builder.py --render pdf` to generate PDF
-- If `--format slides`: Generate a Google Slides-compatible presentation outline
+- Save the approved chat output to `.tmp/<client_name>_<month>_approved.md`
+- Run: `python tools/chat_to_report.py --input .tmp/<client_name>_<month>_approved.md --output clients/<client_name>/reports/<month>_report.docx`
+- If `--format pdf` is requested, inform the user that DOCX is the standard native output now and provide the DOCX path.
 
 ### Step 8: Present Summary & Deliver
 Display executive summary in chat.

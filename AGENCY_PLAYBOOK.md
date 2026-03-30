@@ -51,7 +51,7 @@ This is not another AI writing tool. This is the **complete operating system** t
 19. **geospatial_search.py** - Find local link opportunities
 
 **Reporting:**
-20. **report_builder.py** - Generate branded Word document reports
+20. **chat_to_report.py** - Deterministic formatter to turn chat markdown into Dare Network DOCX templates
 
 **AI & Advanced:**
 21. **topic_graph_mapper.py** - Map topic clusters and content gaps
@@ -437,22 +437,12 @@ python tools/schema_gen.py --type Organization --entity-mode --wikidata-id Q1234
 
 #### Reporting Tools
 
-**20. report_builder.py**
-- **What it does:** Generates branded Word documents (.docx)
-- **Templates:**
-  - `audit` - Full technical SEO audit (40-50 pages)
-  - `monthly_report` - Monthly performance report
-  - `content_brief` - Article outline
-  - `entity_audit` - Entity SEO audit
-- **Features:**
-  - Client branding (colors, logo)
-  - Charts and graphs
-  - Executive summary
-  - 90-day roadmap
-  - Exact code fixes
-- **How to use:** `python tools/report_builder.py --client "clientname" --template audit --data .tmp/audit_data.json --output reports/Client_Audit.docx`
-- **Output:** Professional Word document ready to send
-- **Styling:** Dare Network brand colors (Navy #1B3A6B, Orange #E8671A)
+**20. chat_to_report.py**
+- **What it does:** Pure, deterministic formatter. Takes the markdown you approve from the `report-architect.md` agent and outputs it into the branded Dare Network Word document.
+- **Why it matters:** Eliminates 100% of data hallucinations. No hardcoded math. What you see in chat is exactly what gets printed to the DOCX.
+- **How to use:** `python tools/chat_to_report.py --input ".tmp/approved_markdown.md" --output "reports/Client_Audit.docx"`
+- **Dependencies:** `python-docx`
+- **Known issues:** None. Pure formatting.
 
 ---
 
@@ -1759,7 +1749,7 @@ The question is: will you take action?
 - **Action:** Scan the raw HTML for valid JSON-LD. Does the site have `Organization` schema with a declared `SameAs` array linking to their social profiles? Do they have `LocalBusiness` for local targeting? Provide the exact missing code blocks to inject.
 
 **Step 6: The Executive Synthesis**
-- **Tool:** `report_builder.py` -> `/audit` final output
+- **Agent:** `report-architect` -> Final DOCX compiling
 - **Action:** Synthesize Steps 2-5 into a branded Word document. The AI formats this so you can present the issues *and* the immediate solutions to the client.
 
 ---

@@ -30,13 +30,8 @@ python tools/cleanup_tmp.py --older-than 7 --archive
 
 ### If a Workflow Breaks
 
-```bash
-# Rollback the failed workflow
-python tools/workflow_runner.py --rollback --checkpoint .tmp/checkpoint_audit.json
-
-# Or resume from where it failed
-python tools/workflow_runner.py --resume .tmp/checkpoint_audit.json
-```
+> **NEW for 2026: Mastermind Agent Auto-Recovery**
+> You no longer need manual rollback scripts. The Elite Squad agents (`seo-director`, `audit-architect`, etc.) maintain strict conversational context. If a tool fails mid-execution, simply tell the agent "That tool failed. Please try the fallback method" and the agent will natively recover the workflow without losing progress.
 
 ---
 
@@ -88,45 +83,10 @@ Health Score: 85/100
 
 ---
 
-### 2. **preflight_check.py** — Pre-Flight Validation
+### 2. **preflight_check.py** — [DEPRECATED]
 
-**What it does:** Validates prerequisites before running workflows (prevents cascading failures)
-
-**When to use:** Automatically called by workflow_runner, or manually before big operations
-
-**Usage:**
-```bash
-# Check if system ready for audit
-python tools/preflight_check.py --workflow audit --url https://example.com
-
-# Check dependencies only
-python tools/preflight_check.py --workflow crawler --check-only
-```
-
-**What it checks:**
-- ✅ Python version
-- ✅ Required packages installed
-- ✅ Playwright browsers installed
-- ✅ .tmp directory exists
-- ✅ utils.py working correctly
-- ✅ .env file exists
-- ⚠️ Cached audit files (warns if missing, doesn't block)
-
-**Output Example:**
-```
-✓ PASSED (5)
-  ✓ Python 3.11.5
-  ✓ All 7 required packages installed
-  ✓ Playwright browsers installed
-  ✓ .tmp directory exists
-  ✓ utils.py working correctly
-
-⚠ WARNINGS (1)
-  ⚠ Missing audit files for metalbarns: framework.json
-  ⚠ These will be generated during audit workflow
-
-[READY] All checks passed. Safe to proceed.
-```
+*Note: This tool was deleted during the 2026 Elite Squad Debloat.*
+The Mastermind agents now natively verify requirements (URLs, keys, and schemas) before beginning executions. No manual pre-flight scripts are needed.
 
 ---
 
@@ -178,63 +138,11 @@ Proceed with deletion of 23 files? [y/N]:
 
 ---
 
-### 4. **workflow_runner.py** — Transaction-Style Workflow Execution
+### 4. **workflow_runner.py** — [DEPRECATED]
 
-**What it does:** Runs workflows with automatic checkpoints and rollback capability
-
-**When to use:** Run any workflow through this wrapper for safety
-
-**Usage:**
-```bash
-# Run audit with auto-recovery
-python tools/workflow_runner.py --workflow audit --url https://example.com
-
-# Resume from failure
-python tools/workflow_runner.py --resume .tmp/checkpoint_audit.json
-
-# Rollback failed workflow
-python tools/workflow_runner.py --rollback --checkpoint .tmp/checkpoint_audit.json
-```
-
-**How it works:**
-1. ✅ Saves checkpoint after each successful step
-2. ❌ If step fails: detailed error report + resume instructions
-3. 🔄 Resume: Continue from last successful step
-4. ↩️ Rollback: Delete all files created during workflow
-
-**Output Example (Success):**
-```
-[STEP 1] Pre-flight Check
-Command: python tools/preflight_check.py --workflow audit --url https://example.com
-[SUCCESS] Pre-flight Check completed
-
-[STEP 2] Framework Detection
-Command: python tools/framework_detector.py --url https://example.com --output .tmp/example_framework.json
-[SUCCESS] Framework Detection completed
-
-...
-
-[WORKFLOW COMPLETE] All 6 steps successful
-```
-
-**Output Example (Failure):**
-```
-[STEP 3] No-JS Crawl (Google's Perspective)
-[ERROR] Step failed with exit code 1
-Error: ModuleNotFoundError: No module named 'playwright'
-
-ERROR REPORT
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Error #1: No-JS Crawl (Google's Perspective)
-  Command: python tools/seo_crawler.py --url https://example.com --max-pages 50 --no-js
-  Message: ModuleNotFoundError: No module named 'playwright'
-  Fix:     pip install playwright
-
-Checkpoint saved to: .tmp/checkpoint_audit.json
-
-To resume: python tools/workflow_runner.py --resume .tmp/checkpoint_audit.json
-To rollback: python tools/workflow_runner.py --rollback --checkpoint .tmp/checkpoint_audit.json
-```
+*Note: This tool was deleted during the 2026 Elite Squad Debloat.*
+Attempting to force AI workflows through a Python wrapper caused severe context-loss and hallucinations. 
+Multi-step workflows are now executed natively inside the IDE chat by the **5 Elite Squad Mastermind Agents**. The agents manage their own state and context.
 
 ---
 
@@ -297,63 +205,10 @@ ensure_deps(["playwright", "beautifulsoup4", "requests"])
 
 ---
 
-### 6. **validate_audit_files.py** — Audit File Validator
+### 6. **validate_audit_files.py** — [DEPRECATED]
 
-**What it does:** Validates all required files exist before report generation (prevents "10/10 bug")
-
-**When to use:** Automatically called before report_builder, or manually to debug missing files
-
-**Usage:**
-```bash
-# Validate required files
-python tools/validate_audit_files.py --url https://example.com
-
-# Validate custom file list
-python tools/validate_audit_files.py --url https://example.com --required framework,crawl_nojs
-```
-
-**What it validates:**
-- ✅ framework.json (STEP 0 - CRITICAL)
-- ✅ crawl_nojs.json (Google's perspective)
-- ✅ crawl_js.json (User's perspective)
-- ✅ lighthouse.json (Core Web Vitals)
-
-**Output Example (Success):**
-```
-AUDIT FILE VALIDATION
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-URL:  https://metalbarns.in
-Slug: metalbarns
-
-[PASS] REQUIRED FILES: ALL PRESENT
-
-[INFO] OPTIONAL FILES: 2/6 present
-
-Missing optional files (audit will still work):
-  - .tmp/metalbarns_onpage.json
-  - .tmp/metalbarns_keywords.json
-  - .tmp/metalbarns_serp.json
-  - .tmp/metalbarns_entity_audit.json
-
-[OK] All required files present. Safe to generate report.
-```
-
-**Output Example (Failure):**
-```
-AUDIT FILE VALIDATION
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-URL:  https://example.com
-Slug: example
-
-[FAIL] REQUIRED FILES: MISSING
-
-Missing required files:
-  - .tmp/example_framework.json
-  - .tmp/example_crawl_nojs.json
-
-[ERROR] Cannot generate report - required files missing!
-Run the audit workflow to generate missing files.
-```
+*Note: This tool was deleted during the 2026 Elite Squad Debloat.*
+This tool was built to prevent `report_builder.py` from crashing due to missing files. Since `report_builder.py` was deleted and replaced by `chat_to_report.py` (which requires NO math files), this validation script is obsolete. The `report-architect.md` agent handles visual validation before exporting DOCX.
 
 ---
 
@@ -405,14 +260,11 @@ python tools/health_check.py --verbose
 # 1. Check what's wrong
 python tools/health_check.py --verbose
 
-# 2. If workflow failed mid-execution
-python tools/workflow_runner.py --rollback --checkpoint .tmp/checkpoint_audit.json
-
-# 3. Fix dependencies
+# 2. Fix dependencies
 python tools/deps_manager.py --repair
 
-# 4. Try again with recovery wrapper
-python tools/workflow_runner.py --workflow audit --url https://example.com
+# 3. Instruct the Agent to Use Fallback
+"The last tool failed. Please use the fallback methodology listed in CLAUDE.md to continue."
 ```
 
 ---
@@ -436,32 +288,17 @@ python tools/cleanup_tmp.py --older-than 7 --archive
 ### Issue: "Workflow failed halfway through"
 
 **Solution:**
-```bash
-# Rollback the failed workflow
-python tools/workflow_runner.py --rollback --checkpoint .tmp/checkpoint_audit.json
+1. Do NOT try to rollback via script.
+2. Instruct the agent: *"That tool failed. Please use the fallback methodology listed in CLAUDE.md to continue."*
+3. The Elite Squad Mastermind agent will automatically select a secondary tool or manual fallback.
 
-# Fix the underlying issue (check error report)
-python tools/health_check.py --fix-all
+### Issue: "Hallucinated data in audit report"
 
-# Resume from checkpoint
-python tools/workflow_runner.py --resume .tmp/checkpoint_audit.json
-```
-
-### Issue: "False 10/10 scores in audit report"
-
-**Cause:** Framework detection data missing
+**Cause:** The agent lacked sufficient context before generating the layout.
 
 **Solution:**
-```bash
-# Validate audit files exist
-python tools/validate_audit_files.py --url https://example.com
-
-# If missing, re-run framework detector
-python tools/framework_detector.py --url https://example.com --output .tmp/{slug}_framework.json
-
-# Regenerate report
-python tools/report_builder.py --client client_name --template audit
-```
+1. Instruct the `report-architect.md` agent to explicitly print the raw JSON data to the chat for visual verification.
+2. Once visually verified, instruct the agent to generate the final DOCX via `chat_to_report.py`.
 
 ---
 
@@ -473,7 +310,7 @@ python tools/report_builder.py --client client_name --template audit
 | **.tmp file count** | < 30 | Run cleanup |
 | **Stale files** | 0 | Run cleanup with --older-than 7 |
 | **Missing dependencies** | 0 | Run deps_manager --repair |
-| **Failed workflows** | 0 | Use workflow_runner for auto-recovery |
+| **Failed workflows** | 0 | Conversational Agent Recovery |
 
 ---
 
@@ -482,18 +319,16 @@ python tools/report_builder.py --client client_name --template audit
 ### ✅ DO:
 
 1. Run `health_check.py` daily before starting work
-2. Use `workflow_runner.py` for important workflows (audit, content generation)
+2. Rely on Mastermind Agents for auto-recovery and fallback mechanisms
 3. Clean up `.tmp` weekly with `--archive` flag
 4. Keep dependencies up to date with `deps_manager.py --repair`
-5. Validate audit files before report generation
+5. Always perform visual verification before DOCX generation
 
 ### ❌ DON'T:
 
 1. Delete `.tmp` files manually (use cleanup_tmp.py)
-2. Run workflows without pre-flight check
-3. Ignore health check warnings for >3 days
-4. Delete checkpoint files while workflow is running
-5. Skip validation before report generation
+2. Ignore health check warnings for >3 days
+3. Skip visual verification before chatting to DOCX
 
 ---
 
@@ -502,10 +337,7 @@ python tools/report_builder.py --client client_name --template audit
 If system is completely broken:
 
 ```bash
-# 1. Rollback all active workflows
-find .tmp -name "checkpoint_*.json" -exec python tools/workflow_runner.py --rollback --checkpoint {} \;
-
-# 2. Clean everything
+# 1. Clean everything
 python tools/cleanup_tmp.py --force-all
 
 # 3. Repair dependencies

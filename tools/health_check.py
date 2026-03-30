@@ -154,8 +154,7 @@ class HealthChecker:
             "utils.py",
             "framework_detector.py",
             "seo_crawler.py",
-            "report_builder.py",
-            "validate_audit_files.py"
+            "chat_to_report.py"
         ]
 
         missing_critical = []

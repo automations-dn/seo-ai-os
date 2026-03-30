@@ -29,8 +29,10 @@ Before creating any client folder, collect all fields from `clients/_template/br
 6. Technical settings (CMS, GSC connected, GA4 connected)
 7. Reporting preferences
 
-### Rule 3: Audit Output = Downloadable .docx
-All reports are generated via `tools/report_builder.py`. Always provide a clickable download link after generation:
+### Rule 3: Audit Output = Chat First, Then Downloadable .docx
+All reports are generated via `tools/chat_to_report.py`. 
+The Mastermind agent will present the final report in the chat. ONLY AFTER user approval, the agent will write the output to a temporary `.md` file in `.tmp/` and execute `python tools/chat_to_report.py --input .tmp/approved_report.md --output reports/ClientName_Audit_YYYY-MM-DD.docx`.
+Always provide a clickable download link after generation:
 ```
  Download: [ClientName_Audit_YYYY-MM-DD.docx](file:///full/path/to/report.docx)
 ```
@@ -40,16 +42,13 @@ Format must match `templates/Example Audit template.docx`.
 **MANDATORY: All file naming MUST use `tools/utils.py::url_to_slug()` function.**
 
 **The Bug That Was Fixed (2026-03-18):**
-When generating reports, `report_builder.py` was converting URLs inconsistently:
-- Tools saved: `.tmp/metalbarns_framework.json` (domain only)
-- Report builder looked for: `.tmp/metalbarns_in_framework.json` (domain + TLD with underscore)
-- Result: `framework_data` was always empty → score caps never applied → false 10/10 scores
+When saving data, files were getting mixed up due to raw URL naming.
+- Result: False 10/10 scores.
 
 **The Solution:**
 1. Created `tools/utils.py` with centralized `url_to_slug()` function
-2. Updated `report_builder.py` to import and use `url_to_slug()`
-3. Added pre-flight validation that blocks report generation if required files missing
-4. All tools now use consistent slug format
+2. ALL tool scripts and agents must use `url_to_slug()`
+3. The new 5 Mastermind Agents validate slug formats across their steps.
 
 **Standard Slug Format:**
 ```python
@@ -74,10 +73,8 @@ url_to_slug("http://example.org/about") → "example"
 
 **Validation Before Report Generation:**
 ```bash
-# Check if all required files exist
-python tools/validate_audit_files.py --url https://metalbarns.in
-
-# report_builder.py now auto-validates and blocks if files missing
+# Agent-based verification: The report-architect MUST verify all required data exists in chat.
+# report-architect then writes the approved structure to .tmp/ and compiles the DOCX.
 ```
 
 **CRITICAL RULES:**
@@ -342,10 +339,10 @@ Monitor unlinked brand mentions on tier-1 domains (Reddit, Quora, News). AI engi
    - Instruction: "Run in browser console: `document.querySelectorAll('script[type=\"application/ld+json\"]')`"
 
 #### Report Generation
-1. **Only choice**: `python tools/report_builder.py --client {client} --template audit --output "reports/{client}_Audit_{date}.docx"`
+1. **Only choice**: `python tools/chat_to_report.py --input ".tmp/approved_markdown.md" --output "reports/{client}_Audit_{date}.docx"`
    - Always generates `.docx` file matching Dare Network template
    - Colors: Navy #1B3A6B, Orange #E8671A
-   - Never output reports as Markdown to chat (too long, not branded)
+   - Chat-first model: Do NOT generate until the user has approved the markdown draft in the IDE chat.
 
 ---
 
@@ -539,9 +536,9 @@ python tools/schema_gen.py --type Article --data ".tmp/{client}_metadata.json" -
 python tools/nlp_analyzer.py --mode gap --serp-data ".tmp/{client}_serp.json" --output ".tmp/{client}_content_gaps.json"
 ```
 
-**Report Builder (Audit Report):**
+**Report Builder (Chat to DOCX):**
 ```bash
-python tools/report_builder.py --client "{client}" --template audit --data ".tmp/{client}_audit_data.json" --output "reports/{client}_Audit_{date}.docx"
+python tools/chat_to_report.py --input ".tmp/{client}_report.md" --output "reports/{client}_Audit_{date}.docx"
 ```
 
 **AI Governance / llms.txt Generator:**
@@ -549,9 +546,9 @@ python tools/report_builder.py --client "{client}" --template audit --data ".tmp
 python tools/llmstxt_generator.py --url "{url}" --output "clients/{client}/governance/llms.txt"
 ```
 
-**Citability Scorer (GEO Audit):**
+**Citability Scorer / AEO Grader (GEO Audit):**
 ```bash
-python tools/citability_scorer.py --url "{url}" --output ".tmp/{client}_citability.json"
+python tools/aeo_grader.py --url "{url}" --output ".tmp/{client}_citability.json"
 ```
 
 **On-Page SEO Analyzer:**

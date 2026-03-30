@@ -80,8 +80,6 @@ Trigger the formatting script:
 python tools/chat_to_report.py --input .tmp/approved_report.md --output "clients/{client_slug}/reports/{Client_Name}_Audit_{Date}.docx" --template dare_network
 ```
 
-If `chat_to_report.py` is not available, use the existing `report_builder.py` but ONLY pass the pre-calculated data — do NOT let it recalculate anything.
-
 ### Step 4: Verify Output
 
 After generating the .docx:

@@ -28,7 +28,7 @@ Perform a comprehensive SEO audit that:
 
 ## Quality Gates (Check BEFORE Report Generation)
 
-Before running `report_builder.py`, verify:
+Before generating the final DOCX via `chat_to_report.py`, verify:
 
 - [ ] `framework_detector.py` was run and result is in `.tmp/framework.json`
 - [ ] No-JS crawl was run and result is in `.tmp/crawl_nojs.json`
@@ -509,22 +509,23 @@ python tools/schema_checker.py \
 
 ## STEP 6: Report Synthesis
 
-**Tool:** `tools/report_builder.py`
+**Agent Persona:** `report-architect.md`
+**Tool:** `tools/chat_to_report.py`
 
-**Execute:**
+**Process:**
+1. The Audit Architect compiles all JSON finding summaries and writes the final Markdown report to the IDE chat.
+2. The user reads the chat and approves it.
+3. The report-architect saves the approved markdown to `.tmp/{client}_approved_audit.md`.
+4. The report-architect runs the formatter:
+
 ```bash
-python tools/report_builder.py \
-  --url "{url}" \
-  --type audit \
-  --strategy standalone \
-  --output ".tmp/reports/{client}_Audit_{date}.docx"
+python tools/chat_to_report.py --input ".tmp/{client}_approved_audit.md" --output "reports/{client}_Audit_{date}.docx"
 ```
 
 **What this does:**
-1. Reads all `.tmp/{client}_*.json` files
-2. Loads template `templates/Example Audit template.docx`
-3. Fills template with data
-4. Generates .docx report
+1. Eliminates math hallucinations (chat_to_report does absolutely zero math).
+2. Uses template Dare Network styling.
+3. Outputs `.docx` immediately for the client.
 
 **Report MUST contain these sections in this order:**
 

@@ -225,7 +225,7 @@ python tools/dataforseo_client.py --gap thedarenetwork.com competitor.com --outp
 1. Pull GSC data (existing MCP)
 2. Pull keyword rankings (DataForSEO)
 3. Compare vs. competitors (DataForSEO gap)
-4. Generate report (report_builder.py)
+4. Generate report (chat_to_report.py)
 
 ---
 

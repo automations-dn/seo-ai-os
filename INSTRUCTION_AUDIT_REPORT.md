@@ -378,7 +378,7 @@ python tools/keyword_clusterer.py --input .tmp/keywords.txt --output .tmp/cluste
 
 **Report Generation:**
 ```bash
-python tools/report_builder.py --client {client} --template audit --output "reports/{client}_audit_{date}.docx"
+python tools/chat_to_report.py --input .tmp/{client}_report.md --output "reports/{client}_audit_{date}.docx"
 ```
 
 **Schema Generation:**

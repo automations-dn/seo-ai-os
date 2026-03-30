@@ -54,10 +54,10 @@ Check whether a client folder exists:
 - If not connected: skip and note clearly in the report
 
 ### Step 6: Generate Word Report
-- Run: `python tools/report_builder.py --url <website_url> --type audit`
-  - **Client Mode**: `python tools/report_builder.py --client <name> --type audit`
-- Output file: `clients/<name>/audit_history/<YYYY-MM-DD>_audit_report.docx`
-  - **Standalone**: `.tmp/reports/<YYYY-MM-DD>_audit_report.docx`
+- Wait for user approval of the chat output.
+- Save the approved markdown to `.tmp/approved_audit.md`.
+- Run: `python tools/chat_to_report.py --input .tmp/approved_audit.md --output clients/<name>/reports/<YYYY-MM-DD>_audit_report.docx`
+  - **Standalone**: `... --output .tmp/reports/<YYYY-MM-DD>_audit_report.docx`
 
 ### Step 7: Present Summary + Download Link
 

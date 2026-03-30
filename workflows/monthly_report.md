@@ -535,16 +535,18 @@ Avg Position: 12.4 (↑ 1.2 positions from last month)
 
 ### Step 9: Compile Report Structure
 
-**Tool:** `report_builder.py`
+**Agent Persona:** `seo-director.md`
+**Tool:** `tools/chat_to_report.py`
 
-**Execute:**
+**Process:**
+1. The SEO Director agent reads all the JSON files in `.tmp/` and compiles a beautiful Markdown report in the chat.
+2. The user approves the report.
+3. The agent saves the approved text to `.tmp/{client_name}_{month}_report.md` and generates the DOCX:
+
 ```bash
-python tools/report_builder.py \
-  --client "{client_name}" \
-  --type monthly \
-  --month "{month}" \
-  --format "{format}" \
-  --output "clients/{client_name}/reports/{month}_report.{format}"
+python tools/chat_to_report.py \
+  --input ".tmp/{client_name}_{month}_report.md" \
+  --output "clients/{client_name}/reports/{month}_report.docx"
 ```
 
 **Parameters:**
@@ -897,17 +899,12 @@ Before presenting the report to the user, verify:
 
 ---
 
-## Error Handling Protocol
-
-### **If `report_builder.py` fails:**
+### **If `chat_to_report.py` fails:**
 1. Read stderr output for error message
 2. Common errors:
    - **ModuleNotFoundError (python-docx)**: Run `pip install python-docx`
-   - **FileNotFoundError (template)**: Check template path, use default
-   - **JSONDecodeError (malformed data)**: Validate .tmp/ JSON files
    - **PermissionError (can't write)**: Check folder permissions on `clients/{client_name}/reports/`
-3. If error persists: Generate markdown report as fallback (simpler, no dependencies)
-4. Document error in report: "[WARNING] Report generation encountered errors — see troubleshooting section"
+3. If error persists: The raw markdown file generated in `.tmp/` is perfectly usable as a fallback.
 
 ### **If MCP GSC/GA4 fails:**
 1. Check authentication (credentials valid?)
