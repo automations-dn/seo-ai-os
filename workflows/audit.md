@@ -34,7 +34,6 @@ Before generating the final DOCX via `chat_to_report.py`, verify:
 - [ ] No-JS crawl was run and result is in `.tmp/crawl_nojs.json`
 - [ ] If site is CSR_SPA: Issue #1 is framework migration (not on-page issue)
 - [ ] Competitor section exists (if `--competitors` flag was passed)
-- [ ] Local SEO section exists (if `--local` flag or locations in brand_kit)
 - [ ] Strategic insights section has at least 4 industry-specific points (not generic "start a blog" advice)
 - [ ] 90-day plan is in 3 phases (Foundation / Build-Out / Authority)
 - [ ] AEO/GEO readiness section exists
@@ -336,50 +335,6 @@ python tools/on_page_analyzer.py \
 **Save to:**
 `.tmp/{client}_onpage.json`
 
-### STEP 4B: Local SEO Audit (if `--local` flag or locations in brand_kit)
-
-**For each office location:**
-
-1. **Search "{business name} {city}":**
-   - Does GBP appear?
-   - What info is shown (address, phone, hours, reviews)?
-   - Is it complete or missing fields?
-
-2. **Check website for NAP consistency:**
-   - Is Name, Address, Phone on website?
-   - Does it EXACTLY match GBP listing?
-   - Common errors: "Suite 100" vs "#100", different phone formats
-
-3. **Check LocalBusiness schema:**
-   ```bash
-   python tools/schema_checker.py --url "{url}"
-   ```
-   - Does LocalBusiness schema exist?
-   - Does address in schema match GBP and website footer?
-   - Is `@id` and `sameAs` present for entity linking?
-
-4. **Check location-specific landing pages:**
-   - Example: `/peb-manufacturer-nagpur`, `/services-lucknow`
-   - Do they exist?
-   - Do they have unique content or just template swaps?
-
-5. **Check Local 3-Pack competitors:**
-   - Search "{primary service} {city}"
-   - Who appears in the Local 3-Pack?
-   - Compare their GBP completeness vs client's
-
-**Score Local SEO 0-10 based on:**
-- GBP completeness: 3 points
-- NAP consistency: 2 points
-- Location pages present: 2 points
-- LocalBusiness schema present: 2 points
-- Reviews count & avg rating: 1 point
-
-**Save to:**
-`.tmp/{client}_local_seo.json`
-
----
-
 ## STEP 5: Schema & AEO Readiness
 
 ### STEP 5A: Schema Validation
@@ -466,16 +421,10 @@ python tools/schema_checker.py \
    python tools/schema_checker.py --url "{competitor_url}"
    ```
 
-6. **Check GBP (if local business):**
-   - Review count?
-   - Average rating?
-   - Photos count?
-
-7. **Score them on same 10 dimensions as client:**
+6. **Score them on same 9 dimensions as client:**
    - Technical SEO (framework, indexability)
    - On-Page SEO
    - Content Volume
-   - Local SEO (if applicable)
    - Backlinks (estimated via domain metrics)
    - Portfolio/Social Proof
    - CTAs & Conversion Design
@@ -494,7 +443,6 @@ python tools/schema_checker.py \
 | Technical SEO | 4/10 | 7/10 | 6/10 | 8/10 |
 | On-Page SEO | 6/10 | 8/10 | 7/10 | 9/10 |
 | Content Volume | 3/10 | 9/10 | 5/10 | 7/10 |
-| Local SEO | 5/10 | N/A | 8/10 | N/A |
 | Schema Markup | 2/10 | 6/10 | 4/10 | 7/10 |
 | Blog Activity | 1/10 | 8/10 | 3/10 | 6/10 |
 | Mobile Experience | 6/10 | 9/10 | 7/10 | 8/10 |
@@ -614,13 +562,10 @@ LOW ISSUES (Fix within 90 days)
   - Migrate framework to Next.js SSR
   - Fix all missing H1s
   - Add Organization schema with entity linking
-  - Fix NAP consistency across GBP and website
-
 **Phase 2 (Days 31-60): Content Build-Out**
 - Fix HIGH issues
 - Example tasks:
   - Publish 4 articles targeting keyword gaps
-  - Add LocalBusiness schema for each location
   - Optimize top 10 pages for target keywords
   - Implement image lazy loading
 
@@ -726,10 +671,9 @@ FIXES:
 4. `.tmp/{client}_rendering_comparison.json` — Comparison
 5. `.tmp/{client}_cwv.json` — Core Web Vitals
 6. `.tmp/{client}_onpage.json` — On-page analysis
-7. `.tmp/{client}_local_seo.json` — Local SEO audit (if applicable)
-8. `.tmp/{client}_schema.json` — Schema validation
-9. `.tmp/{client}_aeo.json` — AEO/GEO readiness
-10. `.tmp/{client}_competitors.json` — Competitor benchmarking (if applicable)
+7. `.tmp/{client}_schema.json` — Schema validation
+8. `.tmp/{client}_aeo.json` — AEO/GEO readiness
+9. `.tmp/{client}_competitors.json` — Competitor benchmarking (if applicable)
 11. `.tmp/reports/{client}_Audit_{date}.docx` — Final report
 
 ### User-Facing Deliverables:
